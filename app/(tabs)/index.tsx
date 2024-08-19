@@ -1,14 +1,29 @@
-import { StyleSheet } from 'react-native';
+import React from 'react';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { useRouter, Href } from 'expo-router';
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+export default function HomeScreen() {
+  const router = useRouter();
 
-export default function TabOneScreen() {
+  const navigateTo = (route: Href<string>) => {
+    router.push(route);
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
+      <Text style={styles.title}>Fitness Tracker</Text>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigateTo('(tabs)/camera' as Href<string>)}
+      >
+        <Text style={styles.buttonText}>Take Today's Photos</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigateTo('(tabs)/progress' as Href<string>)}
+      >
+        <Text style={styles.buttonText}>View Progress</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -20,12 +35,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
+    marginBottom: 20,
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  button: {
+    backgroundColor: '#4CAF50',
+    padding: 15,
+    borderRadius: 5,
+    marginVertical: 10,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
   },
 });
