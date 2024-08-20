@@ -1,5 +1,3 @@
-Based on the code snippets you provided, I'll create a basic README file for your GitHub repository. Feel free to modify it as needed.
-
 # **FitSnapshot**
 
 A mobile application for tracking fitness progress through photo tracking.
