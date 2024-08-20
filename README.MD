@@ -47,5 +47,3 @@ To install the application, follow these steps:
 ## **Contributing**
 
 Contributions are welcome! If you'd like to contribute to the project, please fork the repository and submit a pull request.
-
-Note: This is just a basic README file, and you may want to add more information, such as screenshots, API documentation, or a license.
