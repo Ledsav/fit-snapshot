@@ -1,11 +1,21 @@
 import React, { useState, useRef } from "react";
-import { StyleSheet, Text, View, TouchableOpacity, Image } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Dimensions,
+} from "react-native";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import { manipulateAsync, FlipType, SaveFormat } from "expo-image-manipulator";
 import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { savePhoto, Photo } from "../../services/photoStorage";
 import { useRouter, Href } from "expo-router";
+import { Image } from "react-native";
+import TorsoSilhouette from "../../images/TorsoSilhouette";
+import Colors from "@/constants/Colors";
+import { useColorScheme } from "@/components/useColorScheme";
 
 type OverlayType = "front" | "side" | "back";
 
@@ -18,6 +28,8 @@ export default function CameraScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView | null>(null);
   const router = useRouter();
+  const colorScheme = useColorScheme();
+  const theme = Colors[colorScheme ?? "light"];
 
   if (!permission) {
     return <View />;
@@ -25,15 +37,19 @@ export default function CameraScreen() {
 
   if (!permission.granted) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.message}>
+      <View style={[styles.container, { backgroundColor: theme.background }]}>
+        <Text style={[styles.message, { color: theme.text }]}>
           We need your permission to show the camera
         </Text>
         <TouchableOpacity
-          style={styles.permissionButton}
+          style={[styles.permissionButton, { backgroundColor: theme.primary }]}
           onPress={requestPermission}
         >
-          <Text style={styles.permissionButtonText}>Grant permission</Text>
+          <Text
+            style={[styles.permissionButtonText, { color: theme.background }]}
+          >
+            Grant permission
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -93,6 +109,12 @@ export default function CameraScreen() {
     setCapturedImage(null);
   };
 
+  const renderSilhouette = () => (
+    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+      <TorsoSilhouette />
+    </View>
+  );
+
   const renderOverlaySelector = () => (
     <View style={styles.overlaySelector}>
       {["front", "side", "back"].map((type) => (
@@ -100,11 +122,21 @@ export default function CameraScreen() {
           key={type}
           style={[
             styles.overlayButton,
-            overlay === type && styles.activeOverlayButton,
+            overlay === type && [
+              styles.activeOverlayButton,
+              { backgroundColor: theme.primary },
+            ],
           ]}
           onPress={() => setOverlay(type as OverlayType)}
         >
-          <Text style={styles.overlayButtonText}>{type}</Text>
+          <Text
+            style={[
+              styles.overlayButtonText,
+              { color: overlay === type ? theme.background : theme.text },
+            ]}
+          >
+            {type}
+          </Text>
         </TouchableOpacity>
       ))}
     </View>
@@ -112,20 +144,34 @@ export default function CameraScreen() {
 
   if (capturedImage) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: theme.background }]}>
         <Image source={{ uri: capturedImage }} style={styles.preview} />
-        <View style={styles.overlayText}>
-          <Text style={styles.overlayTextContent}>{overlay}</Text>
+        <View
+          style={[
+            styles.overlayText,
+            { backgroundColor: theme.cardBackground },
+          ]}
+        >
+          <Text style={[styles.overlayTextContent, { color: theme.text }]}>
+            {overlay}
+          </Text>
         </View>
         <View style={styles.confirmationButtons}>
           <TouchableOpacity
-            style={styles.confirmButton}
+            style={[styles.confirmButton, { backgroundColor: theme.success }]}
             onPress={confirmPicture}
           >
-            <Ionicons name="checkmark" size={32} color="white" />
+            <Ionicons name="checkmark" size={32} color={theme.background} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.retakeButton} onPress={retakePicture}>
-            <Ionicons name="refresh-outline" size={32} color="white" />
+          <TouchableOpacity
+            style={[styles.retakeButton, { backgroundColor: theme.error }]}
+            onPress={retakePicture}
+          >
+            <Ionicons
+              name="refresh-outline"
+              size={32}
+              color={theme.background}
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -133,8 +179,8 @@ export default function CameraScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="light" />
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
       <CameraView
         ref={cameraRef}
         style={styles.camera}
@@ -142,40 +188,62 @@ export default function CameraScreen() {
         flash={flash}
         zoom={zoom}
       >
+        {renderSilhouette()}
         {renderOverlaySelector()}
-        <View style={styles.overlayText}>
-          <Text style={styles.overlayTextContent}>{overlay}</Text>
-        </View>
-        <View style={styles.controlsContainer}>
+        <View
+          style={[
+            styles.controlsContainer,
+            { backgroundColor: theme.cardBackground },
+          ]}
+        >
           <TouchableOpacity style={styles.controlButton} onPress={toggleFlash}>
             <Ionicons
               name={flash === "on" ? "flash" : "flash-off"}
               size={24}
-              color="white"
+              color={theme.text}
             />
           </TouchableOpacity>
           <TouchableOpacity style={styles.controlButton} onPress={zoomIn}>
-            <Ionicons name="add-circle-outline" size={24} color="white" />
+            <Ionicons name="add-circle-outline" size={24} color={theme.text} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.controlButton} onPress={zoomOut}>
-            <Ionicons name="remove-circle-outline" size={24} color="white" />
+            <Ionicons
+              name="remove-circle-outline"
+              size={24}
+              color={theme.text}
+            />
           </TouchableOpacity>
         </View>
         <View style={styles.bottomControlsContainer}>
           <TouchableOpacity
-            style={styles.flipButton}
+            style={[styles.flipButton, { backgroundColor: theme.transparent }]}
             onPress={toggleCameraFacing}
           >
-            <Ionicons name="camera-reverse-outline" size={32} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.captureButton} onPress={takePicture}>
-            <View style={styles.captureButtonInner} />
+            <Ionicons
+              name="camera-reverse-outline"
+              size={32}
+              color={theme.text}
+            />
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.galleryButton}
+            style={[styles.captureButton, { backgroundColor: theme.primary }]}
+            onPress={takePicture}
+          >
+            <View
+              style={[
+                styles.captureButtonInner,
+                { backgroundColor: theme.background },
+              ]}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.galleryButton,
+              { backgroundColor: theme.transparent },
+            ]}
             onPress={() => router.push("(tabs)/gallery" as Href<string>)}
           >
-            <Ionicons name="images-outline" size={32} color="white" />
+            <Ionicons name="images-outline" size={32} color={theme.text} />
           </TouchableOpacity>
         </View>
       </CameraView>
@@ -186,10 +254,9 @@ export default function CameraScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "black",
   },
   message: {
-    color: "white",
+    color: Colors.light.text,
     textAlign: "center",
     paddingHorizontal: 20,
   },
@@ -223,7 +290,7 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     borderRadius: 35,
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
+    backgroundColor: Colors.light.primary,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -310,5 +377,12 @@ const styles = StyleSheet.create({
   },
   galleryButton: {
     alignSelf: "center",
+  },
+  silhouette: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
 });
