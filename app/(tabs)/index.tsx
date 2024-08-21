@@ -16,6 +16,7 @@ import { StreakService, StreakData } from "@/services/streakService";
 import { Header } from "@/components/home/Header";
 import { StreakCard } from "@/components/home/StreakCard";
 import { LatestPhotoCard } from "@/components/home/LatestPhotoCard";
+import { BackgroundPattern } from "@/components/style/Pattern";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -55,6 +56,7 @@ export default function HomeScreen() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.background }]}
     >
+      <BackgroundPattern />
       <Header />
       <ScrollView
         style={styles.content}
@@ -117,11 +119,24 @@ export default function HomeScreen() {
           </Text>
           <Ionicons name="arrow-forward" size={24} color={theme.background} />
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.settingsButton, { backgroundColor: theme.secondary }]}
+          onPress={() => navigateTo("(tabs)/settings" as Href<string>)}
+        >
+          <Ionicons
+            name="settings-outline"
+            size={24}
+            color={theme.background}
+          />
+          <Text style={[styles.settingsText, { color: theme.background }]}>
+            Settings
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -170,5 +185,18 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginRight: 10,
+  },
+  settingsButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 15,
+    borderRadius: 15,
+    marginTop: 12,
+  },
+  settingsText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginLeft: 10,
   },
 });
