@@ -13,7 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { getPhotos, Photo, deletePhoto } from "../../services/photoStorage";
 import { useRouter, usePathname } from "expo-router";
 import Colors from "@/constants/Colors";
-import { useColorScheme } from "@/components/useColorScheme";
+import { useColorScheme } from "@/hooks/useColorScheme";
 import { FullScreenPhotoModal } from "@/components/gallery/FullScreenPhotoModal";
 
 const { width } = Dimensions.get("window");

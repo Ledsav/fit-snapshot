@@ -12,13 +12,13 @@ import {
 import { Photo, getPhotosByType } from "@/services/photoStorage";
 import { useFocusEffect } from "@react-navigation/native";
 import Colors from "@/constants/Colors";
-import { useColorScheme } from "@/components/useColorScheme";
+import { useColorScheme } from "@/hooks/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
 
 interface PhotoMorphProps {
   type: "front" | "side" | "back";
+  photo: Photo | undefined; // add this line
 }
-
 const { width } = Dimensions.get("window");
 const SLIDER_WIDTH = width * 0.8;
 

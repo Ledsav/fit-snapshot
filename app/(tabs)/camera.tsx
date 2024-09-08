@@ -15,7 +15,7 @@ import { useRouter, Href } from "expo-router";
 import { Image } from "react-native";
 import TorsoSilhouette from "../../images/TorsoSilhouette";
 import Colors from "@/constants/Colors";
-import { useColorScheme } from "@/components/useColorScheme";
+import { useColorScheme } from "@/hooks/useColorScheme";
 
 type OverlayType = "front" | "side" | "back";
 
