@@ -70,3 +70,27 @@ export const deletePhoto = async (photoId: string): Promise<void> => {
     console.error("Error deleting photo:", error);
   }
 };
+
+export const getFirstPhotoOfEachType = async (): Promise<{
+  [key: string]: Photo | null;
+}> => {
+  try {
+    const allPhotos = await getPhotos();
+    const result: { [key: string]: Photo | null } = {
+      front: null,
+      side: null,
+      back: null,
+    };
+
+    for (const photo of allPhotos) {
+      if (!result[photo.type]) {
+        result[photo.type] = photo;
+      }
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error getting first photo of each type:", error);
+    return { front: null, side: null, back: null };
+  }
+};
