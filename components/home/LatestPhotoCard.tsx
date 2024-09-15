@@ -19,7 +19,7 @@ interface LatestPhotoCardProps {
 
 export const LatestPhotoCard: React.FC<LatestPhotoCardProps> = ({
   latestPhoto,
-  onPress = () => {},
+  onPress,
 }) => {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "dark"];

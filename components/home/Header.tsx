@@ -1,9 +1,8 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { useColorScheme } from "@/components/useColorScheme";
+import { useColorScheme } from "@/hooks/useColorScheme";
 import Colors from "@/constants/Colors";
-import Svg, { Defs, Pattern, Rect, Path } from "react-native-svg";
 
 const motivationalQuotes = [
   "Transform your body, transform your life!",
@@ -11,52 +10,22 @@ const motivationalQuotes = [
   "Capture your progress, fuel your motivation.",
 ];
 
-export const Header = () => {
+interface HeaderProps {
+  title: string;
+}
+
+export const Header: React.FC<HeaderProps> = ({ title }) => {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "dark"];
 
   return (
     <View style={styles.container}>
-      <Svg height="100%" width="100%" style={StyleSheet.absoluteFill}>
-        <Defs>
-          <Pattern
-            id="headerPattern"
-            width="100"
-            height="100"
-            patternUnits="userSpaceOnUse"
-          >
-            <Path
-              d="M10 10 h10 v5 h10 v-5 h10 v10 h-10 v5 h-10 v-5 h-10 Z" // Dumbbell
-              stroke={theme.background}
-              strokeWidth="2"
-              strokeOpacity="0.2"
-              fill="none"
-            />
-            <Path
-              d="M60 50 c0-10 10-10 10 0 c0 10-10 10-10 20 c0-10-10-10-10-20 c0-10 10-10 10 0 Z" // Heart
-              stroke={theme.background}
-              strokeWidth="2"
-              strokeOpacity="0.2"
-              fill="none"
-            />
-          </Pattern>
-        </Defs>
-        <Rect
-          x="0"
-          y="0"
-          width="100%"
-          height="100%"
-          fill="url(#headerPattern)"
-        />
-      </Svg>
       <LinearGradient
-        colors={[theme.primary, theme.primary + "CC"]} // CC adds 80% opacity to the second color
+        colors={[theme.background, theme.transparent]}
         style={styles.headerGradient}
       >
-        <Text style={[styles.title, { color: theme.background }]}>
-          Fitness Tracker
-        </Text>
-        <Text style={[styles.subtitle, { color: theme.background }]}>
+        <Text style={[styles.title, { color: theme.text }]}>{title}</Text>
+        <Text style={[styles.subtitle, { color: theme.text }]}>
           {
             motivationalQuotes[
               Math.floor(Math.random() * motivationalQuotes.length)
@@ -67,7 +36,6 @@ export const Header = () => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     overflow: "hidden",
