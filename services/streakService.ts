@@ -11,6 +11,7 @@ export interface StreakData {
 
 export const StreakService = {
   calculateStreak: (photos: Photo[]): number => {
+    console.log(photos.length);
     if (photos.length === 0) return 0;
 
     const sortedPhotos = [...photos].sort(

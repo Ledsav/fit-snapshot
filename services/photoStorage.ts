@@ -35,7 +35,6 @@ export const getPhotosByType = async (
   type: "front" | "side" | "back"
 ): Promise<Photo[]> => {
   try {
-    console.log(`Getting photos for type: ${type}`);
     const allPhotos = await getPhotos();
     console.log(`Total photos: ${allPhotos.length}`);
 
