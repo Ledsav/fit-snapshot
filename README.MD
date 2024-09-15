@@ -7,9 +7,7 @@ A mobile application for tracking fitness progress through photo tracking.
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Components](#components)
-- [Services](#services)
-- [Contributing](#contributing)
+
 
 ## **Features**
 
