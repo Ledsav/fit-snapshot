@@ -10,12 +10,12 @@ import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import { manipulateAsync, FlipType, SaveFormat } from "expo-image-manipulator";
 import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
-import { savePhoto, Photo } from "../../services/photoStorage";
 import { useRouter, Href } from "expo-router";
 import { Image } from "react-native";
 import TorsoSilhouette from "../../images/TorsoSilhouette";
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { usePhotos } from "@/context/PhotoContext";
 
 type OverlayType = "front" | "side" | "back";
 
@@ -30,6 +30,7 @@ export default function CameraScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "light"];
+  const { addPhoto } = usePhotos();
 
   if (!permission) {
     return <View />;
@@ -91,15 +92,16 @@ export default function CameraScreen() {
       }
     }
   };
+
   const confirmPicture = async () => {
     if (capturedImage) {
-      const newPhoto: Photo = {
+      const newPhoto = {
         id: Date.now().toString(),
         uri: capturedImage,
         date: new Date().toISOString(),
         type: overlay,
       };
-      await savePhoto(newPhoto);
+      await addPhoto(newPhoto);
       setCapturedImage(null);
       router.push("(tabs)/gallery" as Href<string>);
     }

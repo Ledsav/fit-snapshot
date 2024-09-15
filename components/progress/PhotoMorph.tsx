@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import {
   StyleSheet,
   View,
@@ -8,73 +8,84 @@ import {
   Animated,
   Dimensions,
   TouchableOpacity,
+  Alert,
 } from "react-native";
-import { Photo, getPhotosByType } from "@/services/photoStorage";
-import { useFocusEffect } from "@react-navigation/native";
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
+import { getTimeDifference } from "@/utils/dateUtils";
+import * as MediaLibrary from "expo-media-library";
+import { usePhotos } from "@/context/PhotoContext";
+import { Photo } from "@/services/photoStorage";
 
 interface PhotoMorphProps {
   type: "front" | "side" | "back";
-  photo: Photo | undefined; // add this line
+  photo: Photo | undefined;
+  onRefresh: () => Promise<void>;
 }
+
 const { width } = Dimensions.get("window");
 const SLIDER_WIDTH = width * 0.8;
 
-const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
+const PhotoMorph: React.FC<PhotoMorphProps> = ({ type, photo, onRefresh }) => {
   const [sliderValue, setSliderValue] = useState(0);
-  const [photos, setPhotos] = useState<Photo[]>([]);
-  const pan = new Animated.ValueXY();
+  const pan = useRef(new Animated.ValueXY()).current;
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "dark"];
+  const { getPhotosByType } = usePhotos();
+
+  const photos = getPhotosByType(type);
 
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onPanResponderMove: (_, gesture) => {
-      let newX = gesture.moveX - width * 0.1; // Adjust for container padding
+      let newX = gesture.moveX - width * 0.1;
       newX = Math.max(0, Math.min(newX, SLIDER_WIDTH));
       pan.x.setValue(newX);
       setSliderValue((newX / SLIDER_WIDTH) * 100);
     },
   });
 
-  const loadPhotos = useCallback(async () => {
+  const extractPhoto = useCallback(async () => {
     try {
-      const loadedPhotos = await getPhotosByType(type);
-      setPhotos(loadedPhotos);
-    } catch (err) {
-      console.error(`Error loading photos for ${type} view:`, err);
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Permission required",
+          "Please grant permission to save photos."
+        );
+        return;
+      }
+
+      const photoToExtract =
+        photos.length > 1
+          ? sliderValue > 50
+            ? photos[photos.length - 1]
+            : photos[0]
+          : photos[0];
+      const asset = await MediaLibrary.createAssetAsync(photoToExtract.uri);
+      await MediaLibrary.createAlbumAsync("FitSnapshot", asset, false);
+
+      Alert.alert("Success", "Photo saved to gallery in FitSnapshot album");
+    } catch (error) {
+      console.error("Error extracting photo:", error);
+      Alert.alert("Error", "Failed to save photo. Please try again.");
     }
-  }, [type]);
-
-  useEffect(() => {
-    loadPhotos();
-  }, [loadPhotos]);
-
-  useFocusEffect(
-    useCallback(() => {
-      loadPhotos();
-    }, [loadPhotos])
-  );
+  }, [photos, sliderValue]);
 
   if (photos.length === 0) {
     return (
-      <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <View style={[styles.container, { backgroundColor: theme.transparent }]}>
         <Text style={[styles.title, { color: theme.text }]}>
-          {type.charAt(0).toUpperCase() + type.slice(1)} View
+          {type.charAt(0).toUpperCase() + type.slice(1)}
         </Text>
         <View
           style={[
             styles.noPhotosContainer,
-            { backgroundColor: theme.cardBackground },
+            { backgroundColor: theme.transparent },
           ]}
         >
-          <Ionicons
-            name="image-outline"
-            size={48}
-            color={theme.tabIconDefault}
-          />
+          <Ionicons name="image-outline" size={48} color={theme.text} />
           <Text style={[styles.noPhotosText, { color: theme.text }]}>
             No photos available for {type} view
           </Text>
@@ -85,17 +96,20 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
 
   if (photos.length === 1) {
     return (
-      <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <View style={[styles.container, { backgroundColor: theme.transparent }]}>
         <Text style={[styles.title, { color: theme.text }]}>
-          {type.charAt(0).toUpperCase() + type.slice(1)} View
+          {type.charAt(0).toUpperCase() + type.slice(1)}
         </Text>
         <View
           style={[
             styles.imageContainer,
-            { backgroundColor: theme.cardBackground },
+            { backgroundColor: theme.transparent, borderColor: theme.primary },
           ]}
         >
           <Image source={{ uri: photos[0].uri }} style={styles.image} />
+          <TouchableOpacity style={styles.extractButton} onPress={extractPhoto}>
+            <Ionicons name="download-outline" size={24} color={theme.text} />
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -105,14 +119,14 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   const newestPhoto = photos[photos.length - 1];
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <View style={[styles.container, { backgroundColor: theme.transparent }]}>
       <Text style={[styles.title, { color: theme.text }]}>
-        {type.charAt(0).toUpperCase() + type.slice(1)} View Progress
+        {type.charAt(0).toUpperCase() + type.slice(1)}
       </Text>
       <View
         style={[
           styles.imageContainer,
-          { backgroundColor: theme.cardBackground },
+          { backgroundColor: theme.transparent, borderColor: theme.primary },
         ]}
       >
         <Image
@@ -127,10 +141,13 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
             { opacity: sliderValue / 100 },
           ]}
         />
+        <TouchableOpacity style={styles.extractButton} onPress={extractPhoto}>
+          <Ionicons name="download-outline" size={24} color={theme.text} />
+        </TouchableOpacity>
       </View>
       <View style={styles.sliderContainer} {...panResponder.panHandlers}>
         <View
-          style={[styles.sliderTrack, { backgroundColor: theme.secondary }]}
+          style={[styles.sliderTrack, { backgroundColor: theme.primary }]}
         />
         <Animated.View
           style={[
@@ -142,9 +159,19 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
           ]}
         />
       </View>
-      <Text style={[styles.instructionText, { color: theme.tabIconDefault }]}>
+      <Text style={[styles.instructionText, { color: theme.text }]}>
         Slide to compare oldest and newest photos
       </Text>
+      <View
+        style={[
+          styles.timeDifferenceContainer,
+          { backgroundColor: theme.primary },
+        ]}
+      >
+        <Text style={[styles.timeDifferenceText, { color: theme.background }]}>
+          {getTimeDifference(oldestPhoto.date, newestPhoto.date)}
+        </Text>
+      </View>
     </View>
   );
 };
@@ -177,6 +204,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     overflow: "hidden",
     marginBottom: 20,
+    borderWidth: 2,
   },
   image: {
     width: "100%",
@@ -212,20 +240,27 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 20,
   },
-  button: {
-    flexDirection: "row",
-    alignItems: "center",
+  timeDifferenceContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     justifyContent: "center",
-    padding: 15,
-    borderRadius: 25,
+    alignItems: "center",
+    alignSelf: "center",
+    marginTop: 20,
   },
-  buttonText: {
-    fontSize: 18,
+  timeDifferenceText: {
+    fontSize: 16,
     fontWeight: "bold",
-    marginRight: 10,
+    textAlign: "center",
   },
-  buttonIcon: {
-    marginLeft: 10,
+  extractButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    borderRadius: 20,
+    padding: 8,
   },
 });
 

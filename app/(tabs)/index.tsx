@@ -1,22 +1,25 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   StyleSheet,
   View,
-  TouchableOpacity,
   SafeAreaView,
   Text,
   ScrollView,
+  RefreshControl,
 } from "react-native";
 import { useRouter, Href } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Colors from "@/constants/Colors";
-import { useColorScheme } from "@/components/useColorScheme";
-import { Ionicons } from "@expo/vector-icons";
-import { getPhotos, Photo } from "@/services/photoStorage";
+import { useColorScheme } from "@/hooks/useColorScheme";
 import { StreakService, StreakData } from "@/services/streakService";
 import { Header } from "@/components/home/Header";
 import { StreakCard } from "@/components/home/StreakCard";
 import { LatestPhotoCard } from "@/components/home/LatestPhotoCard";
-import { BackgroundPattern } from "@/components/style/Pattern";
+import BackgroundImage from "@/components/style/BackgroundImage";
+import { ShreddedTipsCarousel } from "@/components/home/ShreddedTipsCarousel";
+import { ProgressSummary } from "@/components/home/ProgressSummary";
+import { OnboardingCarousel } from "@/components/onBoarding/OnboardingCarousel";
+import { usePhotos } from "@/context/PhotoContext";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -26,117 +29,125 @@ export default function HomeScreen() {
     currentStreak: 0,
     lastPhotoDate: null,
   });
-  const [latestPhoto, setLatestPhoto] = useState<Photo | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const { photos, refreshPhotos } = usePhotos();
+  const latestPhoto = photos.length > 0 ? photos[photos.length - 1] : null;
+
+  const totalDays =
+    photos.length > 0
+      ? Math.ceil(
+          (new Date().getTime() - new Date(photos[0].date).getTime()) /
+            (1000 * 60 * 60 * 24)
+        )
+      : 0;
+  const totalPhotos = photos.length;
+  const improvement =
+    totalDays > 0
+      ? Math.min(100, Math.trunc((totalPhotos / totalDays) * 100))
+      : 0;
+
+  const loadStreakData = useCallback(async () => {
+    const streak = await StreakService.getStreakData();
+    setStreakData(streak);
+
+    if (latestPhoto && streak.lastPhotoDate !== latestPhoto.date) {
+      const updatedStreak = await StreakService.updateStreak(latestPhoto);
+      setStreakData(updatedStreak);
+    }
+  }, [latestPhoto]);
 
   useEffect(() => {
-    const loadData = async () => {
-      const photos = await getPhotos();
-      const streak = await StreakService.getStreakData();
-      setStreakData(streak);
-
-      if (photos.length > 0) {
-        setLatestPhoto(photos[photos.length - 1]);
-        if (streak.lastPhotoDate !== photos[photos.length - 1].date) {
-          const updatedStreak = await StreakService.updateStreak(
-            photos[photos.length - 1]
-          );
-          setStreakData(updatedStreak);
-        }
+    const checkOnboardingStatus = async () => {
+      const onboardingCompleted = await AsyncStorage.getItem(
+        "onboardingCompleted"
+      );
+      if (onboardingCompleted === "true") {
+        setShowOnboarding(false);
+        loadStreakData();
       }
     };
 
-    loadData();
-  }, []);
+    checkOnboardingStatus();
+  }, [loadStreakData]);
+
+  useEffect(() => {
+    loadStreakData();
+  }, [loadStreakData]);
+
+  const handleOnboardingComplete = async () => {
+    await AsyncStorage.setItem("onboardingCompleted", "true");
+    setShowOnboarding(false);
+    loadStreakData();
+  };
 
   const navigateTo = (route: Href<string>) => {
     router.push(route);
   };
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refreshPhotos();
+    await loadStreakData();
+    setRefreshing(false);
+  }, [refreshPhotos, loadStreakData]);
+
+  if (showOnboarding) {
+    return <OnboardingCarousel onComplete={handleOnboardingComplete} />;
+  }
+
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.background }]}
-    >
-      <BackgroundPattern />
-      <Header />
-      <ScrollView
-        style={styles.content}
-        contentContainerStyle={styles.contentContainer}
-      >
-        <StreakCard streak={streakData.currentStreak} />
-
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>
-            Quick Actions
-          </Text>
-          <View style={styles.quickActions}>
-            <TouchableOpacity
-              style={[
-                styles.quickActionButton,
-                { backgroundColor: theme.primary },
-              ]}
-              onPress={() => navigateTo("(tabs)/camera" as Href<string>)}
-            >
-              <Ionicons name="camera" size={32} color={theme.background} />
-              <Text
-                style={[styles.quickActionText, { color: theme.background }]}
-              >
-                Take Photo
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.quickActionButton,
-                { backgroundColor: theme.primary },
-              ]}
-              onPress={() => navigateTo("(tabs)/progress" as Href<string>)}
-            >
-              <Ionicons name="bar-chart" size={32} color={theme.background} />
-              <Text
-                style={[styles.quickActionText, { color: theme.background }]}
-              >
-                View Progress
-              </Text>
-            </TouchableOpacity>
+    <BackgroundImage blurIntensity={0} overlayOpacity={1}>
+      <SafeAreaView style={[styles.container]}>
+        <Header title="Fitness Tracker" />
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={styles.contentContainer}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              Streak
+            </Text>
+            <StreakCard streak={streakData.currentStreak} />
           </View>
-        </View>
 
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>
-            Latest Photo
-          </Text>
-          <LatestPhotoCard
-            latestPhoto={latestPhoto}
-            onPress={() => navigateTo("(tabs)/progress" as Href<string>)}
-          />
-        </View>
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              Stats
+            </Text>
+            <ProgressSummary
+              totalDays={totalDays}
+              totalPhotos={totalPhotos}
+              improvement={improvement}
+            />
+          </View>
 
-        <TouchableOpacity
-          style={[styles.viewGalleryButton, { backgroundColor: theme.primary }]}
-          onPress={() => navigateTo("(tabs)/gallery" as Href<string>)}
-        >
-          <Text style={[styles.viewGalleryText, { color: theme.background }]}>
-            View Full Gallery
-          </Text>
-          <Ionicons name="arrow-forward" size={24} color={theme.background} />
-        </TouchableOpacity>
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              Tips
+            </Text>
+            <ShreddedTipsCarousel />
+          </View>
 
-        <TouchableOpacity
-          style={[styles.settingsButton, { backgroundColor: theme.secondary }]}
-          onPress={() => navigateTo("(tabs)/settings" as Href<string>)}
-        >
-          <Ionicons
-            name="settings-outline"
-            size={24}
-            color={theme.background}
-          />
-          <Text style={[styles.settingsText, { color: theme.background }]}>
-            Settings
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaView>
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              Latest Photo
+            </Text>
+            <LatestPhotoCard
+              latestPhoto={latestPhoto}
+              onPress={() => navigateTo("(tabs)/gallery" as Href<string>)}
+            />
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </BackgroundImage>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

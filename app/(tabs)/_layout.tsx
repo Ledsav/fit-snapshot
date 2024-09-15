@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Link, Tabs } from "expo-router";
+import { Tabs, Stack } from "expo-router";
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { OnboardingCarousel } from "@/components/onBoarding/OnboardingCarousel";
 
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof Ionicons>["name"];
@@ -12,7 +14,7 @@ function TabBarIcon(props: {
   return <Ionicons size={24} style={{ marginBottom: -3 }} {...props} />;
 }
 
-export default function TabLayout() {
+function TabNavigator() {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "light"];
 
@@ -108,6 +110,51 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+  );
+}
+export default function RootLayout() {
+  const [isOnboardingComplete, setIsOnboardingComplete] = useState<
+    boolean | null
+  >(null);
+
+  useEffect(() => {
+    checkOnboardingStatus();
+  }, []);
+
+  const checkOnboardingStatus = async () => {
+    try {
+      const onboardingCompleted = await AsyncStorage.getItem(
+        "onboardingCompleted"
+      );
+      setIsOnboardingComplete(onboardingCompleted === "true");
+    } catch (error) {
+      console.error("Error checking onboarding status:", error);
+      setIsOnboardingComplete(false);
+    }
+  };
+
+  const handleOnboardingComplete = async () => {
+    try {
+      await AsyncStorage.setItem("onboardingCompleted", "true");
+      setIsOnboardingComplete(true);
+    } catch (error) {
+      console.error("Error setting onboarding status:", error);
+    }
+  };
+
+  if (isOnboardingComplete === null) {
+    // Still checking onboarding status, you might want to show a loading screen here
+    return null;
+  }
+
+  return (
+    <>
+      {!isOnboardingComplete ? (
+        <OnboardingCarousel onComplete={handleOnboardingComplete} />
+      ) : (
+        <TabNavigator />
+      )}
+    </>
   );
 }
 

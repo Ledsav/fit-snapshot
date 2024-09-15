@@ -10,14 +10,17 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { getPhotos, Photo, deletePhoto } from "../../services/photoStorage";
 import { useRouter, usePathname } from "expo-router";
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { FullScreenPhotoModal } from "@/components/gallery/FullScreenPhotoModal";
+import BackgroundImage from "@/components/style/BackgroundImage";
+import { Header } from "@/components/home/Header";
+import { usePhotos } from "@/context/PhotoContext";
+import { Photo } from "@/services/photoStorage";
 
 const { width } = Dimensions.get("window");
-const itemSize = width / 2 - 15;
+const itemSize = width / 3 - 10; // Adjusted for 3 columns
 
 type Section = {
   title: string;
@@ -32,14 +35,14 @@ export default function GalleryScreen() {
   const pathname = usePathname();
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "dark"];
+  const { photos, removePhoto, refreshPhotos } = usePhotos();
 
   useEffect(() => {
     loadPhotos();
-  }, [pathname]);
+  }, [pathname, photos]);
 
-  const loadPhotos = async () => {
-    const loadedPhotos = await getPhotos();
-    const sortedPhotos = loadedPhotos.sort(
+  const loadPhotos = () => {
+    const sortedPhotos = [...photos].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
 
@@ -65,7 +68,7 @@ export default function GalleryScreen() {
   };
 
   const handleDeletePhoto = async (id: string) => {
-    await deletePhoto(id);
+    await removePhoto(id);
     loadPhotos();
   };
 
@@ -89,20 +92,21 @@ export default function GalleryScreen() {
 
   const renderItem = ({ item }: { item: Photo }) => (
     <TouchableOpacity
+      key={item.id}
       style={[styles.item, { backgroundColor: theme.cardBackground }]}
       onPress={() => openFullScreenPhoto(item.uri)}
     >
       <Image source={{ uri: item.uri }} style={styles.image} />
-      <View style={styles.overlay}>
+      <TouchableOpacity
+        style={[styles.deleteButton, { backgroundColor: theme.error }]}
+        onPress={() => handleDeletePhoto(item.id)}
+      >
+        <Ionicons name="trash" size={16} color={theme.background} />
+      </TouchableOpacity>
+      <View style={styles.dateContainer}>
         <Text style={[styles.date, { color: theme.text }]}>
           {new Date(item.date).toLocaleDateString()}
         </Text>
-        <TouchableOpacity
-          style={[styles.deleteButton, { backgroundColor: theme.error }]}
-          onPress={() => handleDeletePhoto(item.id)}
-        >
-          <Ionicons name="trash-outline" size={20} color={theme.background} />
-        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
@@ -126,41 +130,55 @@ export default function GalleryScreen() {
     </TouchableOpacity>
   );
 
+  const renderSectionContent = ({ section }: { section: Section }) => {
+    if (!section.isExpanded) return null;
+
+    const rows = [];
+    for (let i = 0; i < section.data.length; i += 3) {
+      const rowItems = section.data.slice(i, i + 3);
+      rows.push(
+        <View key={`row-${i}`} style={styles.row}>
+          {rowItems.map((item) => renderItem({ item }))}
+          {rowItems.length < 3 &&
+            Array(3 - rowItems.length)
+              .fill(null)
+              .map((_, index) => (
+                <View key={`empty-${i}-${index}`} style={styles.emptyItem} />
+              ))}
+        </View>
+      );
+    }
+    return <View>{rows}</View>;
+  };
+
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.background }]}
-    >
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.text }]}>Photo Gallery</Text>
-        <TouchableOpacity
-          style={[styles.addButton, { backgroundColor: theme.primary }]}
-          onPress={() => router.push("(tabs)/camera" as any)}
-        >
-          <Ionicons name="add" size={24} color={theme.background} />
-        </TouchableOpacity>
-      </View>
-      <SectionList
-        sections={sections}
-        renderItem={({ item, section }) =>
-          section.isExpanded ? renderItem({ item }) : null
-        }
-        renderSectionHeader={renderSectionHeader}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        stickySectionHeadersEnabled={false}
-      />
-      <FullScreenPhotoModal
-        isVisible={!!selectedPhoto}
-        photoUri={selectedPhoto || ""}
-        onClose={closeFullScreenPhoto}
-      />
-    </SafeAreaView>
+    <BackgroundImage blurIntensity={0} overlayOpacity={1}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: theme.transparent }]}
+      >
+        <Header title="Gallery" />
+        <SectionList
+          sections={sections}
+          renderItem={() => null}
+          renderSectionHeader={renderSectionHeader}
+          renderSectionFooter={renderSectionContent}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          stickySectionHeadersEnabled={false}
+        />
+        <FullScreenPhotoModal
+          isVisible={!!selectedPhoto}
+          photoUri={selectedPhoto || ""}
+          onClose={closeFullScreenPhoto}
+        />
+      </SafeAreaView>
+    </BackgroundImage>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 50,
   },
   header: {
     flexDirection: "row",
@@ -198,8 +216,14 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
   item: {
-    margin: 5,
+    width: itemSize,
+    height: itemSize,
     borderRadius: 15,
     overflow: "hidden",
     shadowColor: "#000",
@@ -208,25 +232,35 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  image: {
+  emptyItem: {
     width: itemSize,
     height: itemSize,
-    borderRadius: 15,
   },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
-    justifyContent: "space-between",
-    padding: 10,
+  image: {
+    width: "100%",
+    height: "100%",
     borderRadius: 15,
-  },
-  date: {
-    fontSize: 12,
-    fontWeight: "bold",
   },
   deleteButton: {
-    alignSelf: "flex-end",
-    borderRadius: 15,
+    position: "absolute",
+    top: 5,
+    right: 5,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  dateContainer: {
+    position: "absolute",
+    bottom: 5,
+    left: 5,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    borderRadius: 10,
     padding: 5,
+  },
+  date: {
+    fontSize: 10,
+    fontWeight: "bold",
   },
 });
