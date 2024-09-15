@@ -1,10 +1,11 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
   Dimensions,
+  SafeAreaView,
 } from "react-native";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import { manipulateAsync, FlipType, SaveFormat } from "expo-image-manipulator";
@@ -19,6 +20,10 @@ import { usePhotos } from "@/context/PhotoContext";
 
 type OverlayType = "front" | "side" | "back";
 
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+const aspectRatio = 4 / 3;
+const cameraHeight = screenWidth * aspectRatio;
+
 export default function CameraScreen() {
   const [facing, setFacing] = useState<CameraType>("back");
   const [flash, setFlash] = useState<"off" | "on">("off");
@@ -31,6 +36,25 @@ export default function CameraScreen() {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "light"];
   const { addPhoto } = usePhotos();
+
+  // Timer states
+  const [isTimerEnabled, setIsTimerEnabled] = useState(false);
+  const [timerDuration, setTimerDuration] = useState(3);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [remainingTime, setRemainingTime] = useState(0);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isTimerRunning && remainingTime > 0) {
+      interval = setInterval(() => {
+        setRemainingTime((prev) => prev - 1);
+      }, 1000);
+    } else if (isTimerRunning && remainingTime === 0) {
+      takePicture();
+      setIsTimerRunning(false);
+    }
+    return () => clearInterval(interval);
+  }, [isTimerRunning, remainingTime]);
 
   if (!permission) {
     return <View />;
@@ -93,6 +117,20 @@ export default function CameraScreen() {
     }
   };
 
+  const startTimer = () => {
+    setRemainingTime(timerDuration);
+    setIsTimerRunning(true);
+  };
+
+  const cancelTimer = () => {
+    setIsTimerRunning(false);
+    setRemainingTime(0);
+  };
+
+  const toggleTimer = () => {
+    setIsTimerEnabled(!isTimerEnabled);
+  };
+
   const confirmPicture = async () => {
     if (capturedImage) {
       const newPhoto = {
@@ -144,6 +182,42 @@ export default function CameraScreen() {
     </View>
   );
 
+  const renderTimerControls = () => (
+    <View style={styles.timerControls}>
+      <TouchableOpacity
+        style={[
+          styles.timerToggle,
+          isTimerEnabled && { backgroundColor: theme.primary },
+        ]}
+        onPress={toggleTimer}
+      >
+        <Ionicons
+          name={isTimerEnabled ? "timer" : "timer-outline"}
+          size={24}
+          color={isTimerEnabled ? theme.background : theme.text}
+        />
+      </TouchableOpacity>
+      {isTimerEnabled && (
+        <View style={styles.timerDurationContainer}>
+          {[3, 5, 10].map((duration) => (
+            <TouchableOpacity
+              key={duration}
+              style={[
+                styles.timerButton,
+                timerDuration === duration && {
+                  backgroundColor: theme.primary,
+                },
+              ]}
+              onPress={() => setTimerDuration(duration)}
+            >
+              <Text style={styles.timerButtonText}>{duration}s</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+
   if (capturedImage) {
     return (
       <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -181,75 +255,79 @@ export default function CameraScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.background }]}
+    >
+      <StatusBar style="light" />
       <CameraView
         ref={cameraRef}
-        style={styles.camera}
+        style={StyleSheet.absoluteFill}
         facing={facing}
         flash={flash}
         zoom={zoom}
       >
         {renderSilhouette()}
+      </CameraView>
+      <View style={styles.overlayContainer}>
         {renderOverlaySelector()}
-        <View
-          style={[
-            styles.controlsContainer,
-            { backgroundColor: theme.cardBackground },
-          ]}
-        >
+        <View style={styles.controlsContainer}>
           <TouchableOpacity style={styles.controlButton} onPress={toggleFlash}>
             <Ionicons
               name={flash === "on" ? "flash" : "flash-off"}
               size={24}
-              color={theme.text}
+              color="white"
             />
           </TouchableOpacity>
           <TouchableOpacity style={styles.controlButton} onPress={zoomIn}>
-            <Ionicons name="add-circle-outline" size={24} color={theme.text} />
+            <Ionicons name="add-circle-outline" size={24} color="white" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.controlButton} onPress={zoomOut}>
-            <Ionicons
-              name="remove-circle-outline"
-              size={24}
-              color={theme.text}
-            />
+            <Ionicons name="remove-circle-outline" size={24} color="white" />
           </TouchableOpacity>
         </View>
+        {renderTimerControls()}
         <View style={styles.bottomControlsContainer}>
           <TouchableOpacity
-            style={[styles.flipButton, { backgroundColor: theme.transparent }]}
+            style={styles.flipButton}
             onPress={toggleCameraFacing}
           >
-            <Ionicons
-              name="camera-reverse-outline"
-              size={32}
-              color={theme.text}
-            />
+            <Ionicons name="camera-reverse-outline" size={32} color="white" />
           </TouchableOpacity>
+          {isTimerRunning ? (
+            <View style={styles.timerRunningContainer}>
+              <Text style={styles.timerText}>{remainingTime}</Text>
+              <TouchableOpacity
+                style={[
+                  styles.cancelTimerButton,
+                  { backgroundColor: theme.error },
+                ]}
+                onPress={cancelTimer}
+              >
+                <Ionicons name="close" size={24} color="white" />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={[styles.captureButton, { backgroundColor: theme.primary }]}
+              onPress={isTimerEnabled ? startTimer : takePicture}
+            >
+              <View
+                style={[
+                  styles.captureButtonInner,
+                  { backgroundColor: "white" },
+                ]}
+              />
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
-            style={[styles.captureButton, { backgroundColor: theme.primary }]}
-            onPress={takePicture}
-          >
-            <View
-              style={[
-                styles.captureButtonInner,
-                { backgroundColor: theme.background },
-              ]}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.galleryButton,
-              { backgroundColor: theme.transparent },
-            ]}
+            style={styles.galleryButton}
             onPress={() => router.push("(tabs)/gallery" as Href<string>)}
           >
-            <Ionicons name="images-outline" size={32} color={theme.text} />
+            <Ionicons name="images-outline" size={32} color="white" />
           </TouchableOpacity>
         </View>
-      </CameraView>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -258,12 +336,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   message: {
-    color: Colors.light.text,
+    color: Colors.light.primary,
     textAlign: "center",
     paddingHorizontal: 20,
   },
+  overlayContainer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "space-between",
+  },
+  cameraContainer: {
+    width: screenWidth,
+    height: cameraHeight,
+    overflow: "hidden",
+  },
   camera: {
-    flex: 1,
+    width: screenWidth,
+    height: cameraHeight,
   },
   controlsContainer: {
     position: "absolute",
@@ -284,9 +372,12 @@ const styles = StyleSheet.create({
   },
   controlButton: {
     marginVertical: 5,
+    padding: 10,
+    borderRadius: 20,
   },
   flipButton: {
     alignSelf: "center",
+    padding: 10,
   },
   captureButton: {
     width: 70,
@@ -379,6 +470,7 @@ const styles = StyleSheet.create({
   },
   galleryButton: {
     alignSelf: "center",
+    padding: 10,
   },
   silhouette: {
     position: "absolute",
@@ -386,5 +478,52 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+  },
+  timerControls: {
+    position: "absolute",
+    top: 100,
+    left: 20,
+    flexDirection: "column",
+    alignItems: "flex-start",
+  },
+  timerToggle: {
+    padding: 10,
+    borderRadius: 20,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    marginBottom: 10,
+  },
+  timerDurationContainer: {
+    flexDirection: "column",
+    alignItems: "flex-start",
+  },
+  timerButton: {
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 20,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    width: 50,
+    alignItems: "center",
+  },
+  timerButtonText: {
+    color: "white",
+    fontWeight: "bold",
+  },
+  timerRunningContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    borderRadius: 30,
+    padding: 10,
+  },
+  timerText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "white",
+    marginRight: 10,
+  },
+  cancelTimerButton: {
+    padding: 5,
+    borderRadius: 15,
   },
 });
