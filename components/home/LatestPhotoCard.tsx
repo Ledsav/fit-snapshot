@@ -11,6 +11,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import Colors from "@/constants/Colors";
 import { Photo } from "@/services/photoStorage";
+import { useLocalization } from "@/context/LocalizationContext";
 
 interface LatestPhotoCardProps {
   latestPhoto: Photo | null;
@@ -23,6 +24,9 @@ export const LatestPhotoCard: React.FC<LatestPhotoCardProps> = ({
 }) => {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "dark"];
+  const { t } = useLocalization();
+
+  if (!latestPhoto) return null;
 
   return (
     <TouchableOpacity
@@ -42,7 +46,9 @@ export const LatestPhotoCard: React.FC<LatestPhotoCardProps> = ({
             colors={["transparent", "rgba(0,0,0,0.7)"]}
             style={styles.latestPhotoGradient}
           >
-            <Text style={styles.latestPhotoText}>Latest Photo</Text>
+            <Text style={styles.latestPhotoText}>
+              {t(`camera.${latestPhoto.type}`)}
+            </Text>
             <Text style={styles.latestPhotoDate}>
               {new Date(latestPhoto.date).toLocaleDateString()}
             </Text>
@@ -56,7 +62,7 @@ export const LatestPhotoCard: React.FC<LatestPhotoCardProps> = ({
             color={theme.tabIconDefault}
           />
           <Text style={[styles.noPhotoText, { color: theme.text }]}>
-            No photos yet
+            {t("latestPhotoCard.noPhotos")}
           </Text>
         </View>
       )}

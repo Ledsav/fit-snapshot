@@ -17,24 +17,24 @@ import { getTimeDifference } from "@/utils/dateUtils";
 import * as MediaLibrary from "expo-media-library";
 import { usePhotos } from "@/context/PhotoContext";
 import { Photo } from "@/services/photoStorage";
+import { useLocalization } from "@/context/LocalizationContext";
+import { PhotoType } from "@/enums/Photos";
 
 interface PhotoMorphProps {
-  type: "front" | "side" | "back";
-  photo: Photo | undefined;
-  onRefresh: () => Promise<void>;
+  type: PhotoType.front | PhotoType.side | PhotoType.back;
 }
 
 const { width } = Dimensions.get("window");
 const SLIDER_WIDTH = width * 0.8;
 
-const PhotoMorph: React.FC<PhotoMorphProps> = ({ type, photo, onRefresh }) => {
+const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   const [sliderValue, setSliderValue] = useState(0);
   const pan = useRef(new Animated.ValueXY()).current;
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "dark"];
   const { getPhotosByType } = usePhotos();
-
   const photos = getPhotosByType(type);
+  const { t } = useLocalization();
 
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
@@ -50,10 +50,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type, photo, onRefresh }) => {
     try {
       const { status } = await MediaLibrary.requestPermissionsAsync();
       if (status !== "granted") {
-        Alert.alert(
-          "Permission required",
-          "Please grant permission to save photos."
-        );
+        Alert.alert(t("permissions.title"), t("permissions.photoSaveMessage"));
         return;
       }
 
@@ -66,18 +63,18 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type, photo, onRefresh }) => {
       const asset = await MediaLibrary.createAssetAsync(photoToExtract.uri);
       await MediaLibrary.createAlbumAsync("FitSnapshot", asset, false);
 
-      Alert.alert("Success", "Photo saved to gallery in FitSnapshot album");
+      Alert.alert(t("common.success"), t("progress.photoSavedMessage"));
     } catch (error) {
       console.error("Error extracting photo:", error);
-      Alert.alert("Error", "Failed to save photo. Please try again.");
+      Alert.alert(t("common.error"), t("progress.photoSaveErrorMessage"));
     }
-  }, [photos, sliderValue]);
+  }, [photos, sliderValue, t]);
 
   if (photos.length === 0) {
     return (
       <View style={[styles.container, { backgroundColor: theme.transparent }]}>
         <Text style={[styles.title, { color: theme.text }]}>
-          {type.charAt(0).toUpperCase() + type.slice(1)}
+          {t(`progress.${type}`)}
         </Text>
         <View
           style={[
@@ -87,7 +84,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type, photo, onRefresh }) => {
         >
           <Ionicons name="image-outline" size={48} color={theme.text} />
           <Text style={[styles.noPhotosText, { color: theme.text }]}>
-            No photos available for {type} view
+            {t("progress.noPhotosAvailable") + " " + t(`progress.${type}`)}
           </Text>
         </View>
       </View>
@@ -98,7 +95,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type, photo, onRefresh }) => {
     return (
       <View style={[styles.container, { backgroundColor: theme.transparent }]}>
         <Text style={[styles.title, { color: theme.text }]}>
-          {type.charAt(0).toUpperCase() + type.slice(1)}
+          {t(`progress.${type}`)}
         </Text>
         <View
           style={[
@@ -121,7 +118,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type, photo, onRefresh }) => {
   return (
     <View style={[styles.container, { backgroundColor: theme.transparent }]}>
       <Text style={[styles.title, { color: theme.text }]}>
-        {type.charAt(0).toUpperCase() + type.slice(1)}
+        {t(`progress.${type}`)}
       </Text>
       <View
         style={[
@@ -160,7 +157,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type, photo, onRefresh }) => {
         />
       </View>
       <Text style={[styles.instructionText, { color: theme.text }]}>
-        Slide to compare oldest and newest photos
+        {t("progress.comparePhotos")}
       </Text>
       <View
         style={[
@@ -169,7 +166,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type, photo, onRefresh }) => {
         ]}
       >
         <Text style={[styles.timeDifferenceText, { color: theme.background }]}>
-          {getTimeDifference(oldestPhoto.date, newestPhoto.date)}
+          {getTimeDifference(oldestPhoto.date, newestPhoto.date, t)}
         </Text>
       </View>
     </View>

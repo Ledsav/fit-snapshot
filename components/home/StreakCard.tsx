@@ -3,29 +3,51 @@ import { StyleSheet, Text, View, Animated } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import Colors from "@/constants/Colors";
+import { useLocalization } from "@/context/LocalizationContext";
 
 interface StreakCardProps {
   streak: number;
 }
 
-const getStreakMessage = (streak: number): { main: string; sub: string } => {
-  if (streak === 0) return { main: "Start your streak!", sub: "Begin today" };
-  if (streak === 1) return { main: "Great start!", sub: "Keep it up!" };
+const getStreakMessage = (
+  streak: number,
+  t: (key: string) => string
+): { main: string; sub: string } => {
+  if (streak === 0)
+    return {
+      main: t("streakCard.startStreak"),
+      sub: t("streakCard.beginToday"),
+    };
+  if (streak === 1)
+    return { main: t("streakCard.greatStart"), sub: t("streakCard.keepItUp") };
   if (streak < 3)
-    return { main: "You're on fire!", sub: "Keep the momentum going" };
+    return { main: t("streakCard.onFire"), sub: t("streakCard.keepMomentum") };
   if (streak < 7)
-    return { main: "Fantastic progress!", sub: "You're unstoppable" };
+    return {
+      main: t("streakCard.fantasticProgress"),
+      sub: t("streakCard.unstoppable"),
+    };
   if (streak < 14)
-    return { main: "Incredible streak!", sub: "You're a machine" };
+    return {
+      main: t("streakCard.incredibleStreak"),
+      sub: t("streakCard.machine"),
+    };
   if (streak < 30)
-    return { main: "Legendary dedication!", sub: "You're rewriting history" };
-  return { main: "Streak master!", sub: "You've achieved greatness" };
+    return {
+      main: t("streakCard.legendaryDedication"),
+      sub: t("streakCard.rewritingHistory"),
+    };
+  return {
+    main: t("streakCard.streakMaster"),
+    sub: t("streakCard.achievedGreatness"),
+  };
 };
 
 export const StreakCard: React.FC<StreakCardProps> = ({ streak }) => {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "dark"];
-  const { main, sub } = getStreakMessage(streak);
+  const { t } = useLocalization();
+  const { main, sub } = getStreakMessage(streak, t);
 
   const pulseAnim = React.useRef(new Animated.Value(1)).current;
 
@@ -81,7 +103,7 @@ export const StreakCard: React.FC<StreakCardProps> = ({ streak }) => {
           style={[
             styles.progress,
             {
-              width: `${Math.min((streak / 30) * 100, 100)}%`, //TODO: CHANGE 30 TO THE OBJECTIVE
+              width: `${Math.min((streak / 30) * 100, 100)}%`, // TODO change 30 to objective
               backgroundColor: theme.primary,
             },
           ]}

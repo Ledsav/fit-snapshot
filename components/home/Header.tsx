@@ -3,12 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import Colors from "@/constants/Colors";
-
-const motivationalQuotes = [
-  "Transform your body, transform your life!",
-  "Every photo is a step towards your goal.",
-  "Capture your progress, fuel your motivation.",
-];
+import { useLocalization } from "@/context/LocalizationContext";
 
 interface HeaderProps {
   title: string;
@@ -17,6 +12,9 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ title }) => {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "dark"];
+  const { t } = useLocalization();
+
+  const motivationalQuotes = t("header.motivationalQuotes");
 
   return (
     <View style={styles.container}>
@@ -36,6 +34,7 @@ export const Header: React.FC<HeaderProps> = ({ title }) => {
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     overflow: "hidden",

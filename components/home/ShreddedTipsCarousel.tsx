@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import {
   View,
   Text,
@@ -10,18 +10,33 @@ import PagerView from "react-native-pager-view";
 import { Ionicons } from "@expo/vector-icons";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import Colors from "@/constants/Colors";
-import { useShreddedTips } from "../../hooks/useShreddedTips";
+import { useLocalization } from "@/context/LocalizationContext";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const CARD_MARGIN = 10;
 const CARD_WIDTH = SCREEN_WIDTH - 40 - 2 * CARD_MARGIN;
 
+interface Tip {
+  main: string;
+  clarification: string;
+  icon: string;
+}
+
 export const ShreddedTipsCarousel: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState(0);
-  const { tips, refreshTips } = useShreddedTips(5);
   const pagerRef = useRef<PagerView>(null);
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "dark"];
+  const { t } = useLocalization();
+
+  const tips = useMemo(() => {
+    try {
+      return JSON.parse(t("shreddedTipsCarousel.tips")) as Tip[];
+    } catch (error) {
+      console.error("Failed to parse tips:", error);
+      return [];
+    }
+  }, [t]);
 
   const handlePageSelected = (e: any) => {
     setActiveIndex(e.nativeEvent.position);
@@ -39,7 +54,7 @@ export const ShreddedTipsCarousel: React.FC = () => {
         initialPage={0}
         onPageSelected={handlePageSelected}
       >
-        {tips.map((tip, index) => (
+        {tips.map((tip: Tip, index: number) => (
           <View key={index} style={styles.page}>
             <View style={[styles.slide, { backgroundColor: theme.primary }]}>
               <View style={styles.iconContainer}>
@@ -88,7 +103,6 @@ export const ShreddedTipsCarousel: React.FC = () => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     height: SCREEN_HEIGHT * 0.25,

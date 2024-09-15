@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { View, StyleSheet } from "react-native";
+import React, { useState, useLayoutEffect } from "react";
+import { View, StyleSheet, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Tabs, Stack } from "expo-router";
+import { Tabs } from "expo-router";
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -113,11 +113,14 @@ function TabNavigator() {
   );
 }
 export default function RootLayout() {
-  const [isOnboardingComplete, setIsOnboardingComplete] = useState<
-    boolean | null
-  >(null);
+  const [state, setState] = useState({
+    isOnboardingComplete: null as boolean | null,
+    isLoading: true,
+  });
+  const colorScheme = useColorScheme();
+  const theme = Colors[colorScheme ?? "light"];
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     checkOnboardingStatus();
   }, []);
 
@@ -126,30 +129,44 @@ export default function RootLayout() {
       const onboardingCompleted = await AsyncStorage.getItem(
         "onboardingCompleted"
       );
-      setIsOnboardingComplete(onboardingCompleted === "true");
+      setState({
+        isOnboardingComplete: onboardingCompleted === "true",
+        isLoading: false,
+      });
     } catch (error) {
       console.error("Error checking onboarding status:", error);
-      setIsOnboardingComplete(false);
+      setState({
+        isOnboardingComplete: false,
+        isLoading: false,
+      });
     }
   };
 
   const handleOnboardingComplete = async () => {
     try {
       await AsyncStorage.setItem("onboardingCompleted", "true");
-      setIsOnboardingComplete(true);
+      setState((prevState) => ({
+        ...prevState,
+        isOnboardingComplete: true,
+      }));
     } catch (error) {
       console.error("Error setting onboarding status:", error);
     }
   };
 
-  if (isOnboardingComplete === null) {
-    // Still checking onboarding status, you might want to show a loading screen here
-    return null;
+  if (state.isLoading) {
+    return (
+      <View
+        style={[styles.loadingContainer, { backgroundColor: theme.background }]}
+      >
+        <ActivityIndicator size="large" color={theme.primary} />
+      </View>
+    );
   }
 
   return (
     <>
-      {!isOnboardingComplete ? (
+      {!state.isOnboardingComplete ? (
         <OnboardingCarousel onComplete={handleOnboardingComplete} />
       ) : (
         <TabNavigator />
@@ -157,7 +174,6 @@ export default function RootLayout() {
     </>
   );
 }
-
 const styles = StyleSheet.create({
   tabBar: {
     backgroundColor: Colors.light.background,
@@ -171,6 +187,11 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 10,
     borderTopWidth: 0,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   tabBarItem: {
     flex: 1,

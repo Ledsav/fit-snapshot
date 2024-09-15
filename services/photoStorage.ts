@@ -1,10 +1,11 @@
+import { PhotoType } from "@/enums/Photos";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export interface Photo {
   id: string;
   uri: string;
   date: string;
-  type: "front" | "side" | "back";
+  type: PhotoType;
 }
 
 const PHOTO_STORAGE_KEY = "FITNESS_TRACKER_PHOTOS";
@@ -19,6 +20,7 @@ export const savePhoto = async (photo: Photo): Promise<void> => {
     );
   } catch (error) {
     console.error("Error saving photo:", error);
+    throw error;
   }
 };
 
@@ -28,9 +30,10 @@ export const getPhotos = async (): Promise<Photo[]> => {
     return photosJson ? JSON.parse(photosJson) : [];
   } catch (error) {
     console.error("Error getting photos:", error);
-    return [];
+    throw error;
   }
 };
+
 export const getPhotosByType = async (
   type: "front" | "side" | "back"
 ): Promise<Photo[]> => {
@@ -52,9 +55,10 @@ export const getPhotosByType = async (
     return sortedPhotos;
   } catch (error) {
     console.error("Error getting photos by type:", error);
-    return [];
+    throw error;
   }
 };
+
 export const deletePhoto = async (photoId: string): Promise<void> => {
   try {
     const existingPhotos = await getPhotos();
@@ -67,6 +71,7 @@ export const deletePhoto = async (photoId: string): Promise<void> => {
     );
   } catch (error) {
     console.error("Error deleting photo:", error);
+    throw error;
   }
 };
 
@@ -90,6 +95,6 @@ export const getFirstPhotoOfEachType = async (): Promise<{
     return result;
   } catch (error) {
     console.error("Error getting first photo of each type:", error);
-    return { front: null, side: null, back: null };
+    throw error;
   }
 };

@@ -8,9 +8,10 @@ import {
   Dimensions,
   SectionList,
   SafeAreaView,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter, usePathname } from "expo-router";
+import { usePathname } from "expo-router";
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { FullScreenPhotoModal } from "@/components/gallery/FullScreenPhotoModal";
@@ -18,10 +19,10 @@ import BackgroundImage from "@/components/style/BackgroundImage";
 import { Header } from "@/components/home/Header";
 import { usePhotos } from "@/context/PhotoContext";
 import { Photo } from "@/services/photoStorage";
+import { useLocalization } from "@/context/LocalizationContext";
 
 const { width } = Dimensions.get("window");
-const itemSize = width / 3 - 10; // Adjusted for 3 columns
-
+const itemSize = width / 3 - 10;
 type Section = {
   title: string;
   data: Photo[];
@@ -31,40 +32,64 @@ type Section = {
 export default function GalleryScreen() {
   const [sections, setSections] = useState<Section[]>([]);
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
-  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
   const pathname = usePathname();
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "dark"];
-  const { photos, removePhoto, refreshPhotos } = usePhotos();
+  const {
+    photos,
+    removePhoto,
+    refreshPhotos,
+    isLoading: contextLoading,
+    error,
+  } = usePhotos();
+  const { t } = useLocalization();
 
   useEffect(() => {
-    loadPhotos();
-  }, [pathname, photos]);
+    const loadGallery = async () => {
+      setIsLoading(true);
+      try {
+        await refreshPhotos();
+        loadPhotos();
+      } catch (error) {
+        console.error("Error refreshing photos:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadGallery();
+  }, [pathname]);
 
   const loadPhotos = () => {
-    const sortedPhotos = [...photos].sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
+    try {
+      const sortedPhotos = [...photos].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
 
-    const newSections: Section[] = [
-      {
-        title: "Front",
-        data: sortedPhotos.filter((photo) => photo.type === "front"),
-        isExpanded: true,
-      },
-      {
-        title: "Side",
-        data: sortedPhotos.filter((photo) => photo.type === "side"),
-        isExpanded: true,
-      },
-      {
-        title: "Back",
-        data: sortedPhotos.filter((photo) => photo.type === "back"),
-        isExpanded: true,
-      },
-    ];
+      const newSections: Section[] = [
+        {
+          title: "Front",
+          data: sortedPhotos.filter((photo) => photo.type === "front"),
+          isExpanded: true,
+        },
+        {
+          title: "Side",
+          data: sortedPhotos.filter((photo) => photo.type === "side"),
+          isExpanded: true,
+        },
+        {
+          title: "Back",
+          data: sortedPhotos.filter((photo) => photo.type === "back"),
+          isExpanded: true,
+        },
+      ];
 
-    setSections(newSections);
+      setSections(newSections);
+      console.log("Gallery loaded successfully:", newSections);
+    } catch (error) {
+      console.error("Error loading gallery:", error);
+    }
   };
 
   const handleDeletePhoto = async (id: string) => {
@@ -120,7 +145,7 @@ export default function GalleryScreen() {
       onPress={() => toggleSection(section.title)}
     >
       <Text style={[styles.sectionHeader, { color: theme.background }]}>
-        {section.title}
+        {t(`camera.${section.title.toLowerCase()}`)}
       </Text>
       <Ionicons
         name={section.isExpanded ? "chevron-up" : "chevron-down"}
@@ -156,16 +181,31 @@ export default function GalleryScreen() {
       <SafeAreaView
         style={[styles.container, { backgroundColor: theme.transparent }]}
       >
-        <Header title="Gallery" />
-        <SectionList
-          sections={sections}
-          renderItem={() => null}
-          renderSectionHeader={renderSectionHeader}
-          renderSectionFooter={renderSectionContent}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.list}
-          stickySectionHeadersEnabled={false}
-        />
+        <Header title={t("gallery.title")} />
+        {isLoading || contextLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={theme.primary} />
+            <Text style={[styles.loadingText, { color: theme.text }]}>
+              {t("gallery.loading")}
+            </Text>
+          </View>
+        ) : error ? (
+          <View style={styles.errorContainer}>
+            <Text style={[styles.errorText, { color: theme.error }]}>
+              {error}
+            </Text>
+          </View>
+        ) : (
+          <SectionList
+            sections={sections}
+            renderItem={() => null}
+            renderSectionHeader={renderSectionHeader}
+            renderSectionFooter={renderSectionContent}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.list}
+            stickySectionHeadersEnabled={false}
+          />
+        )}
         <FullScreenPhotoModal
           isVisible={!!selectedPhoto}
           photoUri={selectedPhoto || ""}
@@ -262,5 +302,22 @@ const styles = StyleSheet.create({
   date: {
     fontSize: 10,
     fontWeight: "bold",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorText: {
+    fontSize: 16,
   },
 });

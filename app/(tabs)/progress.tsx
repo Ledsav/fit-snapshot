@@ -6,15 +6,19 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import BackgroundImage from "@/components/style/BackgroundImage";
 import { Header } from "@/components/home/Header";
 import { usePhotos } from "@/context/PhotoContext";
+import { useLocalization } from "@/context/LocalizationContext";
+import { PhotoType } from "@/enums/Photos";
 
 const ProgressScreen: React.FC = () => {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "light"];
   const { getLatestPhotoByType, refreshPhotos } = usePhotos();
+  const { t } = useLocalization();
+  const types = Object.values(PhotoType);
 
   return (
     <BackgroundImage blurIntensity={0} overlayOpacity={1}>
-      <Header title="Your Progress" />
+      <Header title={t("progress.title")} />
       <ScrollView
         contentContainerStyle={[
           styles.container,
@@ -24,7 +28,7 @@ const ProgressScreen: React.FC = () => {
           <RefreshControl refreshing={false} onRefresh={refreshPhotos} />
         }
       >
-        {["front", "side", "back"].map((type) => (
+        {types.map((type) => (
           <View
             key={type}
             style={[
@@ -32,11 +36,7 @@ const ProgressScreen: React.FC = () => {
               { backgroundColor: theme.transparent },
             ]}
           >
-            <PhotoMorph
-              type={type as "front" | "side" | "back"}
-              photo={getLatestPhotoByType(type as "front" | "side" | "back")}
-              onRefresh={refreshPhotos}
-            />
+            <PhotoMorph type={type} />
           </View>
         ))}
       </ScrollView>

@@ -20,11 +20,13 @@ import { ShreddedTipsCarousel } from "@/components/home/ShreddedTipsCarousel";
 import { ProgressSummary } from "@/components/home/ProgressSummary";
 import { OnboardingCarousel } from "@/components/onBoarding/OnboardingCarousel";
 import { usePhotos } from "@/context/PhotoContext";
+import { useLocalization } from "@/context/LocalizationContext";
 
 export default function HomeScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "dark"];
+  const { t } = useLocalization();
   const [streakData, setStreakData] = useState<StreakData>({
     currentStreak: 0,
     lastPhotoDate: null,
@@ -43,10 +45,11 @@ export default function HomeScreen() {
         )
       : 0;
   const totalPhotos = photos.length;
-  const improvement =
-    totalDays > 0
-      ? Math.min(100, Math.trunc((totalPhotos / totalDays) * 100))
-      : 0;
+  const totalExpectedPhotos = totalDays * 3;
+  const improvement = Math.min(
+    100,
+    Math.round((totalPhotos / totalExpectedPhotos) * 100)
+  );
 
   const loadStreakData = useCallback(async () => {
     const streak = await StreakService.getStreakData();
@@ -100,7 +103,7 @@ export default function HomeScreen() {
   return (
     <BackgroundImage blurIntensity={0} overlayOpacity={1}>
       <SafeAreaView style={[styles.container]}>
-        <Header title="Fitness Tracker" />
+        <Header title={t("home.title")} />
         <ScrollView
           style={styles.content}
           contentContainerStyle={styles.contentContainer}
@@ -110,14 +113,14 @@ export default function HomeScreen() {
         >
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              Streak
+              {t("home.streak")}
             </Text>
             <StreakCard streak={streakData.currentStreak} />
           </View>
 
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              Stats
+              {t("home.stats")}
             </Text>
             <ProgressSummary
               totalDays={totalDays}
@@ -128,14 +131,14 @@ export default function HomeScreen() {
 
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              Tips
+              {t("home.tips")}
             </Text>
             <ShreddedTipsCarousel />
           </View>
 
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              Latest Photo
+              {t("home.latestPhoto")}
             </Text>
             <LatestPhotoCard
               latestPhoto={latestPhoto}

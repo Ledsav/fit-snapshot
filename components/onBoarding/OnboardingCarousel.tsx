@@ -13,29 +13,9 @@ import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import BackgroundImage from "../style/BackgroundImage";
 import { LinearGradient } from "expo-linear-gradient";
+import { useLocalization } from "@/context/LocalizationContext";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
-
-const onboardingSteps = [
-  {
-    title: "Take a Photo",
-    subtitle: "Take pictures each day",
-    image: require("@/assets/images/camera.png"),
-    icon: "camera",
-  },
-  {
-    title: "See your progress",
-    subtitle: "Track your fitness journey",
-    image: require("@/assets/images/progress.png"),
-    icon: "bar-chart",
-  },
-  {
-    title: "Share your results",
-    subtitle: "Inspire others with your success",
-    image: require("@/assets/images/share.png"),
-    icon: "share-social",
-  },
-];
 
 interface OnboardingCarouselProps {
   onComplete: () => void;
@@ -48,6 +28,28 @@ export const OnboardingCarousel: React.FC<OnboardingCarouselProps> = ({
   const pagerRef = useRef<PagerView>(null);
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "dark"];
+  const { t } = useLocalization();
+
+  const onboardingSteps = [
+    {
+      title: t("onboardingCarousel.takePhoto.title"),
+      subtitle: t("onboardingCarousel.takePhoto.subtitle"),
+      image: require("@/assets/images/camera.png"),
+      icon: "camera",
+    },
+    {
+      title: t("onboardingCarousel.seeProgress.title"),
+      subtitle: t("onboardingCarousel.seeProgress.subtitle"),
+      image: require("@/assets/images/progress.png"),
+      icon: "bar-chart",
+    },
+    {
+      title: t("onboardingCarousel.shareResults.title"),
+      subtitle: t("onboardingCarousel.shareResults.subtitle"),
+      image: require("@/assets/images/share.png"),
+      icon: "share-social",
+    },
+  ];
 
   const handlePageSelected = (e: any) => {
     setActiveIndex(e.nativeEvent.position);
@@ -122,8 +124,8 @@ export const OnboardingCarousel: React.FC<OnboardingCarouselProps> = ({
                 style={[styles.nextButtonText, { color: theme.background }]}
               >
                 {activeIndex === onboardingSteps.length - 1
-                  ? "Get Started"
-                  : "Next"}
+                  ? t("onboardingCarousel.getStarted")
+                  : t("onboardingCarousel.next")}
               </Text>
               <Ionicons
                 name="arrow-forward"

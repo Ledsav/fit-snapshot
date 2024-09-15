@@ -17,8 +17,8 @@ import TorsoSilhouette from "../../images/TorsoSilhouette";
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { usePhotos } from "@/context/PhotoContext";
-
-type OverlayType = "front" | "side" | "back";
+import { useLocalization } from "@/context/LocalizationContext";
+import { PhotoType } from "@/enums/Photos";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const aspectRatio = 4 / 3;
@@ -29,13 +29,14 @@ export default function CameraScreen() {
   const [flash, setFlash] = useState<"off" | "on">("off");
   const [zoom, setZoom] = useState(0);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
-  const [overlay, setOverlay] = useState<OverlayType>("front");
+  const [overlay, setOverlay] = useState<PhotoType>(PhotoType.front);
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView | null>(null);
   const router = useRouter();
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "light"];
   const { addPhoto } = usePhotos();
+  const { t } = useLocalization();
 
   // Timer states
   const [isTimerEnabled, setIsTimerEnabled] = useState(false);
@@ -64,7 +65,7 @@ export default function CameraScreen() {
     return (
       <View style={[styles.container, { backgroundColor: theme.background }]}>
         <Text style={[styles.message, { color: theme.text }]}>
-          We need your permission to show the camera
+          {t("camera.permissionMessage")}
         </Text>
         <TouchableOpacity
           style={[styles.permissionButton, { backgroundColor: theme.primary }]}
@@ -73,7 +74,7 @@ export default function CameraScreen() {
           <Text
             style={[styles.permissionButtonText, { color: theme.background }]}
           >
-            Grant permission
+            {t("camera.grantPermission")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -167,7 +168,7 @@ export default function CameraScreen() {
               { backgroundColor: theme.primary },
             ],
           ]}
-          onPress={() => setOverlay(type as OverlayType)}
+          onPress={() => setOverlay(type as PhotoType)}
         >
           <Text
             style={[
@@ -175,7 +176,7 @@ export default function CameraScreen() {
               { color: overlay === type ? theme.background : theme.text },
             ]}
           >
-            {type}
+            {t(`camera.${type}`)}
           </Text>
         </TouchableOpacity>
       ))}
@@ -229,7 +230,7 @@ export default function CameraScreen() {
           ]}
         >
           <Text style={[styles.overlayTextContent, { color: theme.text }]}>
-            {overlay}
+            {t(`camera.${overlay}`)}
           </Text>
         </View>
         <View style={styles.confirmationButtons}>

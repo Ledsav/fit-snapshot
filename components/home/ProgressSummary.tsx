@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import Colors from "@/constants/Colors";
+import { useLocalization } from "@/context/LocalizationContext";
 
 type ProgressSummaryProps = {
   totalDays: number;
@@ -17,6 +18,7 @@ export const ProgressSummary: React.FC<ProgressSummaryProps> = ({
 }) => {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "light"];
+  const { t } = useLocalization();
 
   return (
     <View
@@ -28,25 +30,24 @@ export const ProgressSummary: React.FC<ProgressSummaryProps> = ({
       <View style={styles.summaryItem}>
         <Ionicons name="calendar-outline" size={24} color={theme.text} />
         <Text style={[styles.summaryText, { color: theme.text }]}>
-          {totalDays} days
+          {totalDays} {t("progressSummary.days")}
         </Text>
       </View>
       <View style={styles.summaryItem}>
         <Ionicons name="camera-outline" size={24} color={theme.text} />
         <Text style={[styles.summaryText, { color: theme.text }]}>
-          {totalPhotos} photos
+          {totalPhotos} {t("progressSummary.photos")}
         </Text>
       </View>
       <View style={styles.summaryItem}>
         <Ionicons name="trending-up-outline" size={24} color={theme.text} />
         <Text style={[styles.summaryText, { color: theme.text }]}>
-          {improvement.toFixed(0)}% active
+          {improvement.toFixed(0)}% {t("progressSummary.active")}
         </Text>
       </View>
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   summaryContainer: {
     flexDirection: "row",
