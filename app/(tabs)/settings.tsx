@@ -13,6 +13,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalization } from "@/context/LocalizationContext";
 import { LanguageSelector } from "@/components/settings/LanguageSelector";
+import ContactsModal from "@/components/settings/ContactsModal";
 
 const SettingItem: React.FC<{
   title: string;
@@ -30,9 +31,7 @@ const SettingItem: React.FC<{
     />
     <Text style={[styles.settingText, { color: theme.text }]}>{title}</Text>
     {value && (
-      <Text style={[styles.settingValue, { color: theme.textSecondary }]}>
-        {value}
-      </Text>
+      <Text style={[styles.settingValue, { color: theme.text }]}>{value}</Text>
     )}
     <Ionicons name="chevron-forward" size={24} color={theme.text} />
   </TouchableOpacity>
@@ -44,25 +43,31 @@ export default function SettingsScreen() {
   const { t, locale } = useLocalization();
   const [isLanguageSelectorVisible, setIsLanguageSelectorVisible] =
     useState(false);
-
-  const handleAccountPress = () => {
-    // Navigate to account settings
-  };
-
-  const handleNotificationsPress = () => {
-    // Navigate to notifications settings
-  };
-
-  const handlePrivacyPress = () => {
-    // Navigate to privacy settings
-  };
-
-  const handleHelpPress = () => {
-    // Navigate to help/support
-  };
+  const [isContactsModalVisible, setIsContactsModalVisible] = useState(false);
 
   const handleLanguagePress = () => {
     setIsLanguageSelectorVisible(true);
+  };
+
+  const handleContactsPress = () => {
+    setIsContactsModalVisible(true);
+  };
+
+  const getLanguageDisplayName = (locale: string) => {
+    switch (locale) {
+      case "en":
+        return "English";
+      case "es":
+        return "Español";
+      case "it":
+        return "Italiano";
+      case "de":
+        return "Deutsch";
+      case "fr":
+        return "Français";
+      default:
+        return locale;
+    }
   };
 
   return (
@@ -73,30 +78,6 @@ export default function SettingsScreen() {
         <Text style={[styles.title, { color: theme.text }]}>
           {t("settings.title")}
         </Text>
-
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>
-            {t("settings.user")}
-          </Text>
-          <SettingItem
-            title={t("settings.account")}
-            onPress={handleAccountPress}
-            icon="person-outline"
-            theme={theme}
-          />
-          <SettingItem
-            title={t("settings.notifications")}
-            onPress={handleNotificationsPress}
-            icon="notifications-outline"
-            theme={theme}
-          />
-          <SettingItem
-            title={t("settings.privacy")}
-            onPress={handlePrivacyPress}
-            icon="lock-closed-outline"
-            theme={theme}
-          />
-        </View>
 
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>
@@ -111,7 +92,7 @@ export default function SettingsScreen() {
           </Text>
           <SettingItem
             title={t("settings.helpAndFeedback")}
-            onPress={handleHelpPress}
+            onPress={handleContactsPress}
             icon="help-circle-outline"
             theme={theme}
           />
@@ -126,7 +107,7 @@ export default function SettingsScreen() {
             onPress={handleLanguagePress}
             icon="language-outline"
             theme={theme}
-            value={locale === "en" ? "English" : "Español"}
+            value={getLanguageDisplayName(locale)}
           />
         </View>
       </ScrollView>
@@ -134,6 +115,11 @@ export default function SettingsScreen() {
       <LanguageSelector
         isVisible={isLanguageSelectorVisible}
         onClose={() => setIsLanguageSelectorVisible(false)}
+      />
+
+      <ContactsModal
+        isVisible={isContactsModalVisible}
+        onClose={() => setIsContactsModalVisible(false)}
       />
     </SafeAreaView>
   );
