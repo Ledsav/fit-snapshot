@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Dimensions,
   SafeAreaView,
+  Platform,
 } from "react-native";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import { manipulateAsync, FlipType, SaveFormat } from "expo-image-manipulator";
@@ -38,6 +39,9 @@ export default function CameraScreen() {
   const { addPhoto } = usePhotos();
   const { t } = useLocalization();
 
+  // New state for camera ready status
+  const [isCameraReady, setIsCameraReady] = useState(false);
+
   // Timer states
   const [isTimerEnabled, setIsTimerEnabled] = useState(false);
   const [timerDuration, setTimerDuration] = useState(3);
@@ -56,6 +60,16 @@ export default function CameraScreen() {
     }
     return () => clearInterval(interval);
   }, [isTimerRunning, remainingTime]);
+
+  // New useEffect to reinitialize camera on facing change
+  useEffect(() => {
+    setIsCameraReady(false);
+    const timer = setTimeout(() => {
+      setIsCameraReady(true);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [facing]);
 
   if (!permission) {
     return <View />;
@@ -98,23 +112,27 @@ export default function CameraScreen() {
   };
 
   const takePicture = async () => {
-    if (cameraRef.current) {
-      const photo = await cameraRef.current.takePictureAsync();
-      if (photo) {
-        let manipulatedImage = photo;
+    if (cameraRef.current && isCameraReady) {
+      try {
+        const photo = await cameraRef.current.takePictureAsync();
+        if (photo) {
+          let manipulatedImage = photo;
 
-        if (facing === "front") {
-          manipulatedImage = await manipulateAsync(
-            photo.uri,
-            [{ flip: FlipType.Horizontal }],
-            { format: SaveFormat.JPEG }
-          );
+          if (facing === "front") {
+            manipulatedImage = await manipulateAsync(
+              photo.uri,
+              [{ flip: FlipType.Horizontal }],
+              { format: SaveFormat.JPEG }
+            );
+          }
+
+          setCapturedImage(manipulatedImage.uri);
         }
-
-        setCapturedImage(manipulatedImage.uri);
-      } else {
-        console.error("Unable to take picture");
+      } catch (error) {
+        console.error("Error taking picture:", error);
       }
+    } else {
+      console.log("Camera is not ready");
     }
   };
 
@@ -260,15 +278,30 @@ export default function CameraScreen() {
       style={[styles.container, { backgroundColor: theme.background }]}
     >
       <StatusBar style="light" />
-      <CameraView
-        ref={cameraRef}
-        style={StyleSheet.absoluteFill}
-        facing={facing}
-        flash={flash}
-        zoom={zoom}
-      >
-        {renderSilhouette()}
-      </CameraView>
+      {isCameraReady && (
+        <CameraView
+          ref={cameraRef}
+          style={StyleSheet.absoluteFill}
+          facing={facing}
+          flash={flash}
+          zoom={zoom}
+          onCameraReady={() => setIsCameraReady(true)}
+        >
+          {renderSilhouette()}
+        </CameraView>
+      )}
+      {!isCameraReady && (
+        <View
+          style={[
+            styles.loadingContainer,
+            { backgroundColor: theme.background },
+          ]}
+        >
+          <Text style={[styles.loadingText, { color: theme.text }]}>
+            {t("common.loading")}
+          </Text>
+        </View>
+      )}
       <View style={styles.overlayContainer}>
         {renderOverlaySelector()}
         <View style={styles.controlsContainer}>
@@ -335,6 +368,14 @@ export default function CameraScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  loadingContainer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    fontSize: 18,
   },
   message: {
     color: Colors.light.primary,
