@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useColorScheme } from "@/hooks/useColorScheme";
@@ -16,6 +16,11 @@ export const Header: React.FC<HeaderProps> = ({ title }) => {
 
   const motivationalQuotes = t("header.motivationalQuotes");
 
+  const randomQuote = useMemo(() => {
+    const randomIndex = Math.floor(Math.random() * motivationalQuotes.length);
+    return motivationalQuotes[randomIndex];
+  }, [motivationalQuotes]);
+
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -24,11 +29,7 @@ export const Header: React.FC<HeaderProps> = ({ title }) => {
       >
         <Text style={[styles.title, { color: theme.text }]}>{title}</Text>
         <Text style={[styles.subtitle, { color: theme.text }]}>
-          {
-            motivationalQuotes[
-              Math.floor(Math.random() * motivationalQuotes.length)
-            ]
-          }
+          {randomQuote}
         </Text>
       </LinearGradient>
     </View>
