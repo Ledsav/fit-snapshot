@@ -30,6 +30,8 @@ interface TranslationKeys {
     comparePhotos: string;
     timeDifference: string;
     extractPhoto: string;
+    photoSavedMessage: string;
+    photoSaveErrorMessage: string;
   };
   settings: {
     title: string;
@@ -112,6 +114,17 @@ interface TranslationKeys {
     loading: string;
     error: string;
     retry: string;
+    success: string;
+  };
+  contacts: {
+    title: string;
+    email: string;
+    phone: string;
+    website: string;
+  };
+  permissions: {
+    title: string;
+    photoSaveMessage: string;
   };
 }
 
@@ -152,6 +165,8 @@ export const translations: Translations = {
       comparePhotos: "Slide to compare oldest and newest photos",
       timeDifference: "Time difference",
       extractPhoto: "Extract photo",
+      photoSavedMessage: "Photo saved successfully",
+      photoSaveErrorMessage: "Error saving photo",
     },
     settings: {
       title: "Settings",
@@ -265,6 +280,18 @@ export const translations: Translations = {
       loading: "Loading...",
       error: "An error occurred",
       retry: "Retry",
+      success: "Success",
+    },
+    contacts: {
+      title: "Contact Us",
+      email: "Email",
+      phone: "Phone",
+      website: "Website",
+    },
+    permissions: {
+      title: "Permission Required",
+      photoSaveMessage:
+        "We need your permission to save photos to your gallery.",
     },
   },
 
@@ -301,6 +328,9 @@ export const translations: Translations = {
         "Desliza para comparar las fotos más antiguas y más recientes",
       timeDifference: "Diferencia de tiempo",
       extractPhoto: "Extraer foto",
+      photoSavedMessage: "Foto guardada en la galería con éxito.",
+      photoSaveErrorMessage:
+        "No se pudo guardar la foto. Por favor, inténtelo de nuevo.",
     },
     settings: {
       title: "Configuración",
@@ -414,6 +444,510 @@ export const translations: Translations = {
       loading: "Cargando...",
       error: "Ocurrió un error",
       retry: "Reintentar",
+      success: "Exito",
+    },
+    contacts: {
+      title: "Contáctanos",
+      email: "Correo electrónico",
+      phone: "Teléfono",
+      website: "Sitio web",
+    },
+    permissions: {
+      title: "Permiso Requerido",
+      photoSaveMessage:
+        "Necesitamos su permiso para guardar fotos en su galería.",
+    },
+  },
+
+  it: {
+    home: {
+      title: "Tracker Fitness",
+      streak: "Serie",
+      stats: "Statistiche",
+      tips: "Consigli",
+      latestPhoto: "Ultima Foto",
+    },
+    camera: {
+      title: "Fotocamera",
+      front: "Fronte",
+      side: "Lato",
+      back: "Retro",
+      takePicture: "Scatta Foto",
+      retake: "Rifare",
+      confirm: "Conferma",
+      permissionMessage:
+        "Abbiamo bisogno del tuo permesso per mostrare la fotocamera",
+      grantPermission: "Concedi permesso",
+    },
+    gallery: {
+      title: "Galleria",
+      deletePhoto: "Elimina Foto",
+    },
+    progress: {
+      title: "I Tuoi Progressi",
+      front: "Fronte",
+      side: "Lato",
+      back: "Retro",
+      noPhotosAvailable: "Nessuna foto disponibile per",
+      comparePhotos: "Scorri per confrontare le foto più vecchie e più recenti",
+      timeDifference: "Differenza di tempo",
+      extractPhoto: "Estrai foto",
+      photoSavedMessage: "Foto salvata nella galleria con successo.",
+      photoSaveErrorMessage: "Impossibile salvare la foto. Per favore riprova.",
+    },
+    settings: {
+      title: "Impostazioni",
+      user: "Utente",
+      account: "Account",
+      notifications: "Notifiche",
+      privacy: "Privacy",
+      reminders: "Promemoria",
+      support: "Supporto",
+      helpAndFeedback: "Aiuto & Feedback",
+      language: "Italiano",
+      selectLanguage: "Seleziona Lingua",
+    },
+    streakCard: {
+      startStreak: "Inizia la tua serie!",
+      beginToday: "Inizia oggi",
+      greatStart: "Ottimo inizio!",
+      keepItUp: "Continua così!",
+      onFire: "Sei in fiamma!",
+      keepMomentum: "Mantieni lo slancio",
+      fantasticProgress: "Progressi fantastici!",
+      unstoppable: "Sei inarrestabile",
+      incredibleStreak: "Serie incredibile!",
+      machine: "Sei una macchina",
+      legendaryDedication: "Dedica leggendaria!",
+      rewritingHistory: "Stai riscrivendo la storia",
+      streakMaster: "Maestro delle serie!",
+      achievedGreatness: "Hai raggiunto la grandezza",
+    },
+    latestPhotoCard: {
+      noPhotos: "Nessuna foto ancora",
+    },
+    header: {
+      motivationalQuotes: [
+        "Trasforma il tuo corpo, trasforma la tua vita!",
+        "Ogni foto è un passo verso il tuo obiettivo.",
+        "Cattura i tuoi progressi, alimenta la tua motivazione.",
+      ],
+    },
+    progressSummary: {
+      days: "giorni",
+      photos: "foto",
+      active: "attivo",
+    },
+    onboardingCarousel: {
+      takePhoto: {
+        title: "Scatta una Foto",
+        subtitle: "Scatta foto ogni giorno",
+      },
+      seeProgress: {
+        title: "Vedi i tuoi progressi",
+        subtitle: "Traccia il tuo percorso fitness",
+      },
+      shareResults: {
+        title: "Condividi i tuoi risultati",
+        subtitle: "Ispira gli altri con il tuo successo",
+      },
+      getStarted: "Inizia",
+      next: "Avanti",
+    },
+    dailyReminder: {
+      title: "Promemoria Giornalieri",
+      addReminder: "Aggiungi Promemoria",
+      setDailyReminder: "Imposta Promemoria Giornaliero",
+      hour: "Ora",
+      minute: "Minuto",
+      cancel: "Annulla",
+      setReminder: "Imposta Promemoria",
+      reminderSet: "Promemoria Impostato",
+      reminderSetMessage: "Riceverai un promemoria giornaliero alle",
+    },
+    shreddedTipsCarousel: {
+      tips: JSON.stringify([
+        {
+          main: "Mantieniti idratato",
+          clarification: "Bevi almeno 8 bicchieri d'acqua al giorno",
+          icon: "water-outline",
+        },
+        {
+          main: "Dormi a sufficienza",
+          clarification: "Punta a dormire 7-9 ore ogni notte",
+          icon: "moon-outline",
+        },
+        {
+          main: "Dieta equilibrata",
+          clarification:
+            "Includi proteine, carboidrati e grassi sani nei tuoi pasti",
+          icon: "nutrition-outline",
+        },
+        {
+          main: "Esercizio regolare",
+          clarification: "Punta ad almeno 30 minuti di attività al giorno",
+          icon: "fitness-outline",
+        },
+        {
+          main: "Traccia i tuoi progressi",
+          clarification: "Scatta foto e prendi misure regolarmente",
+          icon: "analytics-outline",
+        },
+      ]),
+    },
+    timeDifference: {
+      year: "anno",
+      years: "anni",
+      month: "mese",
+      months: "mesi",
+      day: "giorno",
+      days: "giorni",
+    },
+    common: {
+      loading: "Caricamento...",
+      error: "Si è verificato un errore",
+      retry: "Riprova",
+      success: "Successo",
+    },
+    contacts: {
+      title: "Contattaci",
+      email: "Email",
+      phone: "Telefono",
+      website: "Sito web",
+    },
+    permissions: {
+      title: "Autorizzazione Richiesta",
+      photoSaveMessage:
+        "Abbiamo bisogno del tuo permesso per salvare le foto nella tua galleria.",
+    },
+  },
+  de: {
+    home: {
+      title: "Fitness-Tracker",
+      streak: "Serie",
+      stats: "Statistiken",
+      tips: "Tipps",
+      latestPhoto: "Neuestes Foto",
+    },
+    camera: {
+      title: "Kamera",
+      front: "Vorderseite",
+      side: "Seite",
+      back: "Rückseite",
+      takePicture: "Foto aufnehmen",
+      retake: "Neu aufnehmen",
+      confirm: "Bestätigen",
+      permissionMessage:
+        "Wir benötigen Ihre Erlaubnis, um die Kamera zu zeigen",
+      grantPermission: "Erlaubnis erteilen",
+    },
+    gallery: {
+      title: "Galerie",
+      deletePhoto: "Foto löschen",
+    },
+    progress: {
+      title: "Ihr Fortschritt",
+      front: "Vorderseite",
+      side: "Seite",
+      back: "Rückseite",
+      noPhotosAvailable: "Keine Fotos verfügbar für",
+      comparePhotos:
+        "Schieben Sie, um älteste und neueste Fotos zu vergleichen",
+      timeDifference: "Zeitunterschied",
+      extractPhoto: "Foto extrahieren",
+      photoSavedMessage: "Foto erfolgreich in der Galerie gespeichert.",
+      photoSaveErrorMessage:
+        "Foto konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+    },
+    settings: {
+      title: "Einstellungen",
+      user: "Benutzer",
+      account: "Konto",
+      notifications: "Benachrichtigungen",
+      privacy: "Datenschutz",
+      reminders: "Erinnerungen",
+      support: "Unterstützung",
+      helpAndFeedback: "Hilfe & Feedback",
+      language: "Deutsch",
+      selectLanguage: "Sprache auswählen",
+    },
+    streakCard: {
+      startStreak: "Starten Sie Ihre Serie!",
+      beginToday: "Beginnen Sie heute",
+      greatStart: "Großartiger Start!",
+      keepItUp: "Weiter so!",
+      onFire: "Sie sind auf Feuer!",
+      keepMomentum: "Behalten Sie den Schwung bei",
+      fantasticProgress: "Fantastischer Fortschritt!",
+      unstoppable: "Sie sind unaufhaltsam",
+      incredibleStreak: "Unglaubliche Serie!",
+      machine: "Sie sind eine Maschine",
+      legendaryDedication: "Legendäre Hingabe!",
+      rewritingHistory: "Sie schreiben Geschichte neu",
+      streakMaster: "Serien-Meister!",
+      achievedGreatness: "Sie haben Großes erreicht",
+    },
+    latestPhotoCard: {
+      noPhotos: "Noch keine Fotos",
+    },
+    header: {
+      motivationalQuotes: [
+        "Transformieren Sie Ihren Körper, transformieren Sie Ihr Leben!",
+        "Jedes Foto ist ein Schritt zu Ihrem Ziel.",
+        "Erfassen Sie Ihren Fortschritt, nähren Sie Ihre Motivation.",
+      ],
+    },
+    progressSummary: {
+      days: "Tage",
+      photos: "Fotos",
+      active: "aktiv",
+    },
+    onboardingCarousel: {
+      takePhoto: {
+        title: "Machen Sie ein Foto",
+        subtitle: "Machen Sie täglich Fotos",
+      },
+      seeProgress: {
+        title: "Sehen Sie Ihren Fortschritt",
+        subtitle: "Verfolgen Sie Ihre Fitness-Reise",
+      },
+      shareResults: {
+        title: "Teilen Sie Ihre Ergebnisse",
+        subtitle: "Inspirieren Sie andere mit Ihrem Erfolg",
+      },
+      getStarted: "Loslegen",
+      next: "Weiter",
+    },
+    dailyReminder: {
+      title: "Tägliche Erinnerungen",
+      addReminder: "Erinnerung hinzufügen",
+      setDailyReminder: "Tägliche Erinnerung einstellen",
+      hour: "Stunde",
+      minute: "Minute",
+      cancel: "Abbrechen",
+      setReminder: "Erinnerung einstellen",
+      reminderSet: "Erinnerung eingestellt",
+      reminderSetMessage: "Sie werden täglich erinnert um",
+    },
+    shreddedTipsCarousel: {
+      tips: JSON.stringify([
+        {
+          main: "Bleiben Sie hydratisiert",
+          clarification: "Trinken Sie mindestens 8 Gläser Wasser täglich",
+          icon: "water-outline",
+        },
+        {
+          main: "Ausreichend Schlaf",
+          clarification: "Streben Sie 7-9 Stunden Schlaf jede Nacht an",
+          icon: "moon-outline",
+        },
+        {
+          main: "Ausgewogene Ernährung",
+          clarification:
+            "Schließen Sie Proteine, Kohlenhydrate und gesunde Fette in Ihre Mahlzeiten ein",
+          icon: "nutrition-outline",
+        },
+        {
+          main: "Regelmäßige Bewegung",
+          clarification:
+            "Streben Sie mindestens 30 Minuten Aktivität täglich an",
+          icon: "fitness-outline",
+        },
+        {
+          main: "Verfolgen Sie Ihren Fortschritt",
+          clarification: "Machen Sie regelmäßig Fotos und Messungen",
+          icon: "analytics-outline",
+        },
+      ]),
+    },
+    timeDifference: {
+      year: "Jahr",
+      years: "Jahre",
+      month: "Monat",
+      months: "Monate",
+      day: "Tag",
+      days: "Tage",
+    },
+    common: {
+      loading: "Laden...",
+      error: "Ein Fehler ist aufgetreten",
+      retry: "Erneut versuchen",
+      success: "Erfolgreich",
+    },
+    contacts: {
+      title: "Kontaktieren Sie uns",
+      email: "E-Mail",
+      phone: "Telefon",
+      website: "Webseite",
+    },
+    permissions: {
+      title: "Berechtigung Erforderlich",
+      photoSaveMessage:
+        "Wir benötigen Ihre Erlaubnis, um Fotos in Ihrer Galerie zu speichern.",
+    },
+  },
+  fr: {
+    home: {
+      title: "Suivi de Fitness",
+      streak: "Série",
+      stats: "Statistiques",
+      tips: "Conseils",
+      latestPhoto: "Dernière Photo",
+    },
+    camera: {
+      title: "Appareil Photo",
+      front: "Face",
+      side: "Côté",
+      back: "Dos",
+      takePicture: "Prendre une Photo",
+      retake: "Reprendre",
+      confirm: "Confirmer",
+      permissionMessage:
+        "Nous avons besoin de votre permission pour afficher l'appareil photo",
+      grantPermission: "Accorder la permission",
+    },
+    gallery: {
+      title: "Galerie",
+      deletePhoto: "Supprimer la Photo",
+    },
+    progress: {
+      title: "Votre Progrès",
+      front: "Face",
+      side: "Côté",
+      back: "Dos",
+      noPhotosAvailable: "Aucune photo disponible pour",
+      comparePhotos:
+        "Faites glisser pour comparer les photos les plus anciennes et les plus récentes",
+      timeDifference: "Différence de temps",
+      extractPhoto: "Extraire la photo",
+      photoSavedMessage: "Photo enregistrée dans la galerie avec succès.",
+      photoSaveErrorMessage:
+        "Échec de l'enregistrement de la photo. Veuillez réessayer.",
+    },
+    settings: {
+      title: "Paramètres",
+      user: "Utilisateur",
+      account: "Compte",
+      notifications: "Notifications",
+      privacy: "Confidentialité",
+      reminders: "Rappels",
+      support: "Support",
+      helpAndFeedback: "Aide & Commentaires",
+      language: "Français",
+      selectLanguage: "Sélectionner la Langue",
+    },
+    streakCard: {
+      startStreak: "Commencez votre série !",
+      beginToday: "Commencez aujourd'hui",
+      greatStart: "Excellent début !",
+      keepItUp: "Continuez comme ça !",
+      onFire: "Vous êtes en feu !",
+      keepMomentum: "Gardez l'élan",
+      fantasticProgress: "Progrès fantastique !",
+      unstoppable: "Vous êtes inarrêtable",
+      incredibleStreak: "Série incroyable !",
+      machine: "Vous êtes une machine",
+      legendaryDedication: "Dévouement légendaire !",
+      rewritingHistory: "Vous réécrivez l'histoire",
+      streakMaster: "Maître des séries !",
+      achievedGreatness: "Vous avez atteint la grandeur",
+    },
+    latestPhotoCard: {
+      noPhotos: "Pas encore de photos",
+    },
+    header: {
+      motivationalQuotes: [
+        "Transformez votre corps, transformez votre vie !",
+        "Chaque photo est un pas vers votre objectif.",
+        "Capturez vos progrès, alimentez votre motivation.",
+      ],
+    },
+    progressSummary: {
+      days: "jours",
+      photos: "photos",
+      active: "actif",
+    },
+    onboardingCarousel: {
+      takePhoto: {
+        title: "Prenez une Photo",
+        subtitle: "Prenez des photos chaque jour",
+      },
+      seeProgress: {
+        title: "Voyez vos progrès",
+        subtitle: "Suivez votre parcours fitness",
+      },
+      shareResults: {
+        title: "Partagez vos résultats",
+        subtitle: "Inspirez les autres avec votre succès",
+      },
+      getStarted: "Commencer",
+      next: "Suivant",
+    },
+    dailyReminder: {
+      title: "Rappels Quotidiens",
+      addReminder: "Ajouter un Rappel",
+      setDailyReminder: "Définir un Rappel Quotidien",
+      hour: "Heure",
+      minute: "Minute",
+      cancel: "Annuler",
+      setReminder: "Définir le Rappel",
+      reminderSet: "Rappel Défini",
+      reminderSetMessage: "Vous serez rappelé quotidiennement à",
+    },
+    shreddedTipsCarousel: {
+      tips: JSON.stringify([
+        {
+          main: "Restez hydraté",
+          clarification: "Buvez au moins 8 verres d'eau par jour",
+          icon: "water-outline",
+        },
+        {
+          main: "Dormez suffisamment",
+          clarification: "Visez 7-9 heures de sommeil chaque nuit",
+          icon: "moon-outline",
+        },
+        {
+          main: "Alimentation équilibrée",
+          clarification:
+            "Incluez des protéines, des glucides et des graisses saines dans vos repas",
+          icon: "nutrition-outline",
+        },
+        {
+          main: "Exercice régulier",
+          clarification: "Visez au moins 30 minutes d'activité quotidienne",
+          icon: "fitness-outline",
+        },
+        {
+          main: "Suivez vos progrès",
+          clarification: "Prenez des photos et des mesures régulièrement",
+          icon: "analytics-outline",
+        },
+      ]),
+    },
+    timeDifference: {
+      year: "an",
+      years: "ans",
+      month: "mois",
+      months: "mois",
+      day: "jour",
+      days: "jours",
+    },
+    common: {
+      loading: "Chargement...",
+      error: "Une erreur s'est produite",
+      retry: "Réessayer",
+      success: "Succès",
+    },
+    contacts: {
+      title: "Contactez-nous",
+      email: "Email",
+      phone: "Téléphone",
+      website: "Site Web",
+    },
+    permissions: {
+      title: "Autorisation Requise",
+      photoSaveMessage:
+        "Nous avons besoin de votre autorisation pour enregistrer des photos dans votre galerie.",
     },
   },
 };
