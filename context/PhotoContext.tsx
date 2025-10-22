@@ -1,11 +1,13 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { PhotoType } from "@/enums/Photos";
 import {
   Photo,
-  getPhotos,
-  savePhoto,
+  cleanupOrphanedFiles,
   deletePhoto,
+  getPhotos,
+  getStorageInfo,
+  savePhoto,
 } from "@/services/photoStorage";
-import { PhotoType } from "@/enums/Photos";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface PhotoContextType {
   photos: Photo[];
@@ -14,6 +16,12 @@ interface PhotoContextType {
   refreshPhotos: () => Promise<void>;
   getPhotosByType: (type: PhotoType) => Photo[];
   getLatestPhotoByType: (type: PhotoType) => Photo | undefined;
+  getStorageInfo: () => Promise<{
+    totalPhotos: number;
+    directorySize: number;
+    directoryPath: string;
+  }>;
+  cleanupStorage: () => Promise<void>;
   isLoading: boolean;
   error: string | null;
 }
@@ -31,11 +39,29 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsLoading(true);
     setError(null);
     try {
+      
       const fetchedPhotos = await getPhotos();
       setPhotos(fetchedPhotos);
     } catch (err) {
       setError("Failed to load photos. Please try again.");
       console.error("Error refreshing photos:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getStorageInfoWrapper = async () => {
+    return await getStorageInfo();
+  };
+
+  const cleanupStorage = async () => {
+    setIsLoading(true);
+    try {
+      await cleanupOrphanedFiles();
+      await refreshPhotos(); // Refresh after cleanup
+    } catch (err) {
+      setError("Failed to cleanup storage. Please try again.");
+      console.error("Error cleaning up storage:", err);
     } finally {
       setIsLoading(false);
     }
@@ -91,6 +117,8 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({
     refreshPhotos,
     getPhotosByType,
     getLatestPhotoByType,
+    getStorageInfo: getStorageInfoWrapper,
+    cleanupStorage,
     isLoading,
     error,
   };

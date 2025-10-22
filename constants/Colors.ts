@@ -1,58 +1,54 @@
 // Color definitions
 const colors = {
-  limeGreen: "#CCFF00",
-  darkGray: "#1A1A1A",
-  mediumGray: "#2A2A2A",
-  lightGray: "#3A3A3A",
+  emerald: "#00C676",        // vibrant green highlight
+  forest: "#003B2B",         // deep forest green (background depth)
+  midnight: "#0A0F0D",       // near-black base tone
+  graphite: "#1E2422",       // subtle dark gray for panels
+  slate: "#2D3432",          // secondary surfaces
+  mist: "#E0F2E9",           // soft light text or accent
   white: "#FFFFFF",
   black: "#000000",
-  teal: "#20B2AA",
-  coral: "#FF6B6B",
-  skyBlue: "#87CEEB",
-  lime: "#32CD32",
-  amber: "#FFBF00",
-  charcoal: "#36454F",
+  teal: "#00A896",           // cool accent
+  coral: "#FF6B6B",          // alert or contrast color
+  amber: "#FFBF00",          // warning / highlight
+  sky: "#89DCEB",            // info / secondary accent
   transparent: "transparent",
 };
 
-const tintColorLight = colors.limeGreen;
-const tintColorDark = colors.limeGreen;
+const tintColorLight = colors.emerald;
+const tintColorDark = colors.emerald;
 
 export default {
   light: {
-    text: colors.white,
-    background: colors.darkGray,
+    text: colors.graphite,
+    background: colors.mist,
     tint: tintColorLight,
-    tabIconDefault: colors.lightGray,
+    tabIconDefault: colors.slate,
     tabIconSelected: tintColorLight,
-    primary: colors.limeGreen,
-    secondary: colors.mediumGray,
-    accent: colors.white,
-    cardBackground: colors.mediumGray,
-    success: colors.lime,
+    primary: colors.emerald,
+    secondary: colors.teal,
+    accent: colors.forest,
+    cardBackground: colors.white,
+    success: colors.emerald,
     warning: colors.amber,
     error: colors.coral,
-    info: colors.skyBlue,
-    teal: colors.teal,
-    charcoal: colors.charcoal,
+    info: colors.sky,
     transparent: colors.transparent,
   },
   dark: {
-    text: colors.white,
-    background: colors.darkGray,
+    text: colors.mist,
+    background: colors.midnight,
     tint: tintColorDark,
-    tabIconDefault: colors.lightGray,
+    tabIconDefault: colors.slate,
     tabIconSelected: tintColorDark,
-    primary: colors.limeGreen,
-    secondary: colors.mediumGray,
-    accent: colors.white,
-    cardBackground: colors.mediumGray,
-    success: colors.lime,
+    primary: colors.emerald,
+    secondary: colors.forest,
+    accent: colors.teal,
+    cardBackground: colors.graphite,
+    success: colors.emerald,
     warning: colors.amber,
     error: colors.coral,
-    info: colors.skyBlue,
-    teal: colors.teal,
-    charcoal: colors.charcoal,
+    info: colors.sky,
     transparent: colors.transparent,
   },
 };

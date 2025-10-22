@@ -1,19 +1,20 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  ScrollView,
-  TouchableOpacity,
-} from "react-native";
+import ContactsModal from "@/components/settings/ContactsModal";
 import { DailyReminder } from "@/components/settings/DailyReminder";
+import { LanguageSelector } from "@/components/settings/LanguageSelector";
+import { StorageManager } from "@/components/settings/StorageManager";
 import Colors from "@/constants/Colors";
+import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
-import { useLocalization } from "@/context/LocalizationContext";
-import { LanguageSelector } from "@/components/settings/LanguageSelector";
-import ContactsModal from "@/components/settings/ContactsModal";
+import React, { useState } from "react";
+import {
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 const SettingItem: React.FC<{
   title: string;
@@ -84,6 +85,13 @@ export default function SettingsScreen() {
             {t("settings.reminders")}
           </Text>
           <DailyReminder />
+        </View>
+
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>
+            Storage
+          </Text>
+          <StorageManager />
         </View>
 
         <View style={styles.section}>

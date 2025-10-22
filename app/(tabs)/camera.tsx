@@ -1,25 +1,24 @@
-import React, { useState, useRef, useEffect } from "react";
+import Colors from "@/constants/Colors";
+import { useLocalization } from "@/context/LocalizationContext";
+import { usePhotos } from "@/context/PhotoContext";
+import { PhotoType } from "@/enums/Photos";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { Ionicons } from "@expo/vector-icons";
+import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
+import { FlipType, manipulateAsync, SaveFormat } from "expo-image-manipulator";
+import { Href, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  Dimensions,
+  Image,
+  SafeAreaView,
   StyleSheet,
   Text,
-  View,
   TouchableOpacity,
-  Dimensions,
-  SafeAreaView,
-  Platform,
+  View
 } from "react-native";
-import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
-import { manipulateAsync, FlipType, SaveFormat } from "expo-image-manipulator";
-import { Ionicons } from "@expo/vector-icons";
-import { StatusBar } from "expo-status-bar";
-import { useRouter, Href } from "expo-router";
-import { Image } from "react-native";
 import TorsoSilhouette from "../../images/TorsoSilhouette";
-import Colors from "@/constants/Colors";
-import { useColorScheme } from "@/hooks/useColorScheme";
-import { usePhotos } from "@/context/PhotoContext";
-import { useLocalization } from "@/context/LocalizationContext";
-import { PhotoType } from "@/enums/Photos";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const aspectRatio = 4 / 3;
@@ -41,6 +40,8 @@ export default function CameraScreen() {
 
   // New state for camera ready status
   const [isCameraReady, setIsCameraReady] = useState(false);
+  const [cameraKey, setCameraKey] = useState(0); // Force re-render key
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
 
   // Timer states
   const [isTimerEnabled, setIsTimerEnabled] = useState(false);
@@ -61,15 +62,36 @@ export default function CameraScreen() {
     return () => clearInterval(interval);
   }, [isTimerRunning, remainingTime]);
 
-  // New useEffect to reinitialize camera on facing change
+  // Enhanced camera initialization effect
   useEffect(() => {
-    setIsCameraReady(false);
-    const timer = setTimeout(() => {
+    const initializeCamera = async () => {
+      setIsCameraReady(false);
+      
+      // Small delay to ensure proper cleanup
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Force camera re-render by updating key
+      setCameraKey(prev => prev + 1);
+      
+      // Longer delay for camera to properly initialize
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
       setIsCameraReady(true);
-    }, 1000);
+    };
 
-    return () => clearTimeout(timer);
+    initializeCamera();
   }, [facing]);
+
+  // Check camera permissions on mount
+  useEffect(() => {
+    (async () => {
+      if (permission?.granted) {
+        setHasPermission(true);
+      } else {
+        setHasPermission(false);
+      }
+    })();
+  }, [permission]);
 
   if (!permission) {
     return <View />;
@@ -98,6 +120,15 @@ export default function CameraScreen() {
   function toggleCameraFacing() {
     setFacing((current) => (current === "back" ? "front" : "back"));
   }
+
+  // Add force refresh function for black screen issues
+  const forceRefreshCamera = () => {
+    setIsCameraReady(false);
+    setCameraKey(prev => prev + 1);
+    setTimeout(() => {
+      setIsCameraReady(true);
+    }, 1500);
+  };
 
   const toggleFlash = () => {
     setFlash((current) => (current === "off" ? "on" : "off"));
@@ -278,19 +309,30 @@ export default function CameraScreen() {
       style={[styles.container, { backgroundColor: theme.background }]}
     >
       <StatusBar style="light" />
-      {isCameraReady && (
+      {isCameraReady && hasPermission && (
         <CameraView
+          key={cameraKey} // Force re-render on camera issues
           ref={cameraRef}
           style={StyleSheet.absoluteFill}
           facing={facing}
           flash={flash}
           zoom={zoom}
-          onCameraReady={() => setIsCameraReady(true)}
+          onCameraReady={() => {
+            console.log('Camera ready');
+            setIsCameraReady(true);
+          }}
+          onMountError={(error) => {
+            console.error('Camera mount error:', error);
+            // Auto-retry after mount error
+            setTimeout(() => {
+              forceRefreshCamera();
+            }, 2000);
+          }}
         >
           {renderSilhouette()}
         </CameraView>
       )}
-      {!isCameraReady && (
+      {(!isCameraReady || !hasPermission) && (
         <View
           style={[
             styles.loadingContainer,
@@ -298,8 +340,18 @@ export default function CameraScreen() {
           ]}
         >
           <Text style={[styles.loadingText, { color: theme.text }]}>
-            {t("common.loading")}
+            {!hasPermission ? t("camera.permissionMessage") : t("common.loading")}
           </Text>
+          {!isCameraReady && hasPermission && (
+            <TouchableOpacity
+              style={[styles.refreshButton, { backgroundColor: theme.primary }]}
+              onPress={forceRefreshCamera}
+            >
+              <Text style={[styles.refreshButtonText, { color: theme.background }]}>
+                Refresh Camera
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
       <View style={styles.overlayContainer}>
@@ -567,5 +619,16 @@ const styles = StyleSheet.create({
   cancelTimerButton: {
     padding: 5,
     borderRadius: 15,
+  },
+  refreshButton: {
+    backgroundColor: "white",
+    padding: 15,
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  refreshButtonText: {
+    color: "black",
+    fontWeight: "bold",
+    textAlign: "center" as const,
   },
 });

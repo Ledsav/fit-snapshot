@@ -1,6 +1,6 @@
-import React from "react";
-import { ImageBackground, StyleSheet, ViewStyle, View } from "react-native";
 import { BlurView } from "expo-blur";
+import React from "react";
+import { ImageBackground, StyleSheet, View, ViewStyle } from "react-native";
 
 interface BackgroundImageProps {
   children: React.ReactNode;
@@ -17,7 +17,7 @@ const BackgroundImage: React.FC<BackgroundImageProps> = ({
 }) => {
   return (
     <ImageBackground
-      source={require("../../assets/images/background.png")}
+      source={require("../../assets/images/background.jpg")}
       style={[styles.background, style]}
       blurRadius={blurIntensity}
       resizeMode="cover"
