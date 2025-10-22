@@ -6,10 +6,12 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
 import { FlipType, manipulateAsync, SaveFormat } from "expo-image-manipulator";
+import * as ImagePicker from 'expo-image-picker';
 import { Href, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Dimensions,
   Image,
   SafeAreaView,
@@ -32,6 +34,7 @@ export default function CameraScreen() {
   const [overlay, setOverlay] = useState<PhotoType>(PhotoType.front);
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView | null>(null);
+  const [importedPhotoDate, setImportedPhotoDate] = useState<string | null>(null);
   const router = useRouter();
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "light"];
@@ -41,7 +44,6 @@ export default function CameraScreen() {
   // New state for camera ready status
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [cameraKey, setCameraKey] = useState(0); // Force re-render key
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
 
   // Timer states
   const [isTimerEnabled, setIsTimerEnabled] = useState(false);
@@ -62,36 +64,18 @@ export default function CameraScreen() {
     return () => clearInterval(interval);
   }, [isTimerRunning, remainingTime]);
 
-  // Enhanced camera initialization effect
+  // Camera initialization effect - only run when facing changes
   useEffect(() => {
-    const initializeCamera = async () => {
-      setIsCameraReady(false);
-      
-      // Small delay to ensure proper cleanup
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // Force camera re-render by updating key
-      setCameraKey(prev => prev + 1);
-      
-      // Longer delay for camera to properly initialize
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      setIsCameraReady(true);
-    };
+    // Reset camera ready state when switching cameras
+    setIsCameraReady(false);
 
-    initializeCamera();
+    // Small delay to ensure proper cleanup before re-mount
+    const timer = setTimeout(() => {
+      // Camera will set isCameraReady to true via onCameraReady callback
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, [facing]);
-
-  // Check camera permissions on mount
-  useEffect(() => {
-    (async () => {
-      if (permission?.granted) {
-        setHasPermission(true);
-      } else {
-        setHasPermission(false);
-      }
-    })();
-  }, [permission]);
 
   if (!permission) {
     return <View />;
@@ -143,27 +127,43 @@ export default function CameraScreen() {
   };
 
   const takePicture = async () => {
-    if (cameraRef.current && isCameraReady) {
-      try {
-        const photo = await cameraRef.current.takePictureAsync();
-        if (photo) {
-          let manipulatedImage = photo;
+    if (!cameraRef.current) {
+      console.log("Camera ref not available");
+      return;
+    }
 
-          if (facing === "front") {
-            manipulatedImage = await manipulateAsync(
-              photo.uri,
-              [{ flip: FlipType.Horizontal }],
-              { format: SaveFormat.JPEG }
-            );
-          }
+    if (!isCameraReady) {
+      console.log("Camera is not ready yet, please wait...");
+      return;
+    }
 
-          setCapturedImage(manipulatedImage.uri);
+    try {
+      const photo = await cameraRef.current.takePictureAsync({
+        quality: 0.8,
+        skipProcessing: false,
+      });
+
+      if (photo) {
+        let manipulatedImage = photo;
+
+        if (facing === "front") {
+          manipulatedImage = await manipulateAsync(
+            photo.uri,
+            [{ flip: FlipType.Horizontal }],
+            { format: SaveFormat.JPEG }
+          );
         }
-      } catch (error) {
-        console.error("Error taking picture:", error);
+
+        setCapturedImage(manipulatedImage.uri);
       }
-    } else {
-      console.log("Camera is not ready");
+    } catch (error) {
+      console.error("Error taking picture:", error);
+      // Reset camera state and try to recover
+      setIsCameraReady(false);
+      setTimeout(() => {
+        setCameraKey(prev => prev + 1);
+        setTimeout(() => setIsCameraReady(true), 500);
+      }, 100);
     }
   };
 
@@ -183,20 +183,75 @@ export default function CameraScreen() {
 
   const confirmPicture = async () => {
     if (capturedImage) {
+      // Parse EXIF date format (YYYY:MM:DD HH:MM:SS) to ISO string
+      let photoDate = new Date().toISOString();
+
+      if (importedPhotoDate) {
+        try {
+          // EXIF date format: "2024:01:15 14:30:45"
+          const dateStr = importedPhotoDate.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3');
+          const parsedDate = new Date(dateStr);
+          if (!isNaN(parsedDate.getTime())) {
+            photoDate = parsedDate.toISOString();
+          }
+        } catch (error) {
+          console.error("Error parsing imported photo date:", error);
+        }
+      }
+
       const newPhoto = {
         id: Date.now().toString(),
         uri: capturedImage,
-        date: new Date().toISOString(),
+        date: photoDate,
         type: overlay,
       };
       await addPhoto(newPhoto);
       setCapturedImage(null);
+      setImportedPhotoDate(null);
       router.push("(tabs)/gallery" as Href<string>);
     }
   };
 
   const retakePicture = () => {
     setCapturedImage(null);
+    setImportedPhotoDate(null);
+  };
+
+  const pickImage = async () => {
+    try {
+      // Request permission to access media library
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (status !== 'granted') {
+        alert(t("camera.galleryPermissionDenied") || 'Sorry, we need media library permissions to import images!');
+        return;
+      }
+
+      // Launch image picker with exif data
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [3, 4],
+        quality: 1,
+        exif: true, // Include EXIF data to get original date
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        const selectedAsset = result.assets[0];
+        setCapturedImage(selectedAsset.uri);
+
+        // Store the original creation date if available
+        if (selectedAsset.exif?.DateTimeOriginal) {
+          // Store in state to use later when confirming
+          setImportedPhotoDate(selectedAsset.exif.DateTimeOriginal);
+        } else {
+          setImportedPhotoDate(null);
+        }
+      }
+    } catch (error) {
+      console.error("Error picking image:", error);
+      alert(t("camera.imagePickerError") || 'Error selecting image. Please try again.');
+    }
   };
 
   const renderSilhouette = () => (
@@ -309,50 +364,38 @@ export default function CameraScreen() {
       style={[styles.container, { backgroundColor: theme.background }]}
     >
       <StatusBar style="light" />
-      {isCameraReady && hasPermission && (
-        <CameraView
-          key={cameraKey} // Force re-render on camera issues
-          ref={cameraRef}
-          style={StyleSheet.absoluteFill}
-          facing={facing}
-          flash={flash}
-          zoom={zoom}
-          onCameraReady={() => {
-            console.log('Camera ready');
-            setIsCameraReady(true);
-          }}
-          onMountError={(error) => {
-            console.error('Camera mount error:', error);
-            // Auto-retry after mount error
-            setTimeout(() => {
-              forceRefreshCamera();
-            }, 2000);
-          }}
-        >
-          {renderSilhouette()}
-        </CameraView>
-      )}
-      {(!isCameraReady || !hasPermission) && (
-        <View
-          style={[
-            styles.loadingContainer,
-            { backgroundColor: theme.background },
-          ]}
-        >
-          <Text style={[styles.loadingText, { color: theme.text }]}>
-            {!hasPermission ? t("camera.permissionMessage") : t("common.loading")}
-          </Text>
-          {!isCameraReady && hasPermission && (
-            <TouchableOpacity
-              style={[styles.refreshButton, { backgroundColor: theme.primary }]}
-              onPress={forceRefreshCamera}
+      {permission.granted && (
+        <>
+          <CameraView
+            key={`camera-${facing}-${cameraKey}`}
+            ref={cameraRef}
+            style={StyleSheet.absoluteFill}
+            facing={facing}
+            flash={flash}
+            zoom={zoom}
+            onCameraReady={() => {
+              console.log('Camera ready');
+              setIsCameraReady(true);
+            }}
+            onMountError={(error) => {
+              console.error('Camera mount error:', error);
+              // Retry initialization
+              setCameraKey(prev => prev + 1);
+            }}
+          >
+            {renderSilhouette()}
+          </CameraView>
+          {!isCameraReady && (
+            <View
+              style={[
+                styles.loadingContainer,
+                { backgroundColor: theme.background },
+              ]}
             >
-              <Text style={[styles.refreshButtonText, { color: theme.background }]}>
-                Refresh Camera
-              </Text>
-            </TouchableOpacity>
+              <ActivityIndicator size="large" color={theme.primary} />
+            </View>
           )}
-        </View>
+        </>
       )}
       <View style={styles.overlayContainer}>
         {renderOverlaySelector()}
@@ -394,8 +437,15 @@ export default function CameraScreen() {
             </View>
           ) : (
             <TouchableOpacity
-              style={[styles.captureButton, { backgroundColor: theme.primary }]}
+              style={[
+                styles.captureButton,
+                {
+                  backgroundColor: theme.primary,
+                  opacity: isCameraReady ? 1 : 0.5
+                }
+              ]}
               onPress={isTimerEnabled ? startTimer : takePicture}
+              disabled={!isCameraReady}
             >
               <View
                 style={[
@@ -406,10 +456,10 @@ export default function CameraScreen() {
             </TouchableOpacity>
           )}
           <TouchableOpacity
-            style={styles.galleryButton}
-            onPress={() => router.push("(tabs)/gallery" as Href<string>)}
+            style={styles.importButton}
+            onPress={pickImage}
           >
-            <Ionicons name="images-outline" size={32} color="white" />
+            <Ionicons name="image-outline" size={32} color="white" />
           </TouchableOpacity>
         </View>
       </View>
@@ -562,7 +612,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 30,
   },
-  galleryButton: {
+  importButton: {
     alignSelf: "center",
     padding: 10,
   },

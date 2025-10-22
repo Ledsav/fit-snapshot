@@ -100,7 +100,9 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const getPhotosByType = (type: PhotoType) => {
-    return photos.filter((photo) => photo.type === type);
+    return photos
+      .filter((photo) => photo.type === type)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   };
 
   const getLatestPhotoByType = (type: PhotoType) => {

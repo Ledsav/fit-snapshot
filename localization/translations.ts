@@ -16,10 +16,14 @@ interface TranslationKeys {
     permissionMessage: string;
     grantPermission: string;
     confirm: string;
+    galleryPermissionDenied: string;
+    imagePickerError: string;
   };
   gallery: {
     title: string;
     deletePhoto: string;
+    selectPhotoType: string;
+    loading: string;
   };
   progress: {
     title: string;
@@ -115,6 +119,7 @@ interface TranslationKeys {
     error: string;
     retry: string;
     success: string;
+    cancel: string;
   };
   contacts: {
     title: string;
@@ -151,10 +156,14 @@ export const translations: Translations = {
       confirm: "Confirm",
       permissionMessage: "We need your permission to show the camera",
       grantPermission: "Grant permission",
+      galleryPermissionDenied: "We need media library permissions to import images",
+      imagePickerError: "Error selecting image. Please try again",
     },
     gallery: {
       title: "Gallery",
       deletePhoto: "Delete Photo",
+      selectPhotoType: "Select Photo Type",
+      loading: "Loading...",
     },
     progress: {
       title: "Your Progress",
@@ -281,6 +290,7 @@ export const translations: Translations = {
       error: "An error occurred",
       retry: "Retry",
       success: "Success",
+      cancel: "Cancel",
     },
     contacts: {
       title: "Contact Us",
@@ -313,10 +323,14 @@ export const translations: Translations = {
       confirm: "Confirmar",
       permissionMessage: "Necesitamos tu permiso para mostrar la cámara",
       grantPermission: "Conceder permiso",
+      galleryPermissionDenied: "Necesitamos permisos para acceder a la galería de fotos",
+      imagePickerError: "Error al seleccionar imagen. Por favor, inténtalo de nuevo",
     },
     gallery: {
       title: "Galería",
       deletePhoto: "Eliminar Foto",
+      selectPhotoType: "Seleccionar Tipo de Foto",
+      loading: "Cargando...",
     },
     progress: {
       title: "Tu Progreso",
@@ -445,6 +459,7 @@ export const translations: Translations = {
       error: "Ocurrió un error",
       retry: "Reintentar",
       success: "Exito",
+      cancel: "Cancelar",
     },
     contacts: {
       title: "Contáctanos",
@@ -478,10 +493,14 @@ export const translations: Translations = {
       permissionMessage:
         "Abbiamo bisogno del tuo permesso per mostrare la fotocamera",
       grantPermission: "Concedi permesso",
+      galleryPermissionDenied: "Abbiamo bisogno del permesso per accedere alla galleria foto",
+      imagePickerError: "Errore durante la selezione dell'immagine. Riprova",
     },
     gallery: {
       title: "Galleria",
       deletePhoto: "Elimina Foto",
+      selectPhotoType: "Seleziona Tipo di Foto",
+      loading: "Caricamento...",
     },
     progress: {
       title: "I Tuoi Progressi",
@@ -608,6 +627,7 @@ export const translations: Translations = {
       error: "Si è verificato un errore",
       retry: "Riprova",
       success: "Successo",
+      cancel: "Annulla",
     },
     contacts: {
       title: "Contattaci",
@@ -640,10 +660,14 @@ export const translations: Translations = {
       permissionMessage:
         "Wir benötigen Ihre Erlaubnis, um die Kamera zu zeigen",
       grantPermission: "Erlaubnis erteilen",
+      galleryPermissionDenied: "Wir benötigen die Berechtigung zum Zugriff auf die Fotogalerie",
+      imagePickerError: "Fehler beim Auswählen des Bildes. Bitte versuchen Sie es erneut",
     },
     gallery: {
       title: "Galerie",
       deletePhoto: "Foto löschen",
+      selectPhotoType: "Fototyp auswählen",
+      loading: "Lädt...",
     },
     progress: {
       title: "Ihr Fortschritt",
@@ -773,6 +797,7 @@ export const translations: Translations = {
       error: "Ein Fehler ist aufgetreten",
       retry: "Erneut versuchen",
       success: "Erfolgreich",
+      cancel: "Abbrechen",
     },
     contacts: {
       title: "Kontaktieren Sie uns",
@@ -805,10 +830,14 @@ export const translations: Translations = {
       permissionMessage:
         "Nous avons besoin de votre permission pour afficher l'appareil photo",
       grantPermission: "Accorder la permission",
+      galleryPermissionDenied: "Nous avons besoin de l'autorisation d'accéder à la galerie de photos",
+      imagePickerError: "Erreur lors de la sélection de l'image. Veuillez réessayer",
     },
     gallery: {
       title: "Galerie",
       deletePhoto: "Supprimer la Photo",
+      selectPhotoType: "Sélectionner le Type de Photo",
+      loading: "Chargement...",
     },
     progress: {
       title: "Votre Progrès",
@@ -937,6 +966,7 @@ export const translations: Translations = {
       error: "Une erreur s'est produite",
       retry: "Réessayer",
       success: "Succès",
+      cancel: "Annuler",
     },
     contacts: {
       title: "Contactez-nous",

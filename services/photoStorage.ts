@@ -54,8 +54,8 @@ const savePhotoToDevice = async (photoUri: string, fileName: string): Promise<st
 
 export const savePhoto = async (photo: Photo): Promise<void> => {
   try {
-    // Generate a unique filename
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    // Generate a unique filename using the photo's actual date
+    const timestamp = new Date(photo.date).toISOString().replace(/[:.]/g, '-');
     const fileName = `${photo.type}_${timestamp}_${photo.id}.jpg`;
     
     // Save photo to device storage

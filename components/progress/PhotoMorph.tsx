@@ -94,20 +94,40 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   if (photos.length === 1) {
     return (
       <View style={[styles.container, { backgroundColor: theme.transparent }]}>
-        <Text style={[styles.title, { color: theme.text }]}>
-          {t(`progress.${type}`)}
-        </Text>
+        <View style={styles.headerRow}>
+          <Text style={[styles.title, { color: theme.text }]}>
+            {t(`progress.${type}`)}
+          </Text>
+          <View style={[styles.singlePhotoChip, { backgroundColor: theme.cardBackground }]}>
+            <Ionicons name="image-outline" size={16} color={theme.text} />
+            <Text style={[styles.singlePhotoChipText, { color: theme.text }]}>1 photo</Text>
+          </View>
+        </View>
         <View
           style={[
             styles.imageContainer,
-            { backgroundColor: theme.transparent, borderColor: theme.primary },
+            { backgroundColor: theme.cardBackground, borderColor: theme.primary },
           ]}
         >
           <Image source={{ uri: photos[0].uri }} style={styles.image} />
-          <TouchableOpacity style={styles.extractButton} onPress={extractPhoto}>
-            <Ionicons name="download-outline" size={24} color={theme.text} />
+          <View style={styles.photoLabels}>
+            <View style={styles.photoLabel}>
+              <Text style={styles.photoLabelText}>
+                {new Date(photos[0].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            style={[styles.extractButton, { backgroundColor: theme.primary }]}
+            onPress={extractPhoto}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="download-outline" size={20} color={theme.background} />
           </TouchableOpacity>
         </View>
+        <Text style={[styles.singlePhotoHint, { color: theme.text }]}>
+          Take more photos to see your progress over time
+        </Text>
       </View>
     );
   }
@@ -117,13 +137,26 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.transparent }]}>
-      <Text style={[styles.title, { color: theme.text }]}>
-        {t(`progress.${type}`)}
-      </Text>
+      <View style={styles.headerRow}>
+        <Text style={[styles.title, { color: theme.text }]}>
+          {t(`progress.${type}`)}
+        </Text>
+        <View
+          style={[
+            styles.timeDifferenceChip,
+            { backgroundColor: theme.primary },
+          ]}
+        >
+          <Ionicons name="time-outline" size={16} color={theme.background} />
+          <Text style={[styles.timeDifferenceChipText, { color: theme.background }]}>
+            {getTimeDifference(oldestPhoto.date, newestPhoto.date, t)}
+          </Text>
+        </View>
+      </View>
       <View
         style={[
           styles.imageContainer,
-          { backgroundColor: theme.transparent, borderColor: theme.primary },
+          { backgroundColor: theme.cardBackground, borderColor: theme.primary },
         ]}
       >
         <Image
@@ -138,36 +171,57 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
             { opacity: sliderValue / 100 },
           ]}
         />
-        <TouchableOpacity style={styles.extractButton} onPress={extractPhoto}>
-          <Ionicons name="download-outline" size={24} color={theme.text} />
+        <View style={styles.photoLabels}>
+          <View style={[styles.photoLabel, { opacity: (100 - sliderValue) / 100 }]}>
+            <Text style={styles.photoLabelText}>
+              {new Date(oldestPhoto.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            </Text>
+          </View>
+          <View style={[styles.photoLabel, { opacity: sliderValue / 100 }]}>
+            <Text style={styles.photoLabelText}>
+              {new Date(newestPhoto.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            </Text>
+          </View>
+        </View>
+        <TouchableOpacity
+          style={[styles.extractButton, { backgroundColor: theme.primary }]}
+          onPress={extractPhoto}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="download-outline" size={20} color={theme.background} />
         </TouchableOpacity>
       </View>
-      <View style={styles.sliderContainer} {...panResponder.panHandlers}>
-        <View
-          style={[styles.sliderTrack, { backgroundColor: theme.primary }]}
-        />
-        <Animated.View
-          style={[
-            styles.sliderThumb,
-            {
-              backgroundColor: theme.primary,
-              transform: [{ translateX: pan.x }],
-            },
-          ]}
-        />
-      </View>
-      <Text style={[styles.instructionText, { color: theme.text }]}>
-        {t("progress.comparePhotos")}
-      </Text>
-      <View
-        style={[
-          styles.timeDifferenceContainer,
-          { backgroundColor: theme.primary },
-        ]}
-      >
-        <Text style={[styles.timeDifferenceText, { color: theme.background }]}>
-          {getTimeDifference(oldestPhoto.date, newestPhoto.date, t)}
-        </Text>
+      <View style={styles.sliderWrapper}>
+        <View style={styles.sliderContainer} {...panResponder.panHandlers}>
+          <View
+            style={[styles.sliderTrack, { backgroundColor: theme.text + '20' }]}
+          />
+          <View
+            style={[
+              styles.sliderProgress,
+              {
+                backgroundColor: theme.primary,
+                width: `${sliderValue}%`
+              }
+            ]}
+          />
+          <Animated.View
+            style={[
+              styles.sliderThumb,
+              {
+                backgroundColor: theme.background,
+                borderColor: theme.primary,
+                transform: [{ translateX: pan.x }],
+              },
+            ]}
+          >
+            <View style={[styles.sliderThumbInner, { backgroundColor: theme.primary }]} />
+          </Animated.View>
+        </View>
+        <View style={styles.sliderLabels}>
+          <Text style={[styles.sliderLabel, { color: theme.text }]}>Before</Text>
+          <Text style={[styles.sliderLabel, { color: theme.text }]}>After</Text>
+        </View>
       </View>
     </View>
   );
@@ -178,10 +232,48 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
   title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 20,
+    fontSize: 24,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+  },
+  timeDifferenceChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
+  },
+  timeDifferenceChipText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  singlePhotoChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
+  },
+  singlePhotoChipText: {
+    fontSize: 14,
+    fontWeight: "600",
+    opacity: 0.7,
+  },
+  singlePhotoHint: {
+    fontSize: 14,
+    textAlign: "center",
+    opacity: 0.6,
+    fontStyle: "italic",
+    marginTop: 12,
   },
   noPhotosContainer: {
     flex: 1,
@@ -197,11 +289,16 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: "100%",
-    aspectRatio: 1,
-    borderRadius: 15,
+    aspectRatio: 3 / 4,
+    borderRadius: 20,
     overflow: "hidden",
     marginBottom: 20,
-    borderWidth: 2,
+    borderWidth: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
   image: {
     width: "100%",
@@ -213,51 +310,89 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
   },
+  photoLabels: {
+    position: "absolute",
+    top: 16,
+    left: 16,
+    right: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  photoLabel: {
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  photoLabelText: {
+    color: "white",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  sliderWrapper: {
+    marginTop: 8,
+  },
   sliderContainer: {
     width: SLIDER_WIDTH,
-    height: 40,
+    height: 44,
     justifyContent: "center",
     alignSelf: "center",
-    marginBottom: 20,
+    marginBottom: 8,
+    position: "relative",
   },
   sliderTrack: {
     width: "100%",
-    height: 4,
-    borderRadius: 2,
+    height: 6,
+    borderRadius: 3,
+    position: "absolute",
+  },
+  sliderProgress: {
+    height: 6,
+    borderRadius: 3,
+    position: "absolute",
+    left: 0,
   },
   sliderThumb: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     position: "absolute",
-    top: 8,
-  },
-  instructionText: {
-    fontSize: 14,
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  timeDifferenceContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    top: 2,
     justifyContent: "center",
     alignItems: "center",
-    alignSelf: "center",
-    marginTop: 20,
+    borderWidth: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
-  timeDifferenceText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
+  sliderThumbInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  sliderLabels: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: (width - SLIDER_WIDTH) / 2,
+  },
+  sliderLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    opacity: 0.6,
   },
   extractButton: {
     position: "absolute",
-    top: 10,
-    right: 10,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    borderRadius: 20,
-    padding: 8,
+    bottom: 16,
+    right: 16,
+    borderRadius: 24,
+    padding: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
 });
 
