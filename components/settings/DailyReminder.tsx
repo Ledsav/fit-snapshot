@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { NotificationService } from "@/services/notificationService";
 import Colors from "@/constants/Colors";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useTheme } from "@/context/ThemeContext";
 import * as Notifications from "expo-notifications";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalization } from "@/context/LocalizationContext";
@@ -60,8 +60,8 @@ export const DailyReminder: React.FC = () => {
   const [reminders, setReminders] = useState<
     Notifications.NotificationRequest[]
   >([]);
-  const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme ?? "dark"];
+  const { effectiveColorScheme } = useTheme();
+  const theme = Colors[effectiveColorScheme];
   const { t } = useLocalization();
 
   useEffect(() => {
@@ -125,40 +125,57 @@ export const DailyReminder: React.FC = () => {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <View style={styles.container}>
       <TouchableOpacity
-        style={[styles.addButton, { backgroundColor: theme.primary }]}
+        style={[
+          styles.addButton,
+          {
+            backgroundColor: theme.cardBackground,
+            borderColor: theme.primary + '40',
+          }
+        ]}
         onPress={() => setShowModal(true)}
+        activeOpacity={0.7}
       >
-        <Ionicons name="add" size={24} color={theme.background} />
-        <Text style={[styles.addButtonText, { color: theme.background }]}>
+        <View style={[styles.iconContainer, { backgroundColor: theme.primary + '20' }]}>
+          <Ionicons name="add" size={24} color={theme.primary} />
+        </View>
+        <Text style={[styles.addButtonText, { color: theme.text }]}>
           {t("dailyReminder.addReminder")}
         </Text>
+        <Ionicons name="chevron-forward" size={20} color={theme.text} />
       </TouchableOpacity>
 
-      <ScrollView style={styles.reminderList}>
-        {reminders.map((item) => (
-          <View key={item.identifier} style={styles.reminderItem}>
-            <View style={styles.reminderInfo}>
-              <Ionicons
-                name="alarm-outline"
-                size={24}
-                color={theme.text}
-                style={styles.icon}
-              />
-              <Text style={[styles.reminderText, { color: theme.text }]}>
-                {getReminderTime(item.trigger)}
-              </Text>
-            </View>
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={() => handleDeleteReminder(item.identifier)}
-            >
-              <Ionicons name="trash-outline" size={24} color={theme.error} />
-            </TouchableOpacity>
+      {reminders.map((item) => (
+        <View
+          key={item.identifier}
+          style={[
+            styles.reminderItem,
+            {
+              backgroundColor: theme.cardBackground,
+              borderColor: theme.primary + '40',
+            }
+          ]}
+        >
+          <View style={styles.reminderInfo}>
+            <Ionicons
+              name="alarm-outline"
+              size={20}
+              color={theme.text}
+              style={styles.icon}
+            />
+            <Text style={[styles.reminderText, { color: theme.text }]}>
+              {getReminderTime(item.trigger)}
+            </Text>
           </View>
-        ))}
-      </ScrollView>
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={() => handleDeleteReminder(item.identifier)}
+          >
+            <Ionicons name="trash-outline" size={20} color={theme.error} />
+          </TouchableOpacity>
+        </View>
+      ))}
 
       <Modal
         animationType="slide"
@@ -166,7 +183,7 @@ export const DailyReminder: React.FC = () => {
         visible={showModal}
         onRequestClose={() => setShowModal(false)}
       >
-        <View style={styles.modalContainer}>
+        <View style={[styles.modalContainer, { backgroundColor: theme.text + '80' }]}>
           <View
             style={[styles.modalContent, { backgroundColor: theme.background }]}
           >
@@ -205,7 +222,7 @@ export const DailyReminder: React.FC = () => {
                 style={[styles.modalButton, { backgroundColor: theme.error }]}
                 onPress={() => setShowModal(false)}
               >
-                <Text style={styles.modalButtonText}>
+                <Text style={[styles.modalButtonText, { color: theme.background }]}>
                   {t("dailyReminder.cancel")}
                 </Text>
               </TouchableOpacity>
@@ -213,7 +230,7 @@ export const DailyReminder: React.FC = () => {
                 style={[styles.modalButton, { backgroundColor: theme.success }]}
                 onPress={handleSetReminder}
               >
-                <Text style={styles.modalButtonText}>
+                <Text style={[styles.modalButtonText, { color: theme.background }]}>
                   {t("dailyReminder.setReminder")}
                 </Text>
               </TouchableOpacity>
@@ -229,6 +246,7 @@ interface Style {
   container: ViewStyle;
   title: TextStyle;
   addButton: ViewStyle;
+  iconContainer: ViewStyle;
   addButtonText: TextStyle;
   reminderList: ViewStyle;
   reminderItem: ViewStyle;
@@ -253,7 +271,6 @@ interface Style {
 const styles = StyleSheet.create<Style>({
   container: {
     flex: 1,
-    padding: 20,
   },
   title: {
     fontSize: 24,
@@ -263,15 +280,24 @@ const styles = StyleSheet.create<Style>({
   addButton: {
     flexDirection: "row",
     alignItems: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    alignItems: "center",
     justifyContent: "center",
-    padding: 15,
-    borderRadius: 15,
-    marginBottom: 20,
+    marginRight: 12,
   },
   addButtonText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginLeft: 10,
+    fontSize: 16,
+    flex: 1,
+    fontWeight: "500",
   },
   reminderList: {
     flex: 1,
@@ -280,29 +306,31 @@ const styles = StyleSheet.create<Style>({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(0, 0, 0, 0.1)",
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: 1,
   },
   reminderInfo: {
     flexDirection: "row",
     alignItems: "center",
+    flex: 1,
   },
   reminderText: {
-    fontSize: 18,
-    marginLeft: 10,
+    fontSize: 16,
+    fontWeight: "500",
   },
   deleteButton: {
-    padding: 5,
+    padding: 8,
   },
   icon: {
-    marginRight: 10,
+    marginRight: 12,
   },
   modalContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
     width: "80%",
@@ -353,7 +381,6 @@ const styles = StyleSheet.create<Style>({
     justifyContent: "center",
   },
   modalButtonText: {
-    color: "white",
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",

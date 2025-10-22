@@ -9,9 +9,10 @@ import {
   Dimensions,
   TouchableOpacity,
   Alert,
+  ScrollView,
 } from "react-native";
 import Colors from "@/constants/Colors";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useTheme } from "@/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { getTimeDifference } from "@/utils/dateUtils";
 import * as MediaLibrary from "expo-media-library";
@@ -26,20 +27,30 @@ interface PhotoMorphProps {
 
 const { width } = Dimensions.get("window");
 const SLIDER_WIDTH = width * 0.8;
+const THUMB_SIZE = 40;
+const THUMB_RADIUS = THUMB_SIZE / 2;
+
+type ComparisonMode = 'slider' | 'sideBySide' | 'grid';
 
 const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   const [sliderValue, setSliderValue] = useState(0);
   const pan = useRef(new Animated.ValueXY()).current;
-  const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme ?? "dark"];
+  const { effectiveColorScheme } = useTheme();
+  const theme = Colors[effectiveColorScheme];
   const { getPhotosByType } = usePhotos();
   const photos = getPhotosByType(type);
   const { t } = useLocalization();
+  const [comparisonMode, setComparisonMode] = useState<ComparisonMode>('slider');
+  const [isSelectingPhotos, setIsSelectingPhotos] = useState(false);
+  const [selectedPhoto1, setSelectedPhoto1] = useState<Photo | null>(null);
+  const [selectedPhoto2, setSelectedPhoto2] = useState<Photo | null>(null);
 
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onPanResponderMove: (_, gesture) => {
+      // Calculate position relative to slider start, accounting for screen offset
       let newX = gesture.moveX - width * 0.1;
+      // Clamp between 0 and SLIDER_WIDTH, so thumb center stays within bounds
       newX = Math.max(0, Math.min(newX, SLIDER_WIDTH));
       pan.x.setValue(newX);
       setSliderValue((newX / SLIDER_WIDTH) * 100);
@@ -91,6 +102,27 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
     );
   }
 
+  // Use selected photos or default to oldest/newest
+  const photo1 = selectedPhoto1 || photos[0];
+  const photo2 = selectedPhoto2 || photos[photos.length - 1];
+
+  const handlePhotoSelection = (photo: Photo) => {
+    if (!selectedPhoto1) {
+      setSelectedPhoto1(photo);
+    } else if (!selectedPhoto2) {
+      setSelectedPhoto2(photo);
+      setIsSelectingPhotos(false);
+    } else {
+      setSelectedPhoto1(photo);
+      setSelectedPhoto2(null);
+    }
+  };
+
+  const resetSelection = () => {
+    setSelectedPhoto1(null);
+    setSelectedPhoto2(null);
+  };
+
   if (photos.length === 1) {
     return (
       <View style={[styles.container, { backgroundColor: theme.transparent }]}>
@@ -111,7 +143,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
         >
           <Image source={{ uri: photos[0].uri }} style={styles.image} />
           <View style={styles.photoLabels}>
-            <View style={styles.photoLabel}>
+            <View style={[styles.photoLabel, { backgroundColor: theme.text + 'B3' }]}>
               <Text style={styles.photoLabelText}>
                 {new Date(photos[0].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </Text>
@@ -132,6 +164,114 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
     );
   }
 
+  // Photo Selection Modal
+  if (isSelectingPhotos) {
+    return (
+      <View style={[styles.container, { backgroundColor: theme.transparent }]}>
+        <View style={styles.selectionHeader}>
+          <View style={styles.selectionHeaderContent}>
+            <Text style={[styles.selectionTitle, { color: theme.text }]}>
+              {t("progress.selectPhotos") || "Select Photos"}
+            </Text>
+            <Text style={[styles.selectionSubtitle, { color: theme.text }]}>
+              {!selectedPhoto1
+                ? t("progress.selectFirstPhoto") || "Select first photo"
+                : !selectedPhoto2
+                ? t("progress.selectSecondPhoto") || "Select second photo"
+                : "Tap to change selection"}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={[styles.closeButton, { backgroundColor: theme.cardBackground }]}
+            onPress={() => {
+              setIsSelectingPhotos(false);
+              resetSelection();
+            }}
+          >
+            <Ionicons name="close" size={24} color={theme.text} />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.selectionProgress}>
+          <View style={[styles.selectionStep, { backgroundColor: selectedPhoto1 ? theme.primary : theme.text + '20' }]}>
+            <Text style={[styles.selectionStepText, { color: selectedPhoto1 ? 'white' : theme.text }]}>
+              1st Photo {selectedPhoto1 ? '✓' : ''}
+            </Text>
+          </View>
+          <View style={[styles.selectionConnector, { backgroundColor: theme.text + '30' }]} />
+          <View style={[styles.selectionStep, { backgroundColor: selectedPhoto2 ? theme.success : theme.text + '20' }]}>
+            <Text style={[styles.selectionStepText, { color: selectedPhoto2 ? 'white' : theme.text }]}>
+              2nd Photo {selectedPhoto2 ? '✓' : ''}
+            </Text>
+          </View>
+        </View>
+
+        <ScrollView
+          style={styles.photoSelectionScroll}
+          contentContainerStyle={styles.photoSelectionGrid}
+          showsVerticalScrollIndicator={false}
+        >
+          {photos.map((photo, index) => {
+            const isFirst = selectedPhoto1?.id === photo.id;
+            const isSecond = selectedPhoto2?.id === photo.id;
+            const isSelected = isFirst || isSecond;
+
+            return (
+              <TouchableOpacity
+                key={photo.id}
+                style={[
+                  styles.selectionPhotoContainer,
+                  {
+                    borderColor: isFirst ? theme.primary : isSecond ? theme.success : 'transparent',
+                    borderWidth: isSelected ? 3 : 2,
+                  }
+                ]}
+                onPress={() => handlePhotoSelection(photo)}
+                activeOpacity={0.7}
+              >
+                <Image source={{ uri: photo.uri }} style={styles.selectionPhoto} />
+                <View style={[styles.selectionPhotoOverlay, { backgroundColor: theme.text + '99' }]}>
+                  <Text style={styles.selectionPhotoDate}>
+                    {new Date(photo.date).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric'
+                    })}
+                  </Text>
+                </View>
+                {isFirst && (
+                  <View style={[styles.selectionBadge, { backgroundColor: theme.primary }]}>
+                    <Text style={styles.selectionBadgeText}>1</Text>
+                  </View>
+                )}
+                {isSecond && (
+                  <View style={[styles.selectionBadge, { backgroundColor: theme.success }]}>
+                    <Text style={styles.selectionBadgeText}>2</Text>
+                  </View>
+                )}
+                {isSelected && (
+                  <View style={styles.selectionCheckmark}>
+                    <Ionicons name="checkmark-circle" size={32} color={isFirst ? theme.primary : theme.success} />
+                  </View>
+                )}
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+
+        {selectedPhoto1 && selectedPhoto2 && (
+          <TouchableOpacity
+            style={[styles.confirmSelectionButton, { backgroundColor: theme.primary }]}
+            onPress={() => setIsSelectingPhotos(false)}
+          >
+            <Ionicons name="checkmark" size={24} color="white" />
+            <Text style={styles.confirmSelectionText}>Compare Selected Photos</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  }
+
   const oldestPhoto = photos[0];
   const newestPhoto = photos[photos.length - 1];
 
@@ -141,88 +281,194 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
         <Text style={[styles.title, { color: theme.text }]}>
           {t(`progress.${type}`)}
         </Text>
-        <View
-          style={[
-            styles.timeDifferenceChip,
-            { backgroundColor: theme.primary },
-          ]}
-        >
-          <Ionicons name="time-outline" size={16} color={theme.background} />
-          <Text style={[styles.timeDifferenceChipText, { color: theme.background }]}>
-            {getTimeDifference(oldestPhoto.date, newestPhoto.date, t)}
-          </Text>
-        </View>
-      </View>
-      <View
-        style={[
-          styles.imageContainer,
-          { backgroundColor: theme.cardBackground, borderColor: theme.primary },
-        ]}
-      >
-        <Image
-          source={{ uri: oldestPhoto.uri }}
-          style={[styles.image, { opacity: (100 - sliderValue) / 100 }]}
-        />
-        <Image
-          source={{ uri: newestPhoto.uri }}
-          style={[
-            styles.image,
-            styles.overlayImage,
-            { opacity: sliderValue / 100 },
-          ]}
-        />
-        <View style={styles.photoLabels}>
-          <View style={[styles.photoLabel, { opacity: (100 - sliderValue) / 100 }]}>
-            <Text style={styles.photoLabelText}>
-              {new Date(oldestPhoto.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-            </Text>
-          </View>
-          <View style={[styles.photoLabel, { opacity: sliderValue / 100 }]}>
-            <Text style={styles.photoLabelText}>
-              {new Date(newestPhoto.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-            </Text>
-          </View>
-        </View>
-        <TouchableOpacity
-          style={[styles.extractButton, { backgroundColor: theme.primary }]}
-          onPress={extractPhoto}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="download-outline" size={20} color={theme.background} />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.sliderWrapper}>
-        <View style={styles.sliderContainer} {...panResponder.panHandlers}>
-          <View
-            style={[styles.sliderTrack, { backgroundColor: theme.text + '20' }]}
-          />
+        <View style={styles.headerActions}>
+          {(selectedPhoto1 || selectedPhoto2) && (
+            <TouchableOpacity
+              style={[styles.resetButton, { backgroundColor: theme.cardBackground }]}
+              onPress={resetSelection}
+            >
+              <Ionicons name="refresh-outline" size={16} color={theme.text} />
+            </TouchableOpacity>
+          )}
           <View
             style={[
-              styles.sliderProgress,
-              {
-                backgroundColor: theme.primary,
-                width: `${sliderValue}%`
-              }
-            ]}
-          />
-          <Animated.View
-            style={[
-              styles.sliderThumb,
-              {
-                backgroundColor: theme.background,
-                borderColor: theme.primary,
-                transform: [{ translateX: pan.x }],
-              },
+              styles.timeDifferenceChip,
+              { backgroundColor: theme.primary },
             ]}
           >
-            <View style={[styles.sliderThumbInner, { backgroundColor: theme.primary }]} />
-          </Animated.View>
-        </View>
-        <View style={styles.sliderLabels}>
-          <Text style={[styles.sliderLabel, { color: theme.text }]}>Before</Text>
-          <Text style={[styles.sliderLabel, { color: theme.text }]}>After</Text>
+            <Ionicons name="time-outline" size={16} color={theme.background} />
+            <Text style={[styles.timeDifferenceChipText, { color: theme.background }]}>
+              {getTimeDifference(photo1.date, photo2.date, t)}
+            </Text>
+          </View>
         </View>
       </View>
+
+      {/* Comparison Mode Switcher */}
+      <View style={styles.modeSwitcher}>
+        <TouchableOpacity
+          style={[
+            styles.modeButton,
+            { backgroundColor: comparisonMode === 'slider' ? theme.primary : theme.text + '20' }
+          ]}
+          onPress={() => setComparisonMode('slider')}
+        >
+          <Ionicons
+            name="swap-horizontal-outline"
+            size={18}
+            color={comparisonMode === 'slider' ? theme.background : theme.text}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.modeButton,
+            { backgroundColor: comparisonMode === 'sideBySide' ? theme.primary : theme.text + '20' }
+          ]}
+          onPress={() => setComparisonMode('sideBySide')}
+        >
+          <Ionicons
+            name="copy-outline"
+            size={18}
+            color={comparisonMode === 'sideBySide' ? theme.background : theme.text}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.modeButton,
+            { backgroundColor: comparisonMode === 'grid' ? theme.primary : theme.text + '20' }
+          ]}
+          onPress={() => setComparisonMode('grid')}
+        >
+          <Ionicons
+            name="grid-outline"
+            size={18}
+            color={comparisonMode === 'grid' ? theme.background : theme.text}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.modeButton, { backgroundColor: theme.cardBackground }]}
+          onPress={() => setIsSelectingPhotos(true)}
+        >
+          <Ionicons name="images-outline" size={18} color={theme.text} />
+        </TouchableOpacity>
+      </View>
+      {/* Slider Mode */}
+      {comparisonMode === 'slider' && (
+        <>
+          <View
+            style={[
+              styles.imageContainer,
+              { backgroundColor: theme.cardBackground, borderColor: theme.primary },
+            ]}
+          >
+            <Image
+              source={{ uri: photo1.uri }}
+              style={[styles.image, { opacity: (100 - sliderValue) / 100 }]}
+            />
+            <Image
+              source={{ uri: photo2.uri }}
+              style={[
+                styles.image,
+                styles.overlayImage,
+                { opacity: sliderValue / 100 },
+              ]}
+            />
+            <View style={styles.photoLabels}>
+              <View style={[styles.photoLabel, { backgroundColor: theme.text + 'B3', opacity: (100 - sliderValue) / 100 }]}>
+                <Text style={styles.photoLabelText}>
+                  {new Date(photo1.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </Text>
+              </View>
+              <View style={[styles.photoLabel, { backgroundColor: theme.text + 'B3', opacity: sliderValue / 100 }]}>
+                <Text style={styles.photoLabelText}>
+                  {new Date(photo2.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </Text>
+              </View>
+            </View>
+            <TouchableOpacity
+              style={[styles.extractButton, { backgroundColor: theme.primary }]}
+              onPress={extractPhoto}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="download-outline" size={20} color={theme.background} />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.sliderWrapper}>
+            <View style={styles.sliderContainer} {...panResponder.panHandlers}>
+              <View
+                style={[styles.sliderTrack, { backgroundColor: theme.text + '20' }]}
+              />
+              <View
+                style={[
+                  styles.sliderProgress,
+                  {
+                    backgroundColor: theme.primary,
+                    width: `${sliderValue}%`
+                  }
+                ]}
+              />
+              <Animated.View
+                style={[
+                  styles.sliderThumb,
+                  {
+                    backgroundColor: theme.background,
+                    borderColor: theme.primary,
+                    transform: [
+                      { translateX: Animated.subtract(pan.x, THUMB_RADIUS) }
+                    ],
+                  },
+                ]}
+              >
+                <View style={[styles.sliderThumbInner, { backgroundColor: theme.primary }]} />
+              </Animated.View>
+            </View>
+            <View style={styles.sliderLabels}>
+              <Text style={[styles.sliderLabel, { color: theme.text }]}>Before</Text>
+              <Text style={[styles.sliderLabel, { color: theme.text }]}>After</Text>
+            </View>
+          </View>
+        </>
+      )}
+
+      {/* Side by Side Mode */}
+      {comparisonMode === 'sideBySide' && (
+        <View style={styles.sideBySideContainer}>
+          <View style={[styles.sideBySidePhoto, { borderColor: theme.primary }]}>
+            <Image source={{ uri: photo1.uri }} style={styles.image} />
+            <View style={[styles.sideBySideLabel, { backgroundColor: theme.text + 'B3' }]}>
+              <Text style={styles.sideBySideLabelText}>Before</Text>
+              <Text style={styles.sideBySideDateText}>
+                {new Date(photo1.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </Text>
+            </View>
+          </View>
+          <View style={[styles.sideBySidePhoto, { borderColor: theme.primary }]}>
+            <Image source={{ uri: photo2.uri }} style={styles.image} />
+            <View style={[styles.sideBySideLabel, { backgroundColor: theme.text + 'B3' }]}>
+              <Text style={styles.sideBySideLabelText}>After</Text>
+              <Text style={styles.sideBySideDateText}>
+                {new Date(photo2.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </Text>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {/* Grid Mode - Show progression */}
+      {comparisonMode === 'grid' && (
+        <View style={styles.gridContainer}>
+          {photos.slice(0, 6).map((photo, index) => (
+            <View key={photo.id} style={[styles.gridPhoto, { borderColor: theme.primary }]}>
+              <Image source={{ uri: photo.uri }} style={styles.gridImage} />
+              <View style={[styles.gridLabel, { backgroundColor: theme.text + 'B3' }]}>
+                <Text style={styles.gridDateText}>
+                  {new Date(photo.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </Text>
+              </View>
+            </View>
+          ))}
+        </View>
+      )}
     </View>
   );
 };
@@ -238,10 +484,212 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 16,
   },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  resetButton: {
+    padding: 8,
+    borderRadius: 8,
+  },
   title: {
     fontSize: 24,
     fontWeight: "700",
     letterSpacing: 0.5,
+  },
+  modeSwitcher: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 8,
+    marginBottom: 12,
+  },
+  modeButton: {
+    padding: 10,
+    borderRadius: 8,
+  },
+  selectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 16,
+  },
+  selectionHeaderContent: {
+    flex: 1,
+  },
+  selectionTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  selectionSubtitle: {
+    fontSize: 14,
+    opacity: 0.7,
+  },
+  closeButton: {
+    padding: 8,
+    borderRadius: 8,
+    marginLeft: 12,
+  },
+  selectionProgress: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+    paddingHorizontal: 20,
+  },
+  selectionStep: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  selectionStepText: {
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  selectionConnector: {
+    width: 20,
+    height: 2,
+    marginHorizontal: 4,
+  },
+  photoSelectionScroll: {
+    flex: 1,
+  },
+  photoSelectionGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    paddingBottom: 20,
+  },
+  selectionPhotoContainer: {
+    width: "48%",
+    aspectRatio: 3 / 4,
+    borderRadius: 12,
+    overflow: "hidden",
+    marginBottom: 12,
+  },
+  selectionPhoto: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  selectionPhotoOverlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+  },
+  selectionPhotoDate: {
+    color: "white",
+    fontSize: 11,
+    fontWeight: "600",
+  },
+  selectionBadge: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  selectionBadgeText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  selectionCheckmark: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    marginTop: -16,
+    marginLeft: -16,
+    backgroundColor: "white",
+    borderRadius: 16,
+  },
+  confirmSelectionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 16,
+    gap: 8,
+  },
+  confirmSelectionText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  sideBySideContainer: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 20,
+  },
+  sideBySidePhoto: {
+    flex: 1,
+    aspectRatio: 3 / 4,
+    borderRadius: 15,
+    overflow: "hidden",
+    borderWidth: 2,
+  },
+  sideBySideLabel: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 10,
+  },
+  sideBySideLabelText: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  sideBySideDateText: {
+    color: "white",
+    fontSize: 11,
+    opacity: 0.8,
+    marginTop: 2,
+  },
+  gridContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+  gridPhoto: {
+    width: (width - 60) / 3,
+    aspectRatio: 3 / 4,
+    borderRadius: 10,
+    overflow: "hidden",
+    borderWidth: 2,
+  },
+  gridImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  gridLabel: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 4,
+  },
+  gridDateText: {
+    color: "white",
+    fontSize: 9,
+    fontWeight: "600",
+    textAlign: "center",
   },
   timeDifferenceChip: {
     flexDirection: "row",
@@ -319,7 +767,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   photoLabel: {
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,

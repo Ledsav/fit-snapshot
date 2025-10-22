@@ -3,7 +3,7 @@ import { View, StyleSheet, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import Colors from "@/constants/Colors";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useTheme } from "@/context/ThemeContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { OnboardingCarousel } from "@/components/onBoarding/OnboardingCarousel";
 
@@ -15,15 +15,22 @@ function TabBarIcon(props: {
 }
 
 function TabNavigator() {
-  const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme ?? "light"];
+  const { effectiveColorScheme } = useTheme();
+  const theme = Colors[effectiveColorScheme];
+
+  const getActiveIconStyle = () => ({
+    backgroundColor: theme.tint + "20",
+  });
 
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: theme.tint,
         tabBarInactiveTintColor: theme.tabIconDefault,
-        tabBarStyle: styles.tabBar,
+        tabBarStyle: {
+          ...styles.tabBar,
+          backgroundColor: theme.cardBackground,
+        },
         tabBarItemStyle: styles.tabBarItem,
         tabBarShowLabel: false,
         headerShown: false,
@@ -37,7 +44,7 @@ function TabNavigator() {
             <View
               style={[
                 styles.iconContainer,
-                focused && styles.activeIconContainer,
+                focused && getActiveIconStyle(),
               ]}
             >
               <TabBarIcon name="home" color={color} />
@@ -53,7 +60,7 @@ function TabNavigator() {
             <View
               style={[
                 styles.iconContainer,
-                focused && styles.activeIconContainer,
+                focused && getActiveIconStyle(),
               ]}
             >
               <TabBarIcon name="camera" color={color} />
@@ -69,7 +76,7 @@ function TabNavigator() {
             <View
               style={[
                 styles.iconContainer,
-                focused && styles.activeIconContainer,
+                focused && getActiveIconStyle(),
               ]}
             >
               <TabBarIcon name="bar-chart" color={color} />
@@ -85,7 +92,7 @@ function TabNavigator() {
             <View
               style={[
                 styles.iconContainer,
-                focused && styles.activeIconContainer,
+                focused && getActiveIconStyle(),
               ]}
             >
               <TabBarIcon name="images" color={color} />
@@ -101,7 +108,7 @@ function TabNavigator() {
             <View
               style={[
                 styles.iconContainer,
-                focused && styles.activeIconContainer,
+                focused && getActiveIconStyle(),
               ]}
             >
               <TabBarIcon name="settings" color={color} />
@@ -117,8 +124,8 @@ export default function RootLayout() {
     isOnboardingComplete: null as boolean | null,
     isLoading: true,
   });
-  const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme ?? "light"];
+  const { effectiveColorScheme } = useTheme();
+  const theme = Colors[effectiveColorScheme];
 
   useLayoutEffect(() => {
     checkOnboardingStatus();
@@ -176,7 +183,6 @@ export default function RootLayout() {
 }
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: Colors.light.background,
     height: 60,
     shadowColor: "#000",
     shadowOffset: {
@@ -204,8 +210,5 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-  },
-  activeIconContainer: {
-    backgroundColor: Colors.light.tint + "20", // 20% opacity
   },
 });

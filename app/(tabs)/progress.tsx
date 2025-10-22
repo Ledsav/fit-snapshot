@@ -2,7 +2,7 @@ import React from "react";
 import { StyleSheet, ScrollView, View, RefreshControl } from "react-native";
 import PhotoMorph from "@/components/progress/PhotoMorph";
 import Colors from "@/constants/Colors";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useTheme } from "@/context/ThemeContext";
 import BackgroundImage from "@/components/style/BackgroundImage";
 import { Header } from "@/components/home/Header";
 import { usePhotos } from "@/context/PhotoContext";
@@ -10,8 +10,8 @@ import { useLocalization } from "@/context/LocalizationContext";
 import { PhotoType } from "@/enums/Photos";
 
 const ProgressScreen: React.FC = () => {
-  const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme ?? "light"];
+  const { effectiveColorScheme } = useTheme();
+  const theme = Colors[effectiveColorScheme];
   const { getLatestPhotoByType, refreshPhotos } = usePhotos();
   const { t } = useLocalization();
   const types = Object.values(PhotoType);

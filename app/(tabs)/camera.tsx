@@ -2,7 +2,7 @@ import Colors from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
 import { usePhotos } from "@/context/PhotoContext";
 import { PhotoType } from "@/enums/Photos";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useTheme } from "@/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
 import { FlipType, manipulateAsync, SaveFormat } from "expo-image-manipulator";
@@ -36,8 +36,8 @@ export default function CameraScreen() {
   const cameraRef = useRef<CameraView | null>(null);
   const [importedPhotoDate, setImportedPhotoDate] = useState<string | null>(null);
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme ?? "light"];
+  const { effectiveColorScheme } = useTheme();
+  const theme = Colors[effectiveColorScheme];
   const { addPhoto } = usePhotos();
   const { t } = useLocalization();
 

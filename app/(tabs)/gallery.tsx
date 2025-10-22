@@ -5,7 +5,7 @@ import Colors from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
 import { usePhotos } from "@/context/PhotoContext";
 import { PhotoType } from "@/enums/Photos";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useTheme } from "@/context/ThemeContext";
 import { Photo } from "@/services/photoStorage";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from 'expo-image-picker';
@@ -34,6 +34,8 @@ type Section = {
   isExpanded: boolean;
 };
 
+type ViewMode = 'grouped' | 'timeline';
+
 export default function GalleryScreen() {
   const [sections, setSections] = useState<Section[]>([]);
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
@@ -41,9 +43,12 @@ export default function GalleryScreen() {
   const [isTypeSelectionVisible, setIsTypeSelectionVisible] = useState(false);
   const [pendingImageUri, setPendingImageUri] = useState<string | null>(null);
   const [pendingImageDate, setPendingImageDate] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('grouped');
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedPhotoIds, setSelectedPhotoIds] = useState<Set<string>>(new Set());
   const pathname = usePathname();
-  const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme ?? "dark"];
+  const { effectiveColorScheme } = useTheme();
+  const theme = Colors[effectiveColorScheme];
   const {
     photos,
     addPhoto,
@@ -70,10 +75,10 @@ export default function GalleryScreen() {
     loadGallery();
   }, [pathname]);
 
-  // Reload gallery when photos change
+  // Reload gallery when photos or view mode change
   useEffect(() => {
     loadPhotos();
-  }, [photos]);
+  }, [photos, viewMode]);
 
   const loadPhotos = () => {
     try {
@@ -81,26 +86,51 @@ export default function GalleryScreen() {
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
       );
 
-      const newSections: Section[] = [
-        {
-          title: "Front",
-          data: sortedPhotos.filter((photo) => photo.type === "front"),
-          isExpanded: true,
-        },
-        {
-          title: "Side",
-          data: sortedPhotos.filter((photo) => photo.type === "side"),
-          isExpanded: true,
-        },
-        {
-          title: "Back",
-          data: sortedPhotos.filter((photo) => photo.type === "back"),
-          isExpanded: true,
-        },
-      ];
+      if (viewMode === 'timeline') {
+        // Group by date for timeline view
+        const groupedByDate = sortedPhotos.reduce((acc, photo) => {
+          const dateKey = new Date(photo.date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          });
+          if (!acc[dateKey]) {
+            acc[dateKey] = [];
+          }
+          acc[dateKey].push(photo);
+          return acc;
+        }, {} as Record<string, Photo[]>);
 
-      setSections(newSections);
-      console.log("Gallery loaded successfully:", newSections);
+        const newSections: Section[] = Object.entries(groupedByDate).map(([date, data]) => ({
+          title: date,
+          data,
+          isExpanded: true,
+        }));
+
+        setSections(newSections);
+      } else {
+        // Group by type for grouped view
+        const newSections: Section[] = [
+          {
+            title: "Front",
+            data: sortedPhotos.filter((photo) => photo.type === "front"),
+            isExpanded: true,
+          },
+          {
+            title: "Side",
+            data: sortedPhotos.filter((photo) => photo.type === "side"),
+            isExpanded: true,
+          },
+          {
+            title: "Back",
+            data: sortedPhotos.filter((photo) => photo.type === "back"),
+            isExpanded: true,
+          },
+        ];
+
+        setSections(newSections);
+      }
+      console.log("Gallery loaded successfully:", sections);
     } catch (error) {
       console.error("Error loading gallery:", error);
     }
@@ -109,6 +139,31 @@ export default function GalleryScreen() {
   const handleDeletePhoto = async (id: string) => {
     await removePhoto(id);
     // Photos will auto-refresh via useEffect watching photos array
+  };
+
+  const togglePhotoSelection = (id: string) => {
+    const newSelection = new Set(selectedPhotoIds);
+    if (newSelection.has(id)) {
+      newSelection.delete(id);
+    } else {
+      newSelection.add(id);
+    }
+    setSelectedPhotoIds(newSelection);
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedPhotoIds.size === 0) return;
+
+    for (const id of selectedPhotoIds) {
+      await removePhoto(id);
+    }
+    setSelectedPhotoIds(new Set());
+    setSelectionMode(false);
+  };
+
+  const toggleSelectionMode = () => {
+    setSelectionMode(!selectionMode);
+    setSelectedPhotoIds(new Set());
   };
 
   const toggleSection = (title: string) => {
@@ -276,36 +331,57 @@ export default function GalleryScreen() {
     setIsTypeSelectionVisible(false);
   };
 
-  const renderItem = ({ item }: { item: Photo }) => (
-    <View key={item.id} style={styles.item}>
-      <TouchableOpacity
-        style={styles.imageWrapper}
-        onPress={() => openFullScreenPhoto(item.uri)}
-        activeOpacity={0.95}
-      >
-        <Image source={{ uri: item.uri }} style={styles.image} />
-        <View style={styles.imageDateOverlay}>
-          <Text style={styles.dateText}>
-            {new Date(item.date).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              year: '2-digit'
-            })}
-          </Text>
-        </View>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.deleteButton, { backgroundColor: theme.error }]}
-        onPress={(e) => {
-          e.stopPropagation();
-          handleDeletePhoto(item.id);
-        }}
-        activeOpacity={0.7}
-      >
-        <Ionicons name="close" size={16} color="white" />
-      </TouchableOpacity>
-    </View>
-  );
+  const renderItem = ({ item }: { item: Photo }) => {
+    const isSelected = selectedPhotoIds.has(item.id);
+
+    return (
+      <View key={item.id} style={styles.item}>
+        <TouchableOpacity
+          style={[
+            styles.imageWrapper,
+            isSelected && { borderWidth: 3, borderColor: theme.primary }
+          ]}
+          onPress={() => selectionMode ? togglePhotoSelection(item.id) : openFullScreenPhoto(item.uri)}
+          activeOpacity={0.95}
+        >
+          <Image source={{ uri: item.uri }} style={styles.image} />
+          <View style={styles.imageDateOverlay}>
+            <Text style={styles.dateText}>
+              {new Date(item.date).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: '2-digit'
+              })}
+            </Text>
+          </View>
+          {viewMode === 'timeline' && (
+            <View style={[styles.typeIndicator, { backgroundColor: theme.primary }]}>
+              <Text style={styles.typeIndicatorText}>
+                {item.type.charAt(0).toUpperCase()}
+              </Text>
+            </View>
+          )}
+          {selectionMode && isSelected && (
+            <View style={[styles.selectedOverlay, { backgroundColor: theme.primary + '40' }]}>
+              <Ionicons name="checkmark-circle" size={32} color={theme.primary} />
+            </View>
+          )}
+        </TouchableOpacity>
+        {!selectionMode && (
+          <TouchableOpacity
+            style={[styles.deleteButton, { backgroundColor: theme.error }]}
+            onPress={(e) => {
+              e.stopPropagation();
+              handleDeletePhoto(item.id);
+            }}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="close" size={16} color="white" />
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  };
 
   const renderSectionHeader = ({ section }: { section: Section }) => (
     <TouchableOpacity
@@ -316,7 +392,9 @@ export default function GalleryScreen() {
       <View style={styles.sectionHeaderLeft}>
         <View style={[styles.sectionIndicator, { backgroundColor: theme.primary }]} />
         <Text style={[styles.sectionHeader, { color: theme.text }]}>
-          {t(`camera.${section.title.toLowerCase()}`)}
+          {viewMode === 'grouped'
+            ? t(`camera.${section.title.toLowerCase()}`)
+            : section.title}
         </Text>
         <Text style={[styles.photoCount, { color: theme.text }]}>
           {section.data.length}
@@ -358,6 +436,87 @@ export default function GalleryScreen() {
         style={[styles.container, { backgroundColor: theme.transparent }]}
       >
         <Header title={t("gallery.title")} />
+
+        {/* View Mode Toggle and Selection Controls */}
+        <View style={styles.controlsBar}>
+          <View style={styles.viewModeToggle}>
+            <TouchableOpacity
+              style={[
+                styles.viewModeButton,
+                viewMode === 'grouped' && { backgroundColor: theme.primary }
+              ]}
+              onPress={() => setViewMode('grouped')}
+            >
+              <Ionicons
+                name="grid-outline"
+                size={20}
+                color={viewMode === 'grouped' ? theme.background : theme.text}
+              />
+              <Text style={[
+                styles.viewModeText,
+                { color: viewMode === 'grouped' ? theme.background : theme.text }
+              ]}>
+                {t("gallery.grouped") || "Grouped"}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.viewModeButton,
+                viewMode === 'timeline' && { backgroundColor: theme.primary }
+              ]}
+              onPress={() => setViewMode('timeline')}
+            >
+              <Ionicons
+                name="time-outline"
+                size={20}
+                color={viewMode === 'timeline' ? theme.background : theme.text}
+              />
+              <Text style={[
+                styles.viewModeText,
+                { color: viewMode === 'timeline' ? theme.background : theme.text }
+              ]}>
+                {t("gallery.timeline") || "Timeline"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity
+            style={[
+              styles.selectionButton,
+              selectionMode && { backgroundColor: theme.primary }
+            ]}
+            onPress={toggleSelectionMode}
+          >
+            <Ionicons
+              name={selectionMode ? "checkmark-circle" : "checkmark-circle-outline"}
+              size={20}
+              color={selectionMode ? theme.background : theme.text}
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Bulk Delete Bar */}
+        {selectionMode && (
+          <View style={[styles.bulkActionsBar, { backgroundColor: theme.cardBackground }]}>
+            <Text style={[styles.bulkActionsText, { color: theme.text }]}>
+              {selectedPhotoIds.size} {t("gallery.selected") || "selected"}
+            </Text>
+            <TouchableOpacity
+              style={[
+                styles.bulkDeleteButton,
+                { backgroundColor: theme.error },
+                selectedPhotoIds.size === 0 && { opacity: 0.5 }
+              ]}
+              onPress={handleBulkDelete}
+              disabled={selectedPhotoIds.size === 0}
+            >
+              <Ionicons name="trash-outline" size={20} color="white" />
+              <Text style={styles.bulkDeleteText}>
+                {t("gallery.delete") || "Delete"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
         {isLoading || contextLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={theme.primary} />
@@ -457,6 +616,83 @@ export default function GalleryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  controlsBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  viewModeToggle: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(128, 128, 128, 0.2)',
+    borderRadius: 8,
+    padding: 2,
+  },
+  viewModeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    gap: 6,
+  },
+  viewModeText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  selectionButton: {
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: 'rgba(128, 128, 128, 0.2)',
+  },
+  bulkActionsBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginHorizontal: 16,
+    marginBottom: 8,
+    borderRadius: 10,
+  },
+  bulkActionsText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  bulkDeleteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    gap: 6,
+  },
+  bulkDeleteText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  typeIndicator: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  typeIndicatorText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  selectedOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   list: {
     padding: 16,

@@ -3,19 +3,14 @@ import {
   View,
   Text,
   StyleSheet,
-  Image,
-  Dimensions,
   TouchableOpacity,
 } from "react-native";
 import PagerView from "react-native-pager-view";
 import { Ionicons } from "@expo/vector-icons";
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import BackgroundImage from "../style/BackgroundImage";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalization } from "@/context/LocalizationContext";
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 interface OnboardingCarouselProps {
   onComplete: () => void;
@@ -34,20 +29,23 @@ export const OnboardingCarousel: React.FC<OnboardingCarouselProps> = ({
     {
       title: t("onboardingCarousel.takePhoto.title"),
       subtitle: t("onboardingCarousel.takePhoto.subtitle"),
-      image: require("@/assets/images/camera.png"),
       icon: "camera",
+      gradient: [theme.primary, theme.accent],
+      backgroundColor: theme.cardBackground,
     },
     {
       title: t("onboardingCarousel.seeProgress.title"),
       subtitle: t("onboardingCarousel.seeProgress.subtitle"),
-      image: require("@/assets/images/progress.png"),
-      icon: "bar-chart",
+      icon: "trending-up",
+      gradient: [theme.accent, theme.secondary],
+      backgroundColor: theme.cardBackground,
     },
     {
       title: t("onboardingCarousel.shareResults.title"),
       subtitle: t("onboardingCarousel.shareResults.subtitle"),
-      image: require("@/assets/images/share.png"),
-      icon: "share-social",
+      icon: "trophy",
+      gradient: [theme.primary, theme.info],
+      backgroundColor: theme.cardBackground,
     },
   ];
 
@@ -64,79 +62,101 @@ export const OnboardingCarousel: React.FC<OnboardingCarouselProps> = ({
   };
 
   return (
-    <BackgroundImage blurIntensity={0} overlayOpacity={1}>
-      <View style={styles.container}>
-        <PagerView
-          ref={pagerRef}
-          style={styles.pagerView}
-          initialPage={0}
-          onPageSelected={handlePageSelected}
-        >
-          {onboardingSteps.map((step, index) => (
-            <View key={index} style={styles.page}>
-              <Image source={step.image} style={styles.backgroundImage} />
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <PagerView
+        ref={pagerRef}
+        style={styles.pagerView}
+        initialPage={0}
+        onPageSelected={handlePageSelected}
+      >
+        {onboardingSteps.map((step, index) => (
+          <View key={index} style={[styles.page, { backgroundColor: step.backgroundColor }]}>
+            <View style={styles.contentWrapper}>
               <LinearGradient
-                colors={[
-                  "rgba(0,0,0,0)",
-                  "rgba(0,0,0,0.5)",
-                  "rgba(0,0,0,0.8)",
-                  "rgba(0,0,0,0.9)",
-                ]}
-                locations={[0, 0.5, 0.8, 1]}
-                style={styles.overlay}
-              />
-            </View>
-          ))}
-        </PagerView>
-        <View style={styles.footer}>
-          <View style={styles.contentContainer}>
-            <View style={styles.textContainer}>
-              <Text style={[styles.title, { color: theme.text }]}>
-                {onboardingSteps[activeIndex].title}
-              </Text>
-              <Text style={[styles.subtitle, { color: theme.text }]}>
-                {onboardingSteps[activeIndex].subtitle}
-              </Text>
+                colors={step.gradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.gradientCircle}
+              >
+                <View style={styles.iconContainer}>
+                  <Ionicons
+                    name={step.icon as any}
+                    size={100}
+                    color={theme.background}
+                  />
+                </View>
+              </LinearGradient>
+
+              <View style={styles.decorativeCircle1}>
+                <LinearGradient
+                  colors={[step.gradient[0] + '30', step.gradient[1] + '20']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.decorativeGradient}
+                />
+              </View>
+
+              <View style={styles.decorativeCircle2}>
+                <LinearGradient
+                  colors={[step.gradient[1] + '20', step.gradient[0] + '30']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.decorativeGradient}
+                />
+              </View>
             </View>
           </View>
-          <View style={styles.navigationContainer}>
-            <View style={styles.pagination}>
-              {onboardingSteps.map((_, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.paginationDot,
-                    {
-                      backgroundColor:
-                        index === activeIndex
-                          ? theme.primary
-                          : theme.tabIconDefault,
-                    },
-                  ]}
-                />
-              ))}
-            </View>
-            <TouchableOpacity
-              style={[styles.nextButton, { backgroundColor: theme.primary }]}
-              onPress={nextStep}
-            >
-              <Text
-                style={[styles.nextButtonText, { color: theme.background }]}
-              >
-                {activeIndex === onboardingSteps.length - 1
-                  ? t("onboardingCarousel.getStarted")
-                  : t("onboardingCarousel.next")}
-              </Text>
-              <Ionicons
-                name="arrow-forward"
-                size={20}
-                color={theme.background}
-              />
-            </TouchableOpacity>
+        ))}
+      </PagerView>
+      <View style={styles.footer}>
+        <View style={styles.contentContainer}>
+          <View style={styles.textContainer}>
+            <Text style={[styles.title, { color: theme.text }]}>
+              {onboardingSteps[activeIndex].title}
+            </Text>
+            <Text style={[styles.subtitle, { color: theme.secondaryText || theme.text }]}>
+              {onboardingSteps[activeIndex].subtitle}
+            </Text>
           </View>
         </View>
+        <View style={styles.navigationContainer}>
+          <View style={styles.pagination}>
+            {onboardingSteps.map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.paginationDot,
+                  {
+                    backgroundColor:
+                      index === activeIndex
+                        ? theme.primary
+                        : theme.tabIconDefault,
+                    width: index === activeIndex ? 24 : 8,
+                  },
+                ]}
+              />
+            ))}
+          </View>
+          <TouchableOpacity
+            style={[styles.nextButton, { backgroundColor: theme.primary }]}
+            onPress={nextStep}
+          >
+            <Text
+              style={[styles.nextButtonText, { color: theme.background }]}
+            >
+              {activeIndex === onboardingSteps.length - 1
+                ? t("onboardingCarousel.getStarted")
+                : t("onboardingCarousel.next")}
+            </Text>
+            <Ionicons
+              name="arrow-forward"
+              size={20}
+              color={theme.background}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
-    </BackgroundImage>
+    </View>
   );
 };
 
@@ -150,39 +170,79 @@ const styles = StyleSheet.create({
   page: {
     flex: 1,
   },
-  backgroundImage: {
-    position: "absolute",
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT,
-    resizeMode: "cover",
-    opacity: 0.7, // Slightly reduced opacity for better blending
+  contentWrapper: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
   },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
+  gradientCircle: {
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
+    zIndex: 10,
+  },
+  iconContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  decorativeCircle1: {
+    position: "absolute",
+    top: "15%",
+    right: "10%",
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    overflow: "hidden",
+    opacity: 0.6,
+  },
+  decorativeCircle2: {
+    position: "absolute",
+    bottom: "25%",
+    left: "8%",
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    overflow: "hidden",
+    opacity: 0.5,
+  },
+  decorativeGradient: {
+    flex: 1,
   },
   footer: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    paddingHorizontal: 20,
-    paddingVertical: 30,
+    paddingHorizontal: 24,
+    paddingVertical: 40,
+    paddingBottom: 50,
   },
   contentContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 30,
   },
   textContainer: {
     flex: 1,
   },
   title: {
-    fontSize: 28, // Slightly increased font size
+    fontSize: 28,
     fontWeight: "bold",
-    marginBottom: 8, // Increased margin
+    marginBottom: 8,
+    letterSpacing: 0.3,
   },
   subtitle: {
-    fontSize: 18, // Slightly increased font size
+    fontSize: 15,
+    opacity: 0.7,
+    lineHeight: 22,
   },
   navigationContainer: {
     flexDirection: "row",
@@ -191,9 +251,9 @@ const styles = StyleSheet.create({
   },
   pagination: {
     flexDirection: "row",
+    alignItems: "center",
   },
   paginationDot: {
-    width: 8,
     height: 8,
     borderRadius: 4,
     marginHorizontal: 4,
@@ -201,13 +261,18 @@ const styles = StyleSheet.create({
   nextButton: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 10, // Slightly increased padding
-    paddingHorizontal: 20, // Slightly increased padding
-    borderRadius: 25, // Increased border radius
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 30,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
   nextButtonText: {
-    fontSize: 18, // Slightly increased font size
+    fontSize: 16,
     fontWeight: "bold",
-    marginRight: 5,
+    marginRight: 8,
   },
 });

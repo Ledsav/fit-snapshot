@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useTheme } from "@/context/ThemeContext";
 import Colors from "@/constants/Colors";
 import { Photo } from "@/services/photoStorage";
 import { useLocalization } from "@/context/LocalizationContext";
@@ -22,8 +22,8 @@ export const LatestPhotoCard: React.FC<LatestPhotoCardProps> = ({
   latestPhoto,
   onPress,
 }) => {
-  const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme ?? "dark"];
+  const { effectiveColorScheme } = useTheme();
+  const theme = Colors[effectiveColorScheme];
   const { t } = useLocalization();
 
   if (!latestPhoto) return null;
@@ -43,7 +43,7 @@ export const LatestPhotoCard: React.FC<LatestPhotoCardProps> = ({
           imageStyle={{ borderRadius: 15 }}
         >
           <LinearGradient
-            colors={["transparent", "rgba(0,0,0,0.7)"]}
+            colors={["transparent", theme.text + 'B3']}
             style={styles.latestPhotoGradient}
           >
             <Text style={styles.latestPhotoText}>

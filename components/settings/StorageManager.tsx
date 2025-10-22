@@ -1,7 +1,7 @@
 import Colors from '@/constants/Colors';
 import { useLocalization } from '@/context/LocalizationContext';
 import { usePhotos } from '@/context/PhotoContext';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useTheme } from '@/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
@@ -14,8 +14,8 @@ import {
 } from 'react-native';
 
 export const StorageManager: React.FC = () => {
-  const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme ?? 'light'];
+  const { effectiveColorScheme } = useTheme();
+  const theme = Colors[effectiveColorScheme];
   const { t } = useLocalization();
   const { getStorageInfo, cleanupStorage } = usePhotos();
   
@@ -45,21 +45,21 @@ export const StorageManager: React.FC = () => {
 
   const handleCleanup = () => {
     Alert.alert(
-      'Cleanup Storage',
-      'This will remove any orphaned photo files. Continue?',
+      t('settings.cleanupTitle'),
+      t('settings.cleanupMessage'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Cleanup',
+          text: t('settings.cleanup'),
           style: 'destructive',
           onPress: async () => {
             try {
               setIsLoading(true);
               await cleanupStorage();
               await loadStorageInfo();
-              Alert.alert('Success', 'Storage cleanup completed');
+              Alert.alert(t('common.success'), t('settings.cleanupSuccess'));
             } catch (error) {
-              Alert.alert('Error', 'Failed to cleanup storage');
+              Alert.alert(t('common.error'), t('settings.cleanupError'));
             } finally {
               setIsLoading(false);
             }
@@ -83,7 +83,7 @@ export const StorageManager: React.FC = () => {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.primary} />
           <Text style={[styles.loadingText, { color: theme.text }]}>
-            Loading storage info...
+            {t('settings.loadingStorageInfo')}
           </Text>
         </View>
       </View>
@@ -94,7 +94,7 @@ export const StorageManager: React.FC = () => {
     return (
       <View style={styles.container}>
         <Text style={[styles.errorText, { color: theme.error }]}>
-          Failed to load storage information
+          {t('settings.failedToLoadStorage')}
         </Text>
       </View>
     );
@@ -103,11 +103,19 @@ export const StorageManager: React.FC = () => {
   return (
     <View style={styles.container}>
       {/* Storage Info Items */}
-      <View style={styles.infoItem}>
+      <View style={[
+        styles.infoItem,
+        {
+          backgroundColor: theme.cardBackground,
+          borderColor: theme.primary + '40',
+        }
+      ]}>
         <View style={styles.infoLeft}>
-          <Ionicons name="images-outline" size={24} color={theme.text} style={styles.icon} />
+          <View style={[styles.iconContainer, { backgroundColor: theme.primary + '20' }]}>
+            <Ionicons name="images-outline" size={24} color={theme.primary} />
+          </View>
           <Text style={[styles.infoLabel, { color: theme.text }]}>
-            Total Photos
+            {t('settings.totalPhotos')}
           </Text>
         </View>
         <Text style={[styles.infoValue, { color: theme.text }]}>
@@ -115,11 +123,19 @@ export const StorageManager: React.FC = () => {
         </Text>
       </View>
 
-      <View style={styles.infoItem}>
+      <View style={[
+        styles.infoItem,
+        {
+          backgroundColor: theme.cardBackground,
+          borderColor: theme.primary + '40',
+        }
+      ]}>
         <View style={styles.infoLeft}>
-          <Ionicons name="folder-outline" size={24} color={theme.text} style={styles.icon} />
+          <View style={[styles.iconContainer, { backgroundColor: theme.accent + '20' }]}>
+            <Ionicons name="folder-outline" size={24} color={theme.accent} />
+          </View>
           <Text style={[styles.infoLabel, { color: theme.text }]}>
-            Storage Used
+            {t('settings.storageUsed')}
           </Text>
         </View>
         <Text style={[styles.infoValue, { color: theme.text }]}>
@@ -135,7 +151,7 @@ export const StorageManager: React.FC = () => {
         >
           <Ionicons name="refresh" size={20} color={theme.background} />
           <Text style={[styles.buttonText, { color: theme.background }]}>
-            Refresh
+            {t('settings.refresh')}
           </Text>
         </TouchableOpacity>
 
@@ -145,7 +161,7 @@ export const StorageManager: React.FC = () => {
         >
           <Ionicons name="trash" size={20} color={theme.background} />
           <Text style={[styles.buttonText, { color: theme.background }]}>
-            Cleanup
+            {t('settings.cleanup')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -156,34 +172,42 @@ export const StorageManager: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
   },
   loadingContainer: {
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingVertical: 30,
   },
   loadingText: {
-    marginTop: 10,
+    marginTop: 12,
     fontSize: 14,
+    opacity: 0.7,
   },
   infoItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: 1,
   },
   infoLeft: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
-  icon: {
-    marginRight: 10,
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
   },
   infoLabel: {
     fontSize: 16,
-    marginLeft: 10,
+    fontWeight: '500',
   },
   infoValue: {
     fontSize: 16,
@@ -191,27 +215,33 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    gap: 10,
-    marginTop: 20,
+    gap: 12,
+    marginTop: 12,
   },
   actionButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 15,
-    borderRadius: 15,
-    gap: 5,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    gap: 8,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   buttonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginLeft: 5,
+    fontSize: 15,
+    fontWeight: '600',
   },
   errorText: {
     textAlign: 'center',
     fontSize: 14,
     fontStyle: 'italic',
-    paddingVertical: 20,
+    paddingVertical: 30,
+    opacity: 0.7,
   },
 });

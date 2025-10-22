@@ -6,11 +6,13 @@ import {
   Text,
   ScrollView,
   RefreshControl,
+  TouchableOpacity,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter, Href } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Colors from "@/constants/Colors";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useTheme } from "@/context/ThemeContext";
 import { StreakService, StreakData } from "@/services/streakService";
 import { Header } from "@/components/home/Header";
 import { StreakCard } from "@/components/home/StreakCard";
@@ -19,13 +21,18 @@ import BackgroundImage from "@/components/style/BackgroundImage";
 import { ShreddedTipsCarousel } from "@/components/home/ShreddedTipsCarousel";
 import { ProgressSummary } from "@/components/home/ProgressSummary";
 import { OnboardingCarousel } from "@/components/onBoarding/OnboardingCarousel";
+import { WeeklyProgressChart } from "@/components/home/WeeklyProgressChart";
+import { NextPhotoReminder } from "@/components/home/NextPhotoReminder";
+import { MiniComparisonPreview } from "@/components/home/MiniComparisonPreview";
+import { AchievementBadges } from "@/components/home/AchievementBadges";
+import { ConsistencyHeatmap } from "@/components/home/ConsistencyHeatmap";
 import { usePhotos } from "@/context/PhotoContext";
 import { useLocalization } from "@/context/LocalizationContext";
 
 export default function HomeScreen() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme ?? "dark"];
+  const { effectiveColorScheme } = useTheme();
+  const theme = Colors[effectiveColorScheme];
   const { t } = useLocalization();
   const [streakData, setStreakData] = useState<StreakData>({
     currentStreak: 0,
@@ -111,6 +118,19 @@ export default function HomeScreen() {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
         >
+          {/* Next Photo Reminder - Most important action */}
+          <View style={styles.section}>
+            <NextPhotoReminder latestPhoto={latestPhoto} />
+          </View>
+
+          {/* Mini Comparison Preview - Visual progress hook */}
+          {photos.length >= 2 && (
+            <View style={styles.section}>
+              <MiniComparisonPreview photos={photos} />
+            </View>
+          )}
+
+          {/* Streak & Stats - Key metrics at a glance */}
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>
               {t("home.streak")}
@@ -129,13 +149,22 @@ export default function HomeScreen() {
             />
           </View>
 
+          {/* Achievements - Gamification for engagement */}
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              {t("home.tips")}
-            </Text>
-            <ShreddedTipsCarousel />
+            <AchievementBadges photos={photos} currentStreak={streakData.currentStreak} />
           </View>
 
+          {/* Weekly Progress Chart - Recent activity trend */}
+          <View style={styles.section}>
+            <WeeklyProgressChart photos={photos} />
+          </View>
+
+          {/* Consistency Heatmap - Long-term view */}
+          <View style={styles.section}>
+            <ConsistencyHeatmap photos={photos} />
+          </View>
+
+          {/* Latest Photo - Quick gallery preview */}
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>
               {t("home.latestPhoto")}
@@ -144,6 +173,14 @@ export default function HomeScreen() {
               latestPhoto={latestPhoto}
               onPress={() => navigateTo("(tabs)/gallery" as Href<string>)}
             />
+          </View>
+
+          {/* Tips Section - Educational content at bottom */}
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              {t("home.tips")}
+            </Text>
+            <ShreddedTipsCarousel />
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -169,6 +206,24 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 12,
+  },
+  quickCameraButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 18,
+    borderRadius: 15,
+    marginBottom: 24,
+    gap: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  quickCameraText: {
+    fontSize: 18,
+    fontWeight: "bold",
   },
   quickActions: {
     flexDirection: "row",

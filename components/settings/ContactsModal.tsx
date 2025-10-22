@@ -8,7 +8,7 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useTheme } from "@/context/ThemeContext";
 import Colors from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
 import * as Linking from "expo-linking";
@@ -22,8 +22,8 @@ const ContactsModal: React.FC<ContactsModalProps> = ({
   isVisible,
   onClose,
 }) => {
-  const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme ?? "dark"];
+  const { effectiveColorScheme } = useTheme();
+  const theme = Colors[effectiveColorScheme];
   const { t } = useLocalization();
 
   const handleEmailPress = () => {
@@ -48,7 +48,7 @@ const ContactsModal: React.FC<ContactsModalProps> = ({
       <SafeAreaView
         style={[styles.modalContainer, { backgroundColor: theme.background }]}
       >
-        <View style={styles.header}>
+        <View style={[styles.header, { borderBottomColor: theme.text + '1A' }]}>
           <Text style={[styles.title, { color: theme.text }]}>
             {t("contacts.title")}
           </Text>
@@ -100,7 +100,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(0, 0, 0, 0.1)",
   },
   title: {
     fontSize: 20,

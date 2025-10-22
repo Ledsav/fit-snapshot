@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleSheet, Text, View, Animated } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useTheme } from "@/context/ThemeContext";
 import Colors from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
 
@@ -44,8 +44,8 @@ const getStreakMessage = (
 };
 
 export const StreakCard: React.FC<StreakCardProps> = ({ streak }) => {
-  const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme ?? "dark"];
+  const { effectiveColorScheme } = useTheme();
+  const theme = Colors[effectiveColorScheme];
   const { t } = useLocalization();
   const { main, sub } = getStreakMessage(streak, t);
 
@@ -98,7 +98,7 @@ export const StreakCard: React.FC<StreakCardProps> = ({ streak }) => {
           <Text style={[styles.subText, { color: theme.text }]}>{sub}</Text>
         </View>
       </View>
-      <View style={styles.progressBar}>
+      <View style={[styles.progressBar, { backgroundColor: theme.text + '20' }]}>
         <View
           style={[
             styles.progress,
@@ -162,7 +162,6 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: 6,
-    backgroundColor: "rgba(255,255,255,0.2)",
     borderRadius: 3,
     overflow: "hidden",
   },

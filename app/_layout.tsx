@@ -13,6 +13,7 @@ import "react-native-reanimated";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { PhotoProvider } from "@/context/PhotoContext";
 import { LocalizationProvider } from "@/context/LocalizationContext";
+import { ThemeProvider as AppThemeProvider } from "@/context/ThemeContext";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -57,12 +58,14 @@ function RootLayoutNav() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <LocalizationProvider>
-        <PhotoProvider>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="modal" options={{ presentation: "modal" }} />
-          </Stack>
-        </PhotoProvider>
+        <AppThemeProvider>
+          <PhotoProvider>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="modal" options={{ presentation: "modal" }} />
+            </Stack>
+          </PhotoProvider>
+        </AppThemeProvider>
       </LocalizationProvider>
     </ThemeProvider>
   );

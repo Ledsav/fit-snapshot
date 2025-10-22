@@ -5,6 +5,23 @@ interface TranslationKeys {
     stats: string;
     tips: string;
     latestPhoto: string;
+    takePhoto: string;
+    weeklyActivity: string;
+    takeFirstPhoto: string;
+    startJourney: string;
+    photoTakenToday: string;
+    keepItUp: string;
+    takeNextPhoto: string;
+    lastPhotoYesterday: string;
+    daysSinceLastPhoto: string;
+    missedDays: string;
+    getBackOnTrack: string;
+    transformation: string;
+    tapForMore: string;
+    achievements: string;
+    consistency: string;
+    last12Weeks: string;
+    last10Weeks: string;
   };
   camera: {
     title: string;
@@ -24,6 +41,10 @@ interface TranslationKeys {
     deletePhoto: string;
     selectPhotoType: string;
     loading: string;
+    grouped: string;
+    timeline: string;
+    selected: string;
+    delete: string;
   };
   progress: {
     title: string;
@@ -36,6 +57,23 @@ interface TranslationKeys {
     extractPhoto: string;
     photoSavedMessage: string;
     photoSaveErrorMessage: string;
+    selectPhotos: string;
+    selectFirstPhoto: string;
+    selectSecondPhoto: string;
+  };
+  achievements: {
+    firstPhoto: string;
+    firstPhotoDesc: string;
+    sevenDayStreak: string;
+    sevenDayStreakDesc: string;
+    thirtyPhotos: string;
+    thirtyPhotosDesc: string;
+    monthJourney: string;
+    monthJourneyDesc: string;
+    hundredPhotos: string;
+    hundredPhotosDesc: string;
+    allTypes: string;
+    allTypesDesc: string;
   };
   settings: {
     title: string;
@@ -48,6 +86,24 @@ interface TranslationKeys {
     helpAndFeedback: string;
     language: string;
     selectLanguage: string;
+    storage: string;
+    totalPhotos: string;
+    storageUsed: string;
+    refresh: string;
+    cleanup: string;
+    cleanupTitle: string;
+    cleanupMessage: string;
+    cleanupSuccess: string;
+    cleanupError: string;
+    loadingStorageInfo: string;
+    failedToLoadStorage: string;
+    tutorial: string;
+    viewTutorial: string;
+    appearance: string;
+    theme: string;
+    light: string;
+    dark: string;
+    system: string;
   };
   streakCard: {
     startStreak: string;
@@ -145,6 +201,23 @@ export const translations: Translations = {
       stats: "Stats",
       tips: "Tips",
       latestPhoto: "Latest Photo",
+      takePhoto: "Take Photo",
+      weeklyActivity: "Weekly Activity",
+      takeFirstPhoto: "Take Your First Photo!",
+      startJourney: "Start your transformation journey today",
+      photoTakenToday: "Photo Taken Today!",
+      keepItUp: "Great job staying consistent",
+      takeNextPhoto: "Time for Your Next Photo",
+      lastPhotoYesterday: "Last photo was yesterday",
+      daysSinceLastPhoto: "days since last photo",
+      missedDays: "Days Since Last Photo",
+      getBackOnTrack: "Get back on track today!",
+      transformation: "Your Transformation",
+      tapForMore: "Tap to see full comparison",
+      achievements: "Achievements",
+      consistency: "Consistency Tracker",
+      last12Weeks: "Last 12 weeks",
+      last10Weeks: "Last 10 weeks",
     },
     camera: {
       title: "Camera",
@@ -164,6 +237,10 @@ export const translations: Translations = {
       deletePhoto: "Delete Photo",
       selectPhotoType: "Select Photo Type",
       loading: "Loading...",
+      grouped: "Grouped",
+      timeline: "Timeline",
+      selected: "selected",
+      delete: "Delete",
     },
     progress: {
       title: "Your Progress",
@@ -176,6 +253,23 @@ export const translations: Translations = {
       extractPhoto: "Extract photo",
       photoSavedMessage: "Photo saved successfully",
       photoSaveErrorMessage: "Error saving photo",
+      selectPhotos: "Select Photos to Compare",
+      selectFirstPhoto: "Select first photo",
+      selectSecondPhoto: "Select second photo",
+    },
+    achievements: {
+      firstPhoto: "First Step",
+      firstPhotoDesc: "Take your first photo",
+      sevenDayStreak: "Week Warrior",
+      sevenDayStreakDesc: "7-day streak",
+      thirtyPhotos: "Photographer",
+      thirtyPhotosDesc: "Take 30 photos",
+      monthJourney: "Month Journey",
+      monthJourneyDesc: "30 days of tracking",
+      hundredPhotos: "Centurion",
+      hundredPhotosDesc: "Take 100 photos",
+      allTypes: "Complete Set",
+      allTypesDesc: "Photo of each angle",
     },
     settings: {
       title: "Settings",
@@ -186,8 +280,26 @@ export const translations: Translations = {
       reminders: "Reminders",
       support: "Support",
       helpAndFeedback: "Help & Feedback",
-      language: "English",
+      language: "Language",
       selectLanguage: "Select Language",
+      storage: "Storage",
+      totalPhotos: "Total Photos",
+      storageUsed: "Storage Used",
+      refresh: "Refresh",
+      cleanup: "Cleanup",
+      cleanupTitle: "Cleanup Storage",
+      cleanupMessage: "This will remove any orphaned photo files. Continue?",
+      cleanupSuccess: "Storage cleanup completed",
+      cleanupError: "Failed to cleanup storage",
+      loadingStorageInfo: "Loading storage info...",
+      failedToLoadStorage: "Failed to load storage information",
+      tutorial: "Tutorial",
+      viewTutorial: "View Tutorial",
+      appearance: "Appearance",
+      theme: "Theme",
+      light: "Light",
+      dark: "Dark",
+      system: "System",
     },
     streakCard: {
       startStreak: "Start your streak!",
@@ -312,6 +424,23 @@ export const translations: Translations = {
       stats: "Estadísticas",
       tips: "Consejos",
       latestPhoto: "Última Foto",
+      takePhoto: "Tomar Foto",
+      weeklyActivity: "Actividad Semanal",
+      takeFirstPhoto: "¡Toma Tu Primera Foto!",
+      startJourney: "Comienza tu viaje de transformación hoy",
+      photoTakenToday: "¡Foto Tomada Hoy!",
+      keepItUp: "Excelente trabajo manteniéndote consistente",
+      takeNextPhoto: "Hora de Tu Próxima Foto",
+      lastPhotoYesterday: "La última foto fue ayer",
+      daysSinceLastPhoto: "días desde la última foto",
+      missedDays: "Días Desde la Última Foto",
+      getBackOnTrack: "¡Retoma el rumbo hoy!",
+      transformation: "Tu Transformación",
+      tapForMore: "Toca para ver la comparación completa",
+      achievements: "Logros",
+      consistency: "Rastreador de Consistencia",
+      last12Weeks: "Últimas 12 semanas",
+      last10Weeks: "Últimas 10 semanas",
     },
     camera: {
       title: "Cámara",
@@ -331,6 +460,10 @@ export const translations: Translations = {
       deletePhoto: "Eliminar Foto",
       selectPhotoType: "Seleccionar Tipo de Foto",
       loading: "Cargando...",
+      grouped: "Agrupado",
+      timeline: "Línea de Tiempo",
+      selected: "seleccionado",
+      delete: "Eliminar",
     },
     progress: {
       title: "Tu Progreso",
@@ -342,9 +475,25 @@ export const translations: Translations = {
         "Desliza para comparar las fotos más antiguas y más recientes",
       timeDifference: "Diferencia de tiempo",
       extractPhoto: "Extraer foto",
-      photoSavedMessage: "Foto guardada en la galería con éxito.",
-      photoSaveErrorMessage:
-        "No se pudo guardar la foto. Por favor, inténtelo de nuevo.",
+      photoSavedMessage: "Foto guardada con éxito",
+      photoSaveErrorMessage: "Error al guardar foto",
+      selectPhotos: "Seleccionar Fotos para Comparar",
+      selectFirstPhoto: "Seleccionar primera foto",
+      selectSecondPhoto: "Seleccionar segunda foto",
+    },
+    achievements: {
+      firstPhoto: "Primer Paso",
+      firstPhotoDesc: "Toma tu primera foto",
+      sevenDayStreak: "Guerrero Semanal",
+      sevenDayStreakDesc: "Racha de 7 días",
+      thirtyPhotos: "Fotógrafo",
+      thirtyPhotosDesc: "Toma 30 fotos",
+      monthJourney: "Viaje del Mes",
+      monthJourneyDesc: "30 días de seguimiento",
+      hundredPhotos: "Centurión",
+      hundredPhotosDesc: "Toma 100 fotos",
+      allTypes: "Conjunto Completo",
+      allTypesDesc: "Foto de cada ángulo",
     },
     settings: {
       title: "Configuración",
@@ -355,8 +504,26 @@ export const translations: Translations = {
       reminders: "Recordatorios",
       support: "Soporte",
       helpAndFeedback: "Ayuda y Comentarios",
-      language: "Español",
+      language: "Idioma",
       selectLanguage: "Seleccionar Idioma",
+      storage: "Almacenamiento",
+      totalPhotos: "Total de Fotos",
+      storageUsed: "Almacenamiento Usado",
+      refresh: "Actualizar",
+      cleanup: "Limpiar",
+      cleanupTitle: "Limpiar Almacenamiento",
+      cleanupMessage: "Esto eliminará archivos de fotos huérfanos. ¿Continuar?",
+      cleanupSuccess: "Limpieza de almacenamiento completada",
+      cleanupError: "Error al limpiar el almacenamiento",
+      loadingStorageInfo: "Cargando información de almacenamiento...",
+      failedToLoadStorage: "Error al cargar la información de almacenamiento",
+      tutorial: "Tutorial",
+      viewTutorial: "Ver Tutorial",
+      appearance: "Apariencia",
+      theme: "Tema",
+      light: "Claro",
+      dark: "Oscuro",
+      system: "Sistema",
     },
     streakCard: {
       startStreak: "¡Comienza tu racha!",
@@ -481,6 +648,23 @@ export const translations: Translations = {
       stats: "Statistiche",
       tips: "Consigli",
       latestPhoto: "Ultima Foto",
+      takePhoto: "Scatta Foto",
+      weeklyActivity: "Attività Settimanale",
+      takeFirstPhoto: "Scatta la Tua Prima Foto!",
+      startJourney: "Inizia il tuo viaggio di trasformazione oggi",
+      photoTakenToday: "Foto Scattata Oggi!",
+      keepItUp: "Ottimo lavoro nel restare costante",
+      takeNextPhoto: "È Ora della Tua Prossima Foto",
+      lastPhotoYesterday: "L'ultima foto è stata ieri",
+      daysSinceLastPhoto: "giorni dall'ultima foto",
+      missedDays: "Giorni Dall'Ultima Foto",
+      getBackOnTrack: "Torna in carreggiata oggi!",
+      transformation: "La Tua Trasformazione",
+      tapForMore: "Tocca per vedere il confronto completo",
+      achievements: "Obiettivi",
+      consistency: "Tracciatore di Costanza",
+      last12Weeks: "Ultime 12 settimane",
+      last10Weeks: "Ultime 10 settimane",
     },
     camera: {
       title: "Fotocamera",
@@ -501,6 +685,10 @@ export const translations: Translations = {
       deletePhoto: "Elimina Foto",
       selectPhotoType: "Seleziona Tipo di Foto",
       loading: "Caricamento...",
+      grouped: "Raggruppato",
+      timeline: "Timeline",
+      selected: "selezionato",
+      delete: "Elimina",
     },
     progress: {
       title: "I Tuoi Progressi",
@@ -511,8 +699,25 @@ export const translations: Translations = {
       comparePhotos: "Scorri per confrontare le foto più vecchie e più recenti",
       timeDifference: "Differenza di tempo",
       extractPhoto: "Estrai foto",
-      photoSavedMessage: "Foto salvata nella galleria con successo.",
-      photoSaveErrorMessage: "Impossibile salvare la foto. Per favore riprova.",
+      photoSavedMessage: "Foto salvata con successo",
+      photoSaveErrorMessage: "Errore nel salvare la foto",
+      selectPhotos: "Seleziona Foto da Confrontare",
+      selectFirstPhoto: "Seleziona prima foto",
+      selectSecondPhoto: "Seleziona seconda foto",
+    },
+    achievements: {
+      firstPhoto: "Primo Passo",
+      firstPhotoDesc: "Scatta la tua prima foto",
+      sevenDayStreak: "Guerriero Settimanale",
+      sevenDayStreakDesc: "Serie di 7 giorni",
+      thirtyPhotos: "Fotografo",
+      thirtyPhotosDesc: "Scatta 30 foto",
+      monthJourney: "Viaggio del Mese",
+      monthJourneyDesc: "30 giorni di monitoraggio",
+      hundredPhotos: "Centurione",
+      hundredPhotosDesc: "Scatta 100 foto",
+      allTypes: "Set Completo",
+      allTypesDesc: "Foto di ogni angolazione",
     },
     settings: {
       title: "Impostazioni",
@@ -523,8 +728,26 @@ export const translations: Translations = {
       reminders: "Promemoria",
       support: "Supporto",
       helpAndFeedback: "Aiuto & Feedback",
-      language: "Italiano",
+      language: "Lingua",
       selectLanguage: "Seleziona Lingua",
+      storage: "Archiviazione",
+      totalPhotos: "Foto Totali",
+      storageUsed: "Spazio Utilizzato",
+      refresh: "Aggiorna",
+      cleanup: "Pulisci",
+      cleanupTitle: "Pulisci Archiviazione",
+      cleanupMessage: "Questo rimuoverà i file di foto orfani. Continuare?",
+      cleanupSuccess: "Pulizia dell'archiviazione completata",
+      cleanupError: "Impossibile pulire l'archiviazione",
+      loadingStorageInfo: "Caricamento informazioni archiviazione...",
+      failedToLoadStorage: "Impossibile caricare le informazioni di archiviazione",
+      tutorial: "Tutorial",
+      viewTutorial: "Visualizza Tutorial",
+      appearance: "Aspetto",
+      theme: "Tema",
+      light: "Chiaro",
+      dark: "Scuro",
+      system: "Sistema",
     },
     streakCard: {
       startStreak: "Inizia la tua serie!",
@@ -648,6 +871,23 @@ export const translations: Translations = {
       stats: "Statistiken",
       tips: "Tipps",
       latestPhoto: "Neuestes Foto",
+      takePhoto: "Foto aufnehmen",
+      weeklyActivity: "Wöchentliche Aktivität",
+      takeFirstPhoto: "Nehmen Sie Ihr Erstes Foto Auf!",
+      startJourney: "Beginnen Sie heute Ihre Transformation",
+      photoTakenToday: "Foto Heute Aufgenommen!",
+      keepItUp: "Großartige Arbeit, bleiben Sie konsequent",
+      takeNextPhoto: "Zeit für Ihr Nächstes Foto",
+      lastPhotoYesterday: "Das letzte Foto war gestern",
+      daysSinceLastPhoto: "Tage seit dem letzten Foto",
+      missedDays: "Tage Seit dem Letzten Foto",
+      getBackOnTrack: "Kommen Sie heute zurück auf Kurs!",
+      transformation: "Ihre Transformation",
+      tapForMore: "Tippen Sie, um den vollständigen Vergleich zu sehen",
+      achievements: "Erfolge",
+      consistency: "Konsistenz-Tracker",
+      last12Weeks: "Letzte 12 Wochen",
+      last10Weeks: "Letzte 10 Wochen",
     },
     camera: {
       title: "Kamera",
@@ -668,6 +908,10 @@ export const translations: Translations = {
       deletePhoto: "Foto löschen",
       selectPhotoType: "Fototyp auswählen",
       loading: "Lädt...",
+      grouped: "Gruppiert",
+      timeline: "Zeitstrahl",
+      selected: "ausgewählt",
+      delete: "Löschen",
     },
     progress: {
       title: "Ihr Fortschritt",
@@ -679,9 +923,25 @@ export const translations: Translations = {
         "Schieben Sie, um älteste und neueste Fotos zu vergleichen",
       timeDifference: "Zeitunterschied",
       extractPhoto: "Foto extrahieren",
-      photoSavedMessage: "Foto erfolgreich in der Galerie gespeichert.",
-      photoSaveErrorMessage:
-        "Foto konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+      photoSavedMessage: "Foto erfolgreich gespeichert",
+      photoSaveErrorMessage: "Fehler beim Speichern des Fotos",
+      selectPhotos: "Fotos zum Vergleichen Auswählen",
+      selectFirstPhoto: "Erstes Foto auswählen",
+      selectSecondPhoto: "Zweites Foto auswählen",
+    },
+    achievements: {
+      firstPhoto: "Erster Schritt",
+      firstPhotoDesc: "Nehmen Sie Ihr erstes Foto auf",
+      sevenDayStreak: "Wochen-Krieger",
+      sevenDayStreakDesc: "7-Tage-Serie",
+      thirtyPhotos: "Fotograf",
+      thirtyPhotosDesc: "30 Fotos aufnehmen",
+      monthJourney: "Monats-Reise",
+      monthJourneyDesc: "30 Tage Tracking",
+      hundredPhotos: "Zenturio",
+      hundredPhotosDesc: "100 Fotos aufnehmen",
+      allTypes: "Komplettes Set",
+      allTypesDesc: "Foto von jedem Winkel",
     },
     settings: {
       title: "Einstellungen",
@@ -692,8 +952,26 @@ export const translations: Translations = {
       reminders: "Erinnerungen",
       support: "Unterstützung",
       helpAndFeedback: "Hilfe & Feedback",
-      language: "Deutsch",
+      language: "Sprache",
       selectLanguage: "Sprache auswählen",
+      storage: "Speicher",
+      totalPhotos: "Gesamtfotos",
+      storageUsed: "Verwendeter Speicher",
+      refresh: "Aktualisieren",
+      cleanup: "Bereinigen",
+      cleanupTitle: "Speicher Bereinigen",
+      cleanupMessage: "Dies entfernt verwaiste Fotodateien. Fortfahren?",
+      cleanupSuccess: "Speicherbereinigung abgeschlossen",
+      cleanupError: "Fehler beim Bereinigen des Speichers",
+      loadingStorageInfo: "Lade Speicherinformationen...",
+      failedToLoadStorage: "Fehler beim Laden der Speicherinformationen",
+      tutorial: "Anleitung",
+      viewTutorial: "Anleitung Anzeigen",
+      appearance: "Darstellung",
+      theme: "Design",
+      light: "Hell",
+      dark: "Dunkel",
+      system: "System",
     },
     streakCard: {
       startStreak: "Starten Sie Ihre Serie!",
@@ -818,6 +1096,23 @@ export const translations: Translations = {
       stats: "Statistiques",
       tips: "Conseils",
       latestPhoto: "Dernière Photo",
+      takePhoto: "Prendre une Photo",
+      weeklyActivity: "Activité Hebdomadaire",
+      takeFirstPhoto: "Prenez Votre Première Photo !",
+      startJourney: "Commencez votre voyage de transformation aujourd'hui",
+      photoTakenToday: "Photo Prise Aujourd'hui !",
+      keepItUp: "Excellent travail pour rester constant",
+      takeNextPhoto: "Il Est Temps de Prendre Votre Prochaine Photo",
+      lastPhotoYesterday: "La dernière photo était hier",
+      daysSinceLastPhoto: "jours depuis la dernière photo",
+      missedDays: "Jours Depuis la Dernière Photo",
+      getBackOnTrack: "Reprenez le bon chemin aujourd'hui !",
+      transformation: "Votre Transformation",
+      tapForMore: "Appuyez pour voir la comparaison complète",
+      achievements: "Réalisations",
+      consistency: "Suivi de Constance",
+      last12Weeks: "12 dernières semaines",
+      last10Weeks: "10 dernières semaines",
     },
     camera: {
       title: "Appareil Photo",
@@ -838,6 +1133,10 @@ export const translations: Translations = {
       deletePhoto: "Supprimer la Photo",
       selectPhotoType: "Sélectionner le Type de Photo",
       loading: "Chargement...",
+      grouped: "Groupé",
+      timeline: "Chronologie",
+      selected: "sélectionné",
+      delete: "Supprimer",
     },
     progress: {
       title: "Votre Progrès",
@@ -849,9 +1148,25 @@ export const translations: Translations = {
         "Faites glisser pour comparer les photos les plus anciennes et les plus récentes",
       timeDifference: "Différence de temps",
       extractPhoto: "Extraire la photo",
-      photoSavedMessage: "Photo enregistrée dans la galerie avec succès.",
-      photoSaveErrorMessage:
-        "Échec de l'enregistrement de la photo. Veuillez réessayer.",
+      photoSavedMessage: "Photo enregistrée avec succès",
+      photoSaveErrorMessage: "Erreur lors de l'enregistrement de la photo",
+      selectPhotos: "Sélectionner des Photos à Comparer",
+      selectFirstPhoto: "Sélectionner la première photo",
+      selectSecondPhoto: "Sélectionner la deuxième photo",
+    },
+    achievements: {
+      firstPhoto: "Premier Pas",
+      firstPhotoDesc: "Prenez votre première photo",
+      sevenDayStreak: "Guerrier Hebdomadaire",
+      sevenDayStreakDesc: "Série de 7 jours",
+      thirtyPhotos: "Photographe",
+      thirtyPhotosDesc: "Prendre 30 photos",
+      monthJourney: "Voyage du Mois",
+      monthJourneyDesc: "30 jours de suivi",
+      hundredPhotos: "Centurion",
+      hundredPhotosDesc: "Prendre 100 photos",
+      allTypes: "Ensemble Complet",
+      allTypesDesc: "Photo de chaque angle",
     },
     settings: {
       title: "Paramètres",
@@ -862,8 +1177,26 @@ export const translations: Translations = {
       reminders: "Rappels",
       support: "Support",
       helpAndFeedback: "Aide & Commentaires",
-      language: "Français",
+      language: "Langue",
       selectLanguage: "Sélectionner la Langue",
+      storage: "Stockage",
+      totalPhotos: "Total de Photos",
+      storageUsed: "Stockage Utilisé",
+      refresh: "Actualiser",
+      cleanup: "Nettoyer",
+      cleanupTitle: "Nettoyer le Stockage",
+      cleanupMessage: "Cela supprimera les fichiers photo orphelins. Continuer ?",
+      cleanupSuccess: "Nettoyage du stockage terminé",
+      cleanupError: "Échec du nettoyage du stockage",
+      loadingStorageInfo: "Chargement des informations de stockage...",
+      failedToLoadStorage: "Échec du chargement des informations de stockage",
+      tutorial: "Tutoriel",
+      viewTutorial: "Voir le Tutoriel",
+      appearance: "Apparence",
+      theme: "Thème",
+      light: "Clair",
+      dark: "Sombre",
+      system: "Système",
     },
     streakCard: {
       startStreak: "Commencez votre série !",

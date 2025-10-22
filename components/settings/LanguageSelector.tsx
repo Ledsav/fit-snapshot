@@ -10,7 +10,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalization } from "@/context/LocalizationContext";
 import Colors from "@/constants/Colors";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useTheme } from "@/context/ThemeContext";
 
 interface Language {
   code: string;
@@ -36,15 +36,15 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   onClose,
 }) => {
   const { locale, setLocale, t } = useLocalization();
-  const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme ?? "dark"];
+  const { effectiveColorScheme } = useTheme();
+  const theme = Colors[effectiveColorScheme];
 
   const renderLanguageItem = ({ item }: { item: Language }) => (
     <TouchableOpacity
       style={[
         styles.languageItem,
         { borderBottomColor: theme.primary },
-        locale === item.code && styles.selectedLanguage,
+        locale === item.code && { backgroundColor: theme.primary + '1A' },
       ]}
       onPress={() => {
         setLocale(item.code);
@@ -125,9 +125,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 15,
     borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  selectedLanguage: {
-    backgroundColor: "rgba(0, 122, 255, 0.1)",
   },
   languageName: {
     fontSize: 16,

@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import PagerView from "react-native-pager-view";
 import { Ionicons } from "@expo/vector-icons";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useTheme } from "@/context/ThemeContext";
 import Colors from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
 
@@ -25,8 +25,8 @@ interface Tip {
 export const ShreddedTipsCarousel: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const pagerRef = useRef<PagerView>(null);
-  const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme ?? "dark"];
+  const { effectiveColorScheme } = useTheme();
+  const theme = Colors[effectiveColorScheme];
   const { t } = useLocalization();
 
   const tips = useMemo(() => {
@@ -93,7 +93,7 @@ export const ShreddedTipsCarousel: React.FC = () => {
                 backgroundColor:
                   index === activeIndex
                     ? theme.primary
-                    : "rgba(255,255,255,0.5)",
+                    : theme.text + '80',
               },
             ]}
             onPress={() => scrollToIndex(index)}
