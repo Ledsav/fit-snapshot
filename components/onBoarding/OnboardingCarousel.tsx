@@ -1,16 +1,16 @@
-import React, { useState, useRef } from "react";
+import Colors from "@/constants/Colors";
+import { useLocalization } from "@/context/LocalizationContext";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import React, { useRef, useState } from "react";
 import {
-  View,
-  Text,
   StyleSheet,
+  Text,
   TouchableOpacity,
+  View,
 } from "react-native";
 import PagerView from "react-native-pager-view";
-import { Ionicons } from "@expo/vector-icons";
-import Colors from "@/constants/Colors";
-import { useColorScheme } from "@/hooks/useColorScheme";
-import { LinearGradient } from "expo-linear-gradient";
-import { useLocalization } from "@/context/LocalizationContext";
 
 interface OnboardingCarouselProps {
   onComplete: () => void;
@@ -114,7 +114,7 @@ export const OnboardingCarousel: React.FC<OnboardingCarouselProps> = ({
             <Text style={[styles.title, { color: theme.text }]}>
               {onboardingSteps[activeIndex].title}
             </Text>
-            <Text style={[styles.subtitle, { color: theme.secondaryText || theme.text }]}>
+            <Text style={[styles.subtitle, { color: theme.text  }]}>
               {onboardingSteps[activeIndex].subtitle}
             </Text>
           </View>
