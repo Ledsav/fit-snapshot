@@ -1,0 +1,208 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2025-01-01T00:00:00Z",
+  "remoteConfigUrl": null,
+  "features": {
+    "unlimited_photos": {
+      "key": "unlimited_photos",
+      "category": "storage",
+      "name": "Unlimited Photo Storage",
+      "description": "Store unlimited progress photos without any restrictions",
+      "requiredTier": "premium",
+      "enabled": true,
+      "betaOnly": false
+    },
+    "cloud_backup": {
+      "key": "cloud_backup",
+      "category": "storage",
+      "name": "Cloud Backup",
+      "description": "Automatic cloud backup and sync across devices",
+      "requiredTier": "premium",
+      "enabled": false,
+      "betaOnly": false
+    },
+    "weekly_progress_chart": {
+      "key": "weekly_progress_chart",
+      "category": "analytics",
+      "name": "Weekly Progress Chart",
+      "description": "Visualize your weekly photo activity with interactive charts",
+      "requiredTier": "premium",
+      "enabled": true,
+      "betaOnly": false
+    },
+    "consistency_heatmap": {
+      "key": "consistency_heatmap",
+      "category": "analytics",
+      "name": "Consistency Heatmap",
+      "description": "Track your consistency with a GitHub-style heatmap",
+      "requiredTier": "premium",
+      "enabled": true,
+      "betaOnly": false
+    },
+    "achievement_badges": {
+      "key": "achievement_badges",
+      "category": "analytics",
+      "name": "Achievement Badges",
+      "description": "Earn badges and achievements for your progress",
+      "requiredTier": "premium",
+      "enabled": true,
+      "betaOnly": false
+    },
+    "progress_insights": {
+      "key": "progress_insights",
+      "category": "analytics",
+      "name": "Progress Insights",
+      "description": "Get AI-powered insights about your transformation",
+      "requiredTier": "premium",
+      "enabled": false,
+      "betaOnly": true
+    },
+    "side_by_side_comparison": {
+      "key": "side_by_side_comparison",
+      "category": "comparisons",
+      "name": "Side-by-Side Comparison",
+      "description": "Compare photos side-by-side with advanced controls",
+      "requiredTier": "premium",
+      "enabled": true,
+      "betaOnly": false
+    },
+    "grid_view_comparison": {
+      "key": "grid_view_comparison",
+      "category": "comparisons",
+      "name": "Grid View Comparison",
+      "description": "View multiple progress points in a grid layout",
+      "requiredTier": "premium",
+      "enabled": true,
+      "betaOnly": false
+    },
+    "photo_morphing": {
+      "key": "photo_morphing",
+      "category": "comparisons",
+      "name": "Photo Morphing",
+      "description": "Smooth morphing animation between photos",
+      "requiredTier": "premium",
+      "enabled": true,
+      "betaOnly": false
+    },
+    "custom_photo_selection": {
+      "key": "custom_photo_selection",
+      "category": "comparisons",
+      "name": "Custom Photo Selection",
+      "description": "Choose any photos for comparison",
+      "requiredTier": "premium",
+      "enabled": true,
+      "betaOnly": false
+    },
+    "video_export": {
+      "key": "video_export",
+      "category": "export",
+      "name": "Video Export",
+      "description": "Create timelapse videos of your transformation",
+      "requiredTier": "premium",
+      "enabled": false,
+      "betaOnly": false
+    },
+    "pdf_reports": {
+      "key": "pdf_reports",
+      "category": "export",
+      "name": "PDF Progress Reports",
+      "description": "Export professional PDF reports of your journey",
+      "requiredTier": "premium",
+      "enabled": false,
+      "betaOnly": false
+    },
+    "bulk_export": {
+      "key": "bulk_export",
+      "category": "export",
+      "name": "Bulk Export",
+      "description": "Export all your photos at once",
+      "requiredTier": "premium",
+      "enabled": true,
+      "betaOnly": false
+    },
+    "social_sharing": {
+      "key": "social_sharing",
+      "category": "export",
+      "name": "Social Sharing",
+      "description": "Share your transformation to social media",
+      "requiredTier": "premium",
+      "enabled": true,
+      "betaOnly": false
+    },
+    "custom_categories": {
+      "key": "custom_categories",
+      "category": "customization",
+      "name": "Custom Categories",
+      "description": "Create custom photo categories beyond front/side/back",
+      "requiredTier": "premium",
+      "enabled": false,
+      "betaOnly": false
+    },
+    "custom_reminders": {
+      "key": "custom_reminders",
+      "category": "customization",
+      "name": "Custom Reminders",
+      "description": "Set multiple custom reminder times",
+      "requiredTier": "premium",
+      "enabled": false,
+      "betaOnly": false
+    },
+    "premium_themes": {
+      "key": "premium_themes",
+      "category": "customization",
+      "name": "Premium Themes",
+      "description": "Access exclusive premium themes",
+      "requiredTier": "premium",
+      "enabled": false,
+      "betaOnly": false
+    },
+    "custom_watermarks": {
+      "key": "custom_watermarks",
+      "category": "customization",
+      "name": "Custom Watermarks",
+      "description": "Add custom watermarks to your exports",
+      "requiredTier": "premium",
+      "enabled": false,
+      "betaOnly": false
+    },
+    "ad_free": {
+      "key": "ad_free",
+      "category": "experience",
+      "name": "Ad-Free Experience",
+      "description": "Enjoy the app without any advertisements",
+      "requiredTier": "premium",
+      "enabled": true,
+      "betaOnly": false
+    },
+    "priority_support": {
+      "key": "priority_support",
+      "category": "experience",
+      "name": "Priority Support",
+      "description": "Get priority customer support",
+      "requiredTier": "premium",
+      "enabled": true,
+      "betaOnly": false
+    },
+    "early_access": {
+      "key": "early_access",
+      "category": "experience",
+      "name": "Early Access",
+      "description": "Get early access to new features",
+      "requiredTier": "premium",
+      "enabled": true,
+      "betaOnly": false
+    }
+  },
+  "limits": {
+    "free": {
+      "maxPhotos": 50,
+      "maxComparisonsPerDay": 5,
+      "maxExportsPerMonth": 2
+    },
+    "premium": {
+      "maxPhotos": -1,
+      "maxComparisonsPerDay": -1,
+      "maxExportsPerMonth": -1
+    }
+  }
+}

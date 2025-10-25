@@ -4,7 +4,9 @@ import BackgroundImage from "@/components/style/BackgroundImage";
 import Colors from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
 import { usePhotos } from "@/context/PhotoContext";
+import { useUser } from "@/context/UserContext";
 import { PhotoType } from "@/enums/Photos";
+import PaywallModal from "@/components/monetization/PaywallModal";
 import { useTheme } from "@/context/ThemeContext";
 import { Photo } from "@/services/photoStorage";
 import { Ionicons } from "@expo/vector-icons";
@@ -46,6 +48,7 @@ export default function GalleryScreen() {
   const [viewMode, setViewMode] = useState<ViewMode>('grouped');
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedPhotoIds, setSelectedPhotoIds] = useState<Set<string>>(new Set());
+  const [isPaywallVisible, setIsPaywallVisible] = useState(false);
   const pathname = usePathname();
   const { effectiveColorScheme } = useTheme();
   const theme = Colors[effectiveColorScheme];
@@ -54,9 +57,11 @@ export default function GalleryScreen() {
     addPhoto,
     removePhoto,
     refreshPhotos,
+    canAddPhoto,
     isLoading: contextLoading,
     error,
   } = usePhotos();
+  const { storageUsagePercentage, featureUsage } = useUser();
   const { t } = useLocalization();
 
   useEffect(() => {
@@ -185,8 +190,15 @@ export default function GalleryScreen() {
   };
 
   const pickImage = async () => {
+    // Check storage limits before proceeding
+    const storageCheck = canAddPhoto();
+    if (!storageCheck.allowed) {
+      setIsPaywallVisible(true);
+      return;
+    }
+
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const { status} = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (status !== 'granted') {
         alert(t("camera.galleryPermissionDenied") || 'Sorry, we need media library permissions to import images!');
@@ -437,6 +449,30 @@ export default function GalleryScreen() {
       >
         <Header title={t("gallery.title")} />
 
+        {/* Storage Warning Banner */}
+        {storageUsagePercentage >= 80 && storageUsagePercentage < 100 && (
+          <View style={[styles.warningBanner, { backgroundColor: theme.warning + '20' }]}>
+            <Ionicons name="warning-outline" size={20} color={theme.warning} />
+            <Text style={[styles.warningText, { color: theme.warning }]}>
+              {featureUsage.photoCount} / 50 photos used ({storageUsagePercentage}%)
+            </Text>
+            <TouchableOpacity onPress={() => setIsPaywallVisible(true)}>
+              <Text style={[styles.upgradeLink, { color: theme.primary }]}>
+                Upgrade
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {storageUsagePercentage >= 100 && (
+          <View style={[styles.errorBanner, { backgroundColor: theme.error + '20' }]}>
+            <Ionicons name="alert-circle-outline" size={20} color={theme.error} />
+            <Text style={[styles.errorText, { color: theme.error }]}>
+              Storage full! Delete photos or upgrade to Premium
+            </Text>
+          </View>
+        )}
+
         {/* View Mode Toggle and Selection Controls */}
         <View style={styles.controlsBar}>
           <View style={styles.viewModeToggle}>
@@ -608,6 +644,12 @@ export default function GalleryScreen() {
         >
           <Ionicons name="add" size={28} color={theme.background} />
         </TouchableOpacity>
+
+        <PaywallModal
+          visible={isPaywallVisible}
+          onClose={() => setIsPaywallVisible(false)}
+          source="gallery"
+        />
       </SafeAreaView>
     </BackgroundImage>
   );
@@ -616,6 +658,41 @@ export default function GalleryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  warningBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginHorizontal: 16,
+    marginBottom: 8,
+    borderRadius: 10,
+    gap: 10,
+  },
+  warningText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  upgradeLink: {
+    fontSize: 13,
+    fontWeight: "bold",
+    textDecorationLine: "underline",
+  },
+  errorBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginHorizontal: 16,
+    marginBottom: 8,
+    borderRadius: 10,
+    gap: 10,
+  },
+  errorText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: "600",
   },
   controlsBar: {
     flexDirection: 'row',

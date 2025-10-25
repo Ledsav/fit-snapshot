@@ -7,6 +7,7 @@ import { OnboardingCarousel } from "@/components/onBoarding/OnboardingCarousel";
 import Colors from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useUser } from "@/context/UserContext";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
@@ -17,7 +18,11 @@ import {
   TouchableOpacity,
   View,
   Modal,
+  Alert,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import PaywallModal from "@/components/monetization/PaywallModal";
+import { PremiumBadge } from "@/components/monetization/PremiumBadge";
 
 const SettingItem: React.FC<{
   title: string;
@@ -56,11 +61,13 @@ export default function SettingsScreen() {
   const { effectiveColorScheme, themeMode } = useTheme();
   const theme = Colors[effectiveColorScheme];
   const { t, locale } = useLocalization();
+  const { isPremium, subscriptionStatus, featureUsage, setTestPremiumStatus } = useUser();
   const [isLanguageSelectorVisible, setIsLanguageSelectorVisible] =
     useState(false);
   const [isThemeSelectorVisible, setIsThemeSelectorVisible] = useState(false);
   const [isContactsModalVisible, setIsContactsModalVisible] = useState(false);
   const [isTutorialVisible, setIsTutorialVisible] = useState(false);
+  const [isPaywallVisible, setIsPaywallVisible] = useState(false);
 
   const handleLanguagePress = () => {
     setIsLanguageSelectorVisible(true);
@@ -76,6 +83,32 @@ export default function SettingsScreen() {
 
   const handleTutorialPress = () => {
     setIsTutorialVisible(true);
+  };
+
+  const handleUpgradePress = () => {
+    setIsPaywallVisible(true);
+  };
+
+  const handleManageSubscription = () => {
+    Alert.alert(
+      "Manage Subscription",
+      "You can manage your subscription in the App Store or Google Play.",
+      [{ text: "OK" }]
+    );
+  };
+
+  const handleTestPremiumToggle = () => {
+    Alert.alert(
+      "Test Mode",
+      isPremium ? "Disable Premium for testing?" : "Enable Premium for testing?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Confirm",
+          onPress: () => setTestPremiumStatus(!isPremium),
+        },
+      ]
+    );
   };
 
   const getThemeDisplayName = () => {
@@ -116,6 +149,94 @@ export default function SettingsScreen() {
         <Text style={[styles.title, { color: theme.text }]}>
           {t("settings.title")}
         </Text>
+
+        {/* Premium Section */}
+        <View style={styles.section}>
+          {isPremium ? (
+            <LinearGradient
+              colors={[theme.primary + '20', theme.primary + '05']}
+              style={styles.premiumCard}
+            >
+              <View style={styles.premiumHeader}>
+                <PremiumBadge size="large" />
+                <Text style={[styles.premiumTitle, { color: theme.text }]}>
+                  Premium Active
+                </Text>
+              </View>
+              <Text style={[styles.premiumSubtitle, { color: theme.text }]}>
+                Thank you for supporting FitSnapshot!
+              </Text>
+              <View style={styles.premiumStats}>
+                <View style={styles.statItem}>
+                  <Text style={[styles.statValue, { color: theme.primary }]}>
+                    {featureUsage.photoCount}
+                  </Text>
+                  <Text style={[styles.statLabel, { color: theme.text }]}>Photos</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Text style={[styles.statValue, { color: theme.primary }]}>∞</Text>
+                  <Text style={[styles.statLabel, { color: theme.text }]}>Limit</Text>
+                </View>
+              </View>
+              <TouchableOpacity
+                style={[styles.manageButton, { borderColor: theme.primary }]}
+                onPress={handleManageSubscription}
+              >
+                <Text style={[styles.manageButtonText, { color: theme.primary }]}>
+                  Manage Subscription
+                </Text>
+              </TouchableOpacity>
+            </LinearGradient>
+          ) : (
+            <TouchableOpacity
+              style={styles.upgradeCard}
+              onPress={handleUpgradePress}
+              activeOpacity={0.9}
+            >
+              <LinearGradient
+                colors={[theme.primary, theme.primary + 'CC']}
+                style={styles.upgradeGradient}
+              >
+                <Ionicons name="star" size={40} color="#FFF" />
+                <Text style={styles.upgradeTitle}>Upgrade to Premium</Text>
+                <Text style={styles.upgradeSubtitle}>
+                  Unlimited photos, analytics & more
+                </Text>
+                <View style={styles.upgradeStats}>
+                  <Text style={styles.upgradeStatsText}>
+                    {featureUsage.photoCount} / 50 photos used
+                  </Text>
+                </View>
+                <View style={styles.upgradeButton}>
+                  <Text style={styles.upgradeButtonText}>See Plans</Text>
+                  <Ionicons name="arrow-forward" size={20} color="#FFF" />
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Test Mode Toggle (for development) */}
+        <View style={styles.section}>
+          <TouchableOpacity
+            style={[
+              styles.settingItem,
+              {
+                backgroundColor: theme.cardBackground,
+                borderColor: theme.primary + '40',
+              },
+            ]}
+            onPress={handleTestPremiumToggle}
+          >
+            <View style={[styles.iconContainer, { backgroundColor: theme.warning + '20' }]}>
+              <Ionicons name="flask-outline" size={24} color={theme.warning} />
+            </View>
+            <Text style={[styles.settingText, { color: theme.text }]}>
+              Test Premium ({isPremium ? 'ON' : 'OFF'})
+            </Text>
+            <Ionicons name="chevron-forward" size={20} color={theme.text} />
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>
@@ -198,6 +319,12 @@ export default function SettingsScreen() {
       >
         <OnboardingCarousel onComplete={() => setIsTutorialVisible(false)} />
       </Modal>
+
+      <PaywallModal
+        visible={isPaywallVisible}
+        onClose={() => setIsPaywallVisible(false)}
+        source="settings"
+      />
     </SafeAreaView>
   );
 }
@@ -250,5 +377,101 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
+  },
+  premiumCard: {
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 8,
+  },
+  premiumHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+    gap: 12,
+  },
+  premiumTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+  },
+  premiumSubtitle: {
+    fontSize: 14,
+    opacity: 0.7,
+    marginBottom: 20,
+  },
+  premiumStats: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 20,
+  },
+  statItem: {
+    alignItems: "center",
+  },
+  statValue: {
+    fontSize: 32,
+    fontWeight: "bold",
+  },
+  statLabel: {
+    fontSize: 12,
+    opacity: 0.7,
+    marginTop: 4,
+  },
+  manageButton: {
+    borderWidth: 2,
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  manageButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  upgradeCard: {
+    borderRadius: 16,
+    overflow: "hidden",
+    marginBottom: 8,
+  },
+  upgradeGradient: {
+    padding: 24,
+    alignItems: "center",
+  },
+  upgradeTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#FFF",
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  upgradeSubtitle: {
+    fontSize: 14,
+    color: "#FFF",
+    opacity: 0.9,
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  upgradeStats: {
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginBottom: 16,
+  },
+  upgradeStatsText: {
+    color: "#FFF",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  upgradeButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 25,
+    gap: 8,
+  },
+  upgradeButtonText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });

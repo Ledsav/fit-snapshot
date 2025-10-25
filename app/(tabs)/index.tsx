@@ -28,6 +28,8 @@ import { AchievementBadges } from "@/components/home/AchievementBadges";
 import { ConsistencyHeatmap } from "@/components/home/ConsistencyHeatmap";
 import { usePhotos } from "@/context/PhotoContext";
 import { useLocalization } from "@/context/LocalizationContext";
+import { FeatureGate } from "@/components/monetization/FeatureGate";
+import { Feature } from "@/constants/Features";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -149,19 +151,25 @@ export default function HomeScreen() {
             />
           </View>
 
-          {/* Achievements - Gamification for engagement */}
+          {/* Achievements - Gamification for engagement - PREMIUM */}
           <View style={styles.section}>
-            <AchievementBadges photos={photos} currentStreak={streakData.currentStreak} />
+            <FeatureGate feature={Feature.ACHIEVEMENT_BADGES} showPreview={true}>
+              <AchievementBadges photos={photos} currentStreak={streakData.currentStreak} />
+            </FeatureGate>
           </View>
 
-          {/* Weekly Progress Chart - Recent activity trend */}
+          {/* Weekly Progress Chart - Recent activity trend - PREMIUM */}
           <View style={styles.section}>
-            <WeeklyProgressChart photos={photos} />
+            <FeatureGate feature={Feature.WEEKLY_PROGRESS_CHART} showPreview={true}>
+              <WeeklyProgressChart photos={photos} />
+            </FeatureGate>
           </View>
 
-          {/* Consistency Heatmap - Long-term view */}
+          {/* Consistency Heatmap - Long-term view - PREMIUM */}
           <View style={styles.section}>
-            <ConsistencyHeatmap photos={photos} />
+            <FeatureGate feature={Feature.CONSISTENCY_HEATMAP} showPreview={true}>
+              <ConsistencyHeatmap photos={photos} />
+            </FeatureGate>
           </View>
 
           {/* Latest Photo - Quick gallery preview */}

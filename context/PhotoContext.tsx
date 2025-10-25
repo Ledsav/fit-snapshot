@@ -8,10 +8,11 @@ import {
   savePhoto,
 } from "@/services/photoStorage";
 import React, { createContext, useContext, useEffect, useState } from "react";
+import featureFlagService from "@/services/featureFlagService";
 
 interface PhotoContextType {
   photos: Photo[];
-  addPhoto: (photo: Photo) => Promise<void>;
+  addPhoto: (photo: Photo) => Promise<{ success: boolean; error?: string }>;
   removePhoto: (id: string) => Promise<void>;
   refreshPhotos: () => Promise<void>;
   getPhotosByType: (type: PhotoType) => Photo[];
@@ -22,6 +23,7 @@ interface PhotoContextType {
     directoryPath: string;
   }>;
   cleanupStorage: () => Promise<void>;
+  canAddPhoto: () => { allowed: boolean; reason?: string; limit?: number };
   isLoading: boolean;
   error: string | null;
 }
@@ -71,15 +73,29 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({
     refreshPhotos();
   }, []);
 
-  const addPhoto = async (photo: Photo) => {
+  const canAddPhoto = () => {
+    return featureFlagService.canAddPhoto();
+  };
+
+  const addPhoto = async (photo: Photo): Promise<{ success: boolean; error?: string }> => {
+    // Check storage limits before adding
+    const canAdd = featureFlagService.canAddPhoto();
+    if (!canAdd.allowed) {
+      return { success: false, error: canAdd.reason };
+    }
+
     setIsLoading(true);
     setError(null);
     try {
       await savePhoto(photo);
+      await featureFlagService.incrementPhotoCount();
       setPhotos((prevPhotos) => [...prevPhotos, photo]);
+      return { success: true };
     } catch (err) {
-      setError("Failed to add photo. Please try again.");
+      const errorMessage = "Failed to add photo. Please try again.";
+      setError(errorMessage);
       console.error("Error adding photo:", err);
+      return { success: false, error: errorMessage };
     } finally {
       setIsLoading(false);
     }
@@ -90,6 +106,7 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({
     setError(null);
     try {
       await deletePhoto(id);
+      await featureFlagService.decrementPhotoCount();
       setPhotos((prevPhotos) => prevPhotos.filter((photo) => photo.id !== id));
     } catch (err) {
       setError("Failed to remove photo. Please try again.");
@@ -121,6 +138,7 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({
     getLatestPhotoByType,
     getStorageInfo: getStorageInfoWrapper,
     cleanupStorage,
+    canAddPhoto,
     isLoading,
     error,
   };

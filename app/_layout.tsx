@@ -14,6 +14,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { PhotoProvider } from "@/context/PhotoContext";
 import { LocalizationProvider } from "@/context/LocalizationContext";
 import { ThemeProvider as AppThemeProvider } from "@/context/ThemeContext";
+import { UserProvider } from "@/context/UserContext";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -59,12 +60,14 @@ function RootLayoutNav() {
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <LocalizationProvider>
         <AppThemeProvider>
-          <PhotoProvider>
-            <Stack>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="modal" options={{ presentation: "modal" }} />
-            </Stack>
-          </PhotoProvider>
+          <UserProvider>
+            <PhotoProvider>
+              <Stack>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="modal" options={{ presentation: "modal" }} />
+              </Stack>
+            </PhotoProvider>
+          </UserProvider>
         </AppThemeProvider>
       </LocalizationProvider>
     </ThemeProvider>
