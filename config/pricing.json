@@ -1,0 +1,29 @@
+{
+  "monthly": {
+    "price": 0.99,
+    "priceId": "monthly_subscription",
+    "savings": 0,
+    "currency": "$"
+  },
+  "annual": {
+    "price": 5.99,
+    "priceId": "annual_subscription",
+    "savings": 50,
+    "monthlyEquivalent": 4.16,
+    "currency": "$"
+  },
+  "lifetime": {
+    "price": 9.99,
+    "priceId": "lifetime_purchase",
+    "savings": 0,
+    "currency": "$"
+  },
+  "notes": {
+    "price": "Price in the currency specified",
+    "priceId": "ID to use with your payment provider (App Store/Google Play)",
+    "savings": "Percentage saved compared to monthly plan",
+    "monthlyEquivalent": "Monthly cost when divided by 12 months (annual only)",
+    "currency": "Currency symbol to display"
+  }
+}
+ 

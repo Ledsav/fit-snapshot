@@ -1,0 +1,22 @@
+{
+  "freeTier": {
+    "maxPhotos": 20,
+    "maxComparisonsPerDay": 5,
+    "maxExportsPerMonth": 2
+  },
+  "premiumTier": {
+    "maxPhotos": -1,
+    "maxComparisonsPerDay": -1,
+    "maxExportsPerMonth": -1
+  },
+  "lifetimeTier": {
+    "maxPhotos": -1,
+    "maxComparisonsPerDay": -1,
+    "maxExportsPerMonth": -1
+  },
+  "notes": {
+    "maxPhotos": "Number of photos allowed. Use -1 for unlimited.",
+    "maxComparisonsPerDay": "Number of comparisons per day. Use -1 for unlimited.",
+    "maxExportsPerMonth": "Number of exports per month. Use -1 for unlimited."
+  }
+}

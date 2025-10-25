@@ -36,6 +36,9 @@ interface TranslationKeys {
     confirmHelper: string;
     galleryPermissionDenied: string;
     imagePickerError: string;
+    photoLimitReached: string;
+    photosUsed: string;
+    photoLimitMessage: string;
   };
   gallery: {
     title: string;
@@ -46,6 +49,8 @@ interface TranslationKeys {
     timeline: string;
     selected: string;
     delete: string;
+    selectAll: string;
+    deselectAll: string;
   };
   progress: {
     title: string;
@@ -61,6 +66,11 @@ interface TranslationKeys {
     selectPhotos: string;
     selectFirstPhoto: string;
     selectSecondPhoto: string;
+    takeMorePhotosHint: string;
+    tapToChangeSelection: string;
+    firstPhoto: string;
+    secondPhoto: string;
+    compareSelectedPhotos: string;
   };
   achievements: {
     firstPhoto: string;
@@ -105,6 +115,18 @@ interface TranslationKeys {
     light: string;
     dark: string;
     system: string;
+    premiumActive: string;
+    thankYouMessage: string;
+    photos: string;
+    limit: string;
+    manageSubscription: string;
+    upgradeToPremium: string;
+    unlimitedPhotosAnalytics: string;
+    photosUsed: string;
+    seePlans: string;
+    testPremium: string;
+    on: string;
+    off: string;
   };
   streakCard: {
     startStreak: string;
@@ -177,6 +199,8 @@ interface TranslationKeys {
     retry: string;
     success: string;
     cancel: string;
+    before: string;
+    after: string;
   };
   contacts: {
     title: string;
@@ -187,6 +211,45 @@ interface TranslationKeys {
   permissions: {
     title: string;
     photoSaveMessage: string;
+  };
+  paywall: {
+    upgradeTitle: string;
+    upgradeSubtitle: string;
+    premiumBenefits: string;
+    choosePlan: string;
+    annual: string;
+    monthly: string;
+    lifetime: string;
+    billedMonthly: string;
+    oneTimePayment: string;
+    mostPopular: string;
+    save: string;
+    processing: string;
+    continueToPayment: string;
+    cancelAnytime: string;
+    termsAgreement: string;
+    perMonth: string;
+    currency: string;
+  };
+  featureGate: {
+    premiumFeature: string;
+    upgradeMessage: string;
+    upgrade: string;
+    upgradeNow: string;
+  };
+  premiumBenefits: {
+    unlimitedStorageTitle: string;
+    unlimitedStorageDesc: string;
+    advancedAnalyticsTitle: string;
+    advancedAnalyticsDesc: string;
+    advancedComparisonsTitle: string;
+    advancedComparisonsDesc: string;
+    exportShareTitle: string;
+    exportShareDesc: string;
+    premiumThemesTitle: string;
+    premiumThemesDesc: string;
+    adFreeTitle: string;
+    adFreeDesc: string;
   };
 }
 
@@ -233,6 +296,9 @@ export const translations: Translations = {
       grantPermission: "Grant permission",
       galleryPermissionDenied: "We need media library permissions to import images",
       imagePickerError: "Error selecting image. Please try again",
+      photoLimitReached: "Photo Limit Reached",
+      photosUsed: "photos",
+      photoLimitMessage: "You've reached the free tier limit. Upgrade to Premium for unlimited photos.",
     },
     gallery: {
       title: "Gallery",
@@ -243,6 +309,8 @@ export const translations: Translations = {
       timeline: "Timeline",
       selected: "selected",
       delete: "Delete",
+      selectAll: "Select All",
+      deselectAll: "Deselect All",
     },
     progress: {
       title: "Your Progress",
@@ -258,6 +326,11 @@ export const translations: Translations = {
       selectPhotos: "Select Photos to Compare",
       selectFirstPhoto: "Select first photo",
       selectSecondPhoto: "Select second photo",
+      takeMorePhotosHint: "Take more photos to see your progress over time",
+      tapToChangeSelection: "Tap to change selection",
+      firstPhoto: "1st Photo",
+      secondPhoto: "2nd Photo",
+      compareSelectedPhotos: "Compare Selected Photos",
     },
     achievements: {
       firstPhoto: "First Step",
@@ -302,6 +375,18 @@ export const translations: Translations = {
       light: "Light",
       dark: "Dark",
       system: "System",
+      premiumActive: "Premium Active",
+      thankYouMessage: "Thank you for supporting FitSnapshot!",
+      photos: "Photos",
+      limit: "Limit",
+      manageSubscription: "Manage Subscription",
+      upgradeToPremium: "Upgrade to Premium",
+      unlimitedPhotosAnalytics: "Unlimited photos, analytics & more",
+      photosUsed: "photos used",
+      seePlans: "See Plans",
+      testPremium: "Test Premium",
+      on: "ON",
+      off: "OFF",
     },
     streakCard: {
       startStreak: "Start your streak!",
@@ -405,6 +490,8 @@ export const translations: Translations = {
       retry: "Retry",
       success: "Success",
       cancel: "Cancel",
+      before: "Before",
+      after: "After",
     },
     contacts: {
       title: "Contact Us",
@@ -416,6 +503,45 @@ export const translations: Translations = {
       title: "Permission Required",
       photoSaveMessage:
         "We need your permission to save photos to your gallery.",
+    },
+    paywall: {
+      upgradeTitle: "Upgrade to Premium",
+      upgradeSubtitle: "Unlock unlimited photos, advanced analytics, and more",
+      premiumBenefits: "Premium Benefits",
+      choosePlan: "Choose Your Plan",
+      annual: "Annual",
+      monthly: "Monthly",
+      lifetime: "Lifetime",
+      billedMonthly: "Billed monthly",
+      oneTimePayment: "One-time payment",
+      mostPopular: "MOST POPULAR",
+      save: "Save",
+      processing: "Processing...",
+      continueToPayment: "Continue to Payment",
+      cancelAnytime: "Cancel anytime. No commitment.",
+      termsAgreement: "By continuing, you agree to our Terms & Privacy Policy",
+      perMonth: "/month",
+      currency: "$",
+    },
+    featureGate: {
+      premiumFeature: "Premium Feature",
+      upgradeMessage: "Upgrade to Premium to unlock this feature",
+      upgrade: "Upgrade",
+      upgradeNow: "Upgrade Now",
+    },
+    premiumBenefits: {
+      unlimitedStorageTitle: "Unlimited Photo Storage",
+      unlimitedStorageDesc: "Store unlimited progress photos with cloud backup",
+      advancedAnalyticsTitle: "Advanced Analytics",
+      advancedAnalyticsDesc: "Track your progress with detailed charts and insights",
+      advancedComparisonsTitle: "Advanced Comparisons",
+      advancedComparisonsDesc: "Side-by-side, grid view, and photo morphing",
+      exportShareTitle: "Export & Share",
+      exportShareDesc: "Create videos, PDFs, and share your transformation",
+      premiumThemesTitle: "Premium Themes",
+      premiumThemesDesc: "Customize your experience with exclusive themes",
+      adFreeTitle: "Ad-Free Experience",
+      adFreeDesc: "Enjoy the app without any advertisements",
     },
   },
 
@@ -457,6 +583,9 @@ export const translations: Translations = {
       grantPermission: "Conceder permiso",
       galleryPermissionDenied: "Necesitamos permisos para acceder a la galería de fotos",
       imagePickerError: "Error al seleccionar imagen. Por favor, inténtalo de nuevo",
+      photoLimitReached: "Límite de Fotos Alcanzado",
+      photosUsed: "fotos",
+      photoLimitMessage: "Has alcanzado el límite del plan gratuito. Actualiza a Premium para fotos ilimitadas.",
     },
     gallery: {
       title: "Galería",
@@ -467,6 +596,8 @@ export const translations: Translations = {
       timeline: "Línea de Tiempo",
       selected: "seleccionado",
       delete: "Eliminar",
+      selectAll: "Seleccionar Todo",
+      deselectAll: "Deseleccionar Todo",
     },
     progress: {
       title: "Tu Progreso",
@@ -483,6 +614,11 @@ export const translations: Translations = {
       selectPhotos: "Seleccionar Fotos para Comparar",
       selectFirstPhoto: "Seleccionar primera foto",
       selectSecondPhoto: "Seleccionar segunda foto",
+      takeMorePhotosHint: "Toma más fotos para ver tu progreso con el tiempo",
+      tapToChangeSelection: "Toca para cambiar selección",
+      firstPhoto: "1ª Foto",
+      secondPhoto: "2ª Foto",
+      compareSelectedPhotos: "Comparar Fotos Seleccionadas",
     },
     achievements: {
       firstPhoto: "Primer Paso",
@@ -527,6 +663,18 @@ export const translations: Translations = {
       light: "Claro",
       dark: "Oscuro",
       system: "Sistema",
+      premiumActive: "Premium Activo",
+      thankYouMessage: "¡Gracias por apoyar a FitSnapshot!",
+      photos: "Fotos",
+      limit: "Límite",
+      manageSubscription: "Administrar Suscripción",
+      upgradeToPremium: "Actualizar a Premium",
+      unlimitedPhotosAnalytics: "Fotos ilimitadas, análisis y más",
+      photosUsed: "fotos usadas",
+      seePlans: "Ver Planes",
+      testPremium: "Probar Premium",
+      on: "ACTIVADO",
+      off: "DESACTIVADO",
     },
     streakCard: {
       startStreak: "¡Comienza tu racha!",
@@ -630,6 +778,8 @@ export const translations: Translations = {
       retry: "Reintentar",
       success: "Exito",
       cancel: "Cancelar",
+      before: "Antes",
+      after: "Después",
     },
     contacts: {
       title: "Contáctanos",
@@ -642,11 +792,50 @@ export const translations: Translations = {
       photoSaveMessage:
         "Necesitamos su permiso para guardar fotos en su galería.",
     },
+    paywall: {
+      upgradeTitle: "Actualizar a Premium",
+      upgradeSubtitle: "Desbloquea fotos ilimitadas, análisis avanzados y más",
+      premiumBenefits: "Beneficios Premium",
+      choosePlan: "Elige tu Plan",
+      annual: "Anual",
+      monthly: "Mensual",
+      lifetime: "De por Vida",
+      billedMonthly: "Facturado mensualmente",
+      oneTimePayment: "Pago único",
+      mostPopular: "MÁS POPULAR",
+      save: "Ahorra",
+      processing: "Procesando...",
+      continueToPayment: "Continuar al Pago",
+      cancelAnytime: "Cancela en cualquier momento. Sin compromiso.",
+      termsAgreement: "Al continuar, aceptas nuestros Términos y Política de Privacidad",
+      perMonth: "/mes",
+      currency: "€",
+    },
+    featureGate: {
+      premiumFeature: "Función Premium",
+      upgradeMessage: "Actualiza a Premium para desbloquear esta función",
+      upgrade: "Actualizar",
+      upgradeNow: "Actualizar Ahora",
+    },
+    premiumBenefits: {
+      unlimitedStorageTitle: "Almacenamiento Ilimitado de Fotos",
+      unlimitedStorageDesc: "Almacena fotos de progreso ilimitadas con respaldo en la nube",
+      advancedAnalyticsTitle: "Análisis Avanzados",
+      advancedAnalyticsDesc: "Rastrea tu progreso con gráficos detallados e información",
+      advancedComparisonsTitle: "Comparaciones Avanzadas",
+      advancedComparisonsDesc: "Lado a lado, vista en cuadrícula y transformación de fotos",
+      exportShareTitle: "Exportar y Compartir",
+      exportShareDesc: "Crea videos, PDFs y comparte tu transformación",
+      premiumThemesTitle: "Temas Premium",
+      premiumThemesDesc: "Personaliza tu experiencia con temas exclusivos",
+      adFreeTitle: "Experiencia Sin Anuncios",
+      adFreeDesc: "Disfruta la aplicación sin ningún anuncio",
+    },
   },
 
   it: {
     home: {
-      title: "Tracker Fitness",
+      title: "Tracker Forma",
       streak: "Serie",
       stats: "Statistiche",
       tips: "Consigli",
@@ -683,6 +872,9 @@ export const translations: Translations = {
       grantPermission: "Concedi permesso",
       galleryPermissionDenied: "Abbiamo bisogno del permesso per accedere alla galleria foto",
       imagePickerError: "Errore durante la selezione dell'immagine. Riprova",
+      photoLimitReached: "Limite Foto Raggiunto",
+      photosUsed: "foto",
+      photoLimitMessage: "Hai raggiunto il limite del piano gratuito. Passa a Premium per foto illimitate.",
     },
     gallery: {
       title: "Galleria",
@@ -693,6 +885,8 @@ export const translations: Translations = {
       timeline: "Timeline",
       selected: "selezionato",
       delete: "Elimina",
+      selectAll: "Seleziona Tutto",
+      deselectAll: "Deseleziona Tutto",
     },
     progress: {
       title: "I Tuoi Progressi",
@@ -708,6 +902,11 @@ export const translations: Translations = {
       selectPhotos: "Seleziona Foto da Confrontare",
       selectFirstPhoto: "Seleziona prima foto",
       selectSecondPhoto: "Seleziona seconda foto",
+      takeMorePhotosHint: "Scatta più foto per vedere i tuoi progressi nel tempo",
+      tapToChangeSelection: "Tocca per cambiare selezione",
+      firstPhoto: "1ª Foto",
+      secondPhoto: "2ª Foto",
+      compareSelectedPhotos: "Confronta Foto Selezionate",
     },
     achievements: {
       firstPhoto: "Primo Passo",
@@ -752,6 +951,18 @@ export const translations: Translations = {
       light: "Chiaro",
       dark: "Scuro",
       system: "Sistema",
+      premiumActive: "Premium Attivo",
+      thankYouMessage: "Grazie per il supporto a FitSnapshot!",
+      photos: "Foto",
+      limit: "Limite",
+      manageSubscription: "Gestisci Abbonamento",
+      upgradeToPremium: "Passa a Premium",
+      unlimitedPhotosAnalytics: "Foto illimitate, analisi e altro",
+      photosUsed: "foto utilizzate",
+      seePlans: "Vedi Piani",
+      testPremium: "Testa Premium",
+      on: "ATTIVO",
+      off: "DISATTIVO",
     },
     streakCard: {
       startStreak: "Inizia la tua serie!",
@@ -855,6 +1066,8 @@ export const translations: Translations = {
       retry: "Riprova",
       success: "Successo",
       cancel: "Annulla",
+      before: "Prima",
+      after: "Dopo",
     },
     contacts: {
       title: "Contattaci",
@@ -866,6 +1079,45 @@ export const translations: Translations = {
       title: "Autorizzazione Richiesta",
       photoSaveMessage:
         "Abbiamo bisogno del tuo permesso per salvare le foto nella tua galleria.",
+    },
+    paywall: {
+      upgradeTitle: "Passa a Premium",
+      upgradeSubtitle: "Sblocca foto illimitate, analisi avanzate e altro",
+      premiumBenefits: "Vantaggi Premium",
+      choosePlan: "Scegli il Tuo Piano",
+      annual: "Annuale",
+      monthly: "Mensile",
+      lifetime: "A Vita",
+      billedMonthly: "Costo mensile",
+      oneTimePayment: "Pagamento unico",
+      mostPopular: "PIÙ POPOLARE",
+      save: "Risparmia",
+      processing: "Elaborazione...",
+      continueToPayment: "Continua al Pagamento",
+      cancelAnytime: "Annulla in qualsiasi momento. Nessun impegno.",
+      termsAgreement: "Continuando, accetti i nostri Termini e la Politica sulla Privacy",
+      perMonth: "/mese",
+      currency: "€",
+    },
+    featureGate: {
+      premiumFeature: "Funzione Premium",
+      upgradeMessage: "Passa a Premium per sbloccare questa funzione",
+      upgrade: "Aggiorna",
+      upgradeNow: "Aggiorna Ora",
+    },
+    premiumBenefits: {
+      unlimitedStorageTitle: "Archiviazione Foto Illimitata",
+      unlimitedStorageDesc: "Archivia foto di progresso illimitate con backup nel cloud",
+      advancedAnalyticsTitle: "Analisi Avanzate",
+      advancedAnalyticsDesc: "Traccia i tuoi progressi con grafici dettagliati e approfondimenti",
+      advancedComparisonsTitle: "Confronti Avanzati",
+      advancedComparisonsDesc: "Affiancamento, vista a griglia e morphing fotografico",
+      exportShareTitle: "Esporta e Condividi",
+      exportShareDesc: "Crea video, PDF e condividi la tua trasformazione",
+      premiumThemesTitle: "Temi Premium",
+      premiumThemesDesc: "Personalizza la tua esperienza con temi esclusivi",
+      adFreeTitle: "Esperienza Senza Pubblicità",
+      adFreeDesc: "Goditi l'app senza alcuna pubblicità",
     },
   },
   de: {
@@ -907,6 +1159,9 @@ export const translations: Translations = {
       grantPermission: "Erlaubnis erteilen",
       galleryPermissionDenied: "Wir benötigen die Berechtigung zum Zugriff auf die Fotogalerie",
       imagePickerError: "Fehler beim Auswählen des Bildes. Bitte versuchen Sie es erneut",
+      photoLimitReached: "Fotolimit Erreicht",
+      photosUsed: "Fotos",
+      photoLimitMessage: "Sie haben das Limit des kostenlosen Plans erreicht. Upgraden Sie auf Premium für unbegrenzte Fotos.",
     },
     gallery: {
       title: "Galerie",
@@ -917,6 +1172,8 @@ export const translations: Translations = {
       timeline: "Zeitstrahl",
       selected: "ausgewählt",
       delete: "Löschen",
+      selectAll: "Alle Auswählen",
+      deselectAll: "Alle Abwählen",
     },
     progress: {
       title: "Ihr Fortschritt",
@@ -933,6 +1190,11 @@ export const translations: Translations = {
       selectPhotos: "Fotos zum Vergleichen Auswählen",
       selectFirstPhoto: "Erstes Foto auswählen",
       selectSecondPhoto: "Zweites Foto auswählen",
+      takeMorePhotosHint: "Machen Sie mehr Fotos, um Ihren Fortschritt im Laufe der Zeit zu sehen",
+      tapToChangeSelection: "Tippen, um Auswahl zu ändern",
+      firstPhoto: "1. Foto",
+      secondPhoto: "2. Foto",
+      compareSelectedPhotos: "Ausgewählte Fotos Vergleichen",
     },
     achievements: {
       firstPhoto: "Erster Schritt",
@@ -977,6 +1239,18 @@ export const translations: Translations = {
       light: "Hell",
       dark: "Dunkel",
       system: "System",
+      premiumActive: "Premium Aktiv",
+      thankYouMessage: "Vielen Dank für die Unterstützung von FitSnapshot!",
+      photos: "Fotos",
+      limit: "Limit",
+      manageSubscription: "Abonnement Verwalten",
+      upgradeToPremium: "Auf Premium Upgraden",
+      unlimitedPhotosAnalytics: "Unbegrenzte Fotos, Analysen & mehr",
+      photosUsed: "Fotos verwendet",
+      seePlans: "Pläne Ansehen",
+      testPremium: "Premium Testen",
+      on: "AN",
+      off: "AUS",
     },
     streakCard: {
       startStreak: "Starten Sie Ihre Serie!",
@@ -1081,6 +1355,8 @@ export const translations: Translations = {
       retry: "Erneut versuchen",
       success: "Erfolgreich",
       cancel: "Abbrechen",
+      before: "Vorher",
+      after: "Nachher",
     },
     contacts: {
       title: "Kontaktieren Sie uns",
@@ -1092,6 +1368,45 @@ export const translations: Translations = {
       title: "Berechtigung Erforderlich",
       photoSaveMessage:
         "Wir benötigen Ihre Erlaubnis, um Fotos in Ihrer Galerie zu speichern.",
+    },
+    paywall: {
+      upgradeTitle: "Auf Premium upgraden",
+      upgradeSubtitle: "Unbegrenzte Fotos, erweiterte Analysen und mehr freischalten",
+      premiumBenefits: "Premium-Vorteile",
+      choosePlan: "Wählen Sie Ihren Plan",
+      annual: "Jährlich",
+      monthly: "Monatlich",
+      lifetime: "Lebenslang",
+      billedMonthly: "Monatlich abgerechnet",
+      oneTimePayment: "Einmalige Zahlung",
+      mostPopular: "AM BELIEBTESTEN",
+      save: "Sparen",
+      processing: "Verarbeitung...",
+      continueToPayment: "Weiter zur Zahlung",
+      cancelAnytime: "Jederzeit kündbar. Keine Verpflichtung.",
+      termsAgreement: "Indem Sie fortfahren, stimmen Sie unseren Bedingungen und Datenschutzrichtlinien zu",
+      perMonth: "/Monat",
+      currency: "€",
+    },
+    featureGate: {
+      premiumFeature: "Premium-Funktion",
+      upgradeMessage: "Upgraden Sie auf Premium, um diese Funktion freizuschalten",
+      upgrade: "Upgraden",
+      upgradeNow: "Jetzt Upgraden",
+    },
+    premiumBenefits: {
+      unlimitedStorageTitle: "Unbegrenzter Fotospeicher",
+      unlimitedStorageDesc: "Speichern Sie unbegrenzt Fortschrittsfotos mit Cloud-Backup",
+      advancedAnalyticsTitle: "Erweiterte Analysen",
+      advancedAnalyticsDesc: "Verfolgen Sie Ihren Fortschritt mit detaillierten Diagrammen und Einblicken",
+      advancedComparisonsTitle: "Erweiterte Vergleiche",
+      advancedComparisonsDesc: "Seite an Seite, Rasteransicht und Foto-Morphing",
+      exportShareTitle: "Exportieren & Teilen",
+      exportShareDesc: "Erstellen Sie Videos, PDFs und teilen Sie Ihre Transformation",
+      premiumThemesTitle: "Premium-Themes",
+      premiumThemesDesc: "Passen Sie Ihr Erlebnis mit exklusiven Themes an",
+      adFreeTitle: "Werbefreies Erlebnis",
+      adFreeDesc: "Genießen Sie die App ohne jegliche Werbung",
     },
   },
   fr: {
@@ -1133,6 +1448,9 @@ export const translations: Translations = {
       grantPermission: "Accorder la permission",
       galleryPermissionDenied: "Nous avons besoin de l'autorisation d'accéder à la galerie de photos",
       imagePickerError: "Erreur lors de la sélection de l'image. Veuillez réessayer",
+      photoLimitReached: "Limite de Photos Atteinte",
+      photosUsed: "photos",
+      photoLimitMessage: "Vous avez atteint la limite du plan gratuit. Passez à Premium pour des photos illimitées.",
     },
     gallery: {
       title: "Galerie",
@@ -1143,6 +1461,8 @@ export const translations: Translations = {
       timeline: "Chronologie",
       selected: "sélectionné",
       delete: "Supprimer",
+      selectAll: "Tout Sélectionner",
+      deselectAll: "Tout Désélectionner",
     },
     progress: {
       title: "Votre Progrès",
@@ -1159,6 +1479,11 @@ export const translations: Translations = {
       selectPhotos: "Sélectionner des Photos à Comparer",
       selectFirstPhoto: "Sélectionner la première photo",
       selectSecondPhoto: "Sélectionner la deuxième photo",
+      takeMorePhotosHint: "Prenez plus de photos pour voir vos progrès au fil du temps",
+      tapToChangeSelection: "Appuyez pour changer la sélection",
+      firstPhoto: "1ère Photo",
+      secondPhoto: "2ème Photo",
+      compareSelectedPhotos: "Comparer les Photos Sélectionnées",
     },
     achievements: {
       firstPhoto: "Premier Pas",
@@ -1203,6 +1528,18 @@ export const translations: Translations = {
       light: "Clair",
       dark: "Sombre",
       system: "Système",
+      premiumActive: "Premium Actif",
+      thankYouMessage: "Merci de soutenir FitSnapshot!",
+      photos: "Photos",
+      limit: "Limite",
+      manageSubscription: "Gérer l'Abonnement",
+      upgradeToPremium: "Passer à Premium",
+      unlimitedPhotosAnalytics: "Photos illimitées, analyses & plus",
+      photosUsed: "photos utilisées",
+      seePlans: "Voir les Plans",
+      testPremium: "Tester Premium",
+      on: "ACTIVÉ",
+      off: "DÉSACTIVÉ",
     },
     streakCard: {
       startStreak: "Commencez votre série !",
@@ -1306,6 +1643,8 @@ export const translations: Translations = {
       retry: "Réessayer",
       success: "Succès",
       cancel: "Annuler",
+      before: "Avant",
+      after: "Après",
     },
     contacts: {
       title: "Contactez-nous",
@@ -1317,6 +1656,45 @@ export const translations: Translations = {
       title: "Autorisation Requise",
       photoSaveMessage:
         "Nous avons besoin de votre autorisation pour enregistrer des photos dans votre galerie.",
+    },
+    paywall: {
+      upgradeTitle: "Passer à Premium",
+      upgradeSubtitle: "Débloquez des photos illimitées, des analyses avancées et plus encore",
+      premiumBenefits: "Avantages Premium",
+      choosePlan: "Choisissez Votre Plan",
+      annual: "Annuel",
+      monthly: "Mensuel",
+      lifetime: "À Vie",
+      billedMonthly: "Facturé mensuellement",
+      oneTimePayment: "Paiement unique",
+      mostPopular: "LE PLUS POPULAIRE",
+      save: "Économiser",
+      processing: "Traitement...",
+      continueToPayment: "Continuer vers le Paiement",
+      cancelAnytime: "Annulez à tout moment. Aucun engagement.",
+      termsAgreement: "En continuant, vous acceptez nos Conditions et notre Politique de Confidentialité",
+      perMonth: "/mois",
+      currency: "€",
+    },
+    featureGate: {
+      premiumFeature: "Fonctionnalité Premium",
+      upgradeMessage: "Passez à Premium pour débloquer cette fonctionnalité",
+      upgrade: "Mettre à Niveau",
+      upgradeNow: "Mettre à Niveau Maintenant",
+    },
+    premiumBenefits: {
+      unlimitedStorageTitle: "Stockage de Photos Illimité",
+      unlimitedStorageDesc: "Stockez des photos de progression illimitées avec sauvegarde cloud",
+      advancedAnalyticsTitle: "Analyses Avancées",
+      advancedAnalyticsDesc: "Suivez vos progrès avec des graphiques détaillés et des informations",
+      advancedComparisonsTitle: "Comparaisons Avancées",
+      advancedComparisonsDesc: "Côte à côte, vue en grille et morphing de photos",
+      exportShareTitle: "Exporter et Partager",
+      exportShareDesc: "Créez des vidéos, des PDFs et partagez votre transformation",
+      premiumThemesTitle: "Thèmes Premium",
+      premiumThemesDesc: "Personnalisez votre expérience avec des thèmes exclusifs",
+      adFreeTitle: "Expérience Sans Publicité",
+      adFreeDesc: "Profitez de l'application sans aucune publicité",
     },
   },
 };

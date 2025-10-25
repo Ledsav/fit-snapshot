@@ -6,7 +6,8 @@
  */
 
 import Colors from '@/constants/Colors';
-import { Feature, PREMIUM_BENEFITS, PRICING } from '@/constants/Features';
+import { Feature, getPremiumBenefits, PRICING } from '@/constants/Features';
+import { useLocalization } from '@/context/LocalizationContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useUser } from '@/context/UserContext';
 import { Ionicons } from '@expo/vector-icons';
@@ -45,8 +46,12 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
   const { effectiveColorScheme } = useTheme();
   const theme = Colors[effectiveColorScheme];
   const { setTestPremiumStatus } = useUser();
+  const { t } = useLocalization();
   const [selectedPlan, setSelectedPlan] = useState<PricingPlan>('annual');
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Get translated premium benefits
+  const premiumBenefits = getPremiumBenefits(t);
 
   const handlePurchase = async () => {
     setIsProcessing(true);
@@ -110,7 +115,7 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
         {isPopular && (
           <View style={[styles.popularBadge, { backgroundColor: theme.primary }]}>
             <Text style={[styles.popularBadgeText, { color: theme.background }]}>
-              MOST POPULAR
+              {t("paywall.mostPopular")}
             </Text>
           </View>
         )}
@@ -130,11 +135,11 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
           </View>
         </View>
         <View style={styles.pricingBottom}>
-          <Text style={[styles.pricingPrice, { color: theme.primary }]}>${price}</Text>
+          <Text style={[styles.pricingPrice, { color: theme.primary }]}>{t("paywall.currency")}{price}</Text>
           {savings && (
             <View style={[styles.savingsBadge, { backgroundColor: theme.success + '20' }]}>
               <Text style={[styles.savingsText, { color: theme.success }]}>
-                Save {savings}%
+                {t("paywall.save")} {savings}%
               </Text>
             </View>
           )}
@@ -176,19 +181,19 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
           >
             <Ionicons name="star" size={48} color={theme.primary} />
             <Text style={[styles.heroTitle, { color: theme.text }]}>
-              Upgrade to Premium
+              {t("paywall.upgradeTitle")}
             </Text>
             <Text style={[styles.heroSubtitle, { color: theme.text }]}>
-              Unlock unlimited photos, advanced analytics, and more
+              {t("paywall.upgradeSubtitle")}
             </Text>
           </LinearGradient>
 
           {/* Benefits List */}
           <View style={styles.benefitsContainer}>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              Premium Benefits
+              {t("paywall.premiumBenefits")}
             </Text>
-            {PREMIUM_BENEFITS.map((benefit, index) => (
+            {premiumBenefits.map((benefit, index) => (
               <View key={index} style={styles.benefitItem}>
                 <View
                   style={[
@@ -213,14 +218,14 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
           {/* Pricing Options */}
           <View style={styles.pricingContainer}>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              Choose Your Plan
+              {t("paywall.choosePlan")}
             </Text>
 
             <PricingCard
               plan="annual"
               price={PRICING.annual.price.toFixed(2)}
-              title="Annual"
-              subtitle={`$${PRICING.annual.monthlyEquivalent}/month`}
+              title={t("paywall.annual")}
+              subtitle={`${t("paywall.currency")}${PRICING.annual.monthlyEquivalent}${t("paywall.perMonth")}`}
               savings={PRICING.annual.savings.toString()}
               isPopular
             />
@@ -228,15 +233,15 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
             <PricingCard
               plan="monthly"
               price={PRICING.monthly.price.toFixed(2)}
-              title="Monthly"
-              subtitle="Billed monthly"
+              title={t("paywall.monthly")}
+              subtitle={t("paywall.billedMonthly")}
             />
 
             <PricingCard
               plan="lifetime"
               price={PRICING.lifetime.price.toFixed(2)}
-              title="Lifetime"
-              subtitle="One-time payment"
+              title={t("paywall.lifetime")}
+              subtitle={t("paywall.oneTimePayment")}
             />
           </View>
 
@@ -253,17 +258,17 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
           >
             <Ionicons name="cart" size={24} color={theme.background} />
             <Text style={[styles.purchaseButtonText, { color: theme.background }]}>
-              {isProcessing ? 'Processing...' : 'Continue to Payment'}
+              {isProcessing ? t("paywall.processing") : t("paywall.continueToPayment")}
             </Text>
           </TouchableOpacity>
 
           {/* Footer */}
           <View style={styles.footer}>
             <Text style={[styles.footerText, { color: theme.text }]}>
-              Cancel anytime. No commitment.
+              {t("paywall.cancelAnytime")}
             </Text>
             <Text style={[styles.footerText, { color: theme.text }]}>
-              By continuing, you agree to our Terms & Privacy Policy
+              {t("paywall.termsAgreement")}
             </Text>
           </View>
         </ScrollView>

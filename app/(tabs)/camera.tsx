@@ -2,14 +2,15 @@ import Colors from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
 import { usePhotos } from "@/context/PhotoContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useUser } from "@/context/UserContext";
 import { PhotoType } from "@/enums/Photos";
 import { Ionicons } from "@expo/vector-icons";
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
 import { FlipType, manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import * as ImagePicker from 'expo-image-picker';
-import { Href, useRouter } from "expo-router";
+import { Href, useFocusEffect, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
@@ -40,16 +41,42 @@ export default function CameraScreen() {
   const theme = Colors[effectiveColorScheme];
   const { addPhoto } = usePhotos();
   const { t } = useLocalization();
+  const { canAddPhoto, featureUsage, isPremium } = useUser();
 
   
   const [isCameraReady, setIsCameraReady] = useState(false);
-  const [cameraKey, setCameraKey] = useState(0); 
+  const [cameraKey, setCameraKey] = useState(0);
+  const [isFocused, setIsFocused] = useState(true);
 
-  
+
   const [isTimerEnabled, setIsTimerEnabled] = useState(false);
   const [timerDuration, setTimerDuration] = useState(3);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [remainingTime, setRemainingTime] = useState(0);
+
+  // Check photo limit
+  const photoLimitStatus = canAddPhoto();
+  const isPhotoLimitReached = !photoLimitStatus.allowed;
+
+  // Handle navigation focus/blur to properly manage camera resources
+  useFocusEffect(
+    useCallback(() => {
+      console.log('Camera screen focused - reinitializing camera');
+      setIsFocused(true);
+      setIsCameraReady(false);
+      // Force camera re-mount when screen comes into focus
+      setCameraKey(prev => prev + 1);
+
+      return () => {
+        console.log('Camera screen blurred - releasing camera resources');
+        setIsFocused(false);
+        setIsCameraReady(false);
+        // Cancel any running timer when leaving the screen
+        setIsTimerRunning(false);
+        setRemainingTime(0);
+      };
+    }, [])
+  );
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -137,6 +164,12 @@ export default function CameraScreen() {
       return;
     }
 
+    // Check photo limit before taking picture
+    if (isPhotoLimitReached) {
+      console.log("Photo limit reached");
+      return;
+    }
+
     try {
       const photo = await cameraRef.current.takePictureAsync({
         quality: 0.8,
@@ -218,8 +251,14 @@ export default function CameraScreen() {
   };
 
   const pickImage = async () => {
+    // Check photo limit before importing
+    if (isPhotoLimitReached) {
+      alert(photoLimitStatus.reason || t("camera.photoLimitReached") || "Photo limit reached. Delete photos or upgrade to Premium.");
+      return;
+    }
+
     try {
-      
+
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (status !== 'granted') {
@@ -403,7 +442,7 @@ export default function CameraScreen() {
       style={[styles.container, { backgroundColor: theme.background }]}
     >
       <StatusBar style="light" />
-      {permission.granted && (
+      {permission.granted && isFocused && (
         <>
           <CameraView
             key={`camera-${facing}-${cameraKey}`}
@@ -418,7 +457,7 @@ export default function CameraScreen() {
             }}
             onMountError={(error) => {
               console.error('Camera mount error:', error);
-              
+
               setCameraKey(prev => prev + 1);
             }}
           >
@@ -479,29 +518,66 @@ export default function CameraScreen() {
               style={[
                 styles.captureButton,
                 {
-                  backgroundColor: theme.primary,
-                  opacity: isCameraReady ? 1 : 0.5
+                  backgroundColor: isPhotoLimitReached ? theme.error : theme.primary,
+                  opacity: (isCameraReady && !isPhotoLimitReached) ? 1 : 0.5
                 }
               ]}
               onPress={isTimerEnabled ? startTimer : takePicture}
-              disabled={!isCameraReady}
+              disabled={!isCameraReady || isPhotoLimitReached}
             >
               <View
                 style={[
                   styles.captureButtonInner,
-                  { backgroundColor: "white" },
+                  { backgroundColor: isPhotoLimitReached ? theme.error : "white" },
                 ]}
               />
+              {isPhotoLimitReached && (
+                <View style={styles.limitBadge}>
+                  <Ionicons name="lock-closed" size={24} color="white" />
+                </View>
+              )}
             </TouchableOpacity>
           )}
           <TouchableOpacity
-            style={styles.importButton}
+            style={[
+              styles.importButton,
+              isPhotoLimitReached && styles.disabledButton
+            ]}
             onPress={pickImage}
+            disabled={isPhotoLimitReached}
           >
-            <Ionicons name="image-outline" size={32} color="white" />
+            <Ionicons
+              name="image-outline"
+              size={32}
+              color={isPhotoLimitReached ? "rgba(255, 255, 255, 0.3)" : "white"}
+            />
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Photo Limit Warning Banner */}
+      {isPhotoLimitReached && (
+        <View style={[styles.limitWarningBanner, { backgroundColor: theme.error }]}>
+          <Ionicons name="warning" size={24} color="white" />
+          <View style={styles.limitWarningTextContainer}>
+            <Text style={styles.limitWarningTitle}>
+              {t("camera.photoLimitReached")}
+            </Text>
+            <Text style={styles.limitWarningMessage}>
+              {t("camera.photoLimitMessage")}
+            </Text>
+          </View>
+        </View>
+      )}
+
+      {/* Photo Counter for Free Users */}
+      {!isPremium && !isPhotoLimitReached && photoLimitStatus.limit && (
+        <View style={[styles.photoCounterBanner, { backgroundColor: 'rgba(0, 0, 0, 0.6)' }]}>
+          <Text style={styles.photoCounterText}>
+            {featureUsage.photoCount} / {photoLimitStatus.limit} {t("camera.photosUsed")}
+          </Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -781,5 +857,56 @@ const styles = StyleSheet.create({
     color: "black",
     fontWeight: "bold",
     textAlign: "center" as const,
+  },
+  limitBadge: {
+    position: "absolute",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  disabledButton: {
+    opacity: 0.3,
+  },
+  limitWarningBanner: {
+    position: "absolute",
+    bottom: 140,
+    left: 20,
+    right: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    borderRadius: 12,
+    gap: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  limitWarningTextContainer: {
+    flex: 1,
+  },
+  limitWarningTitle: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  limitWarningMessage: {
+    color: "white",
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  photoCounterBanner: {
+    position: "absolute",
+    top: 120,
+    alignSelf: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+  },
+  photoCounterText: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "600",
   },
 });

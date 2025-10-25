@@ -68,10 +68,10 @@ export const MiniComparisonPreview: React.FC<MiniComparisonPreviewProps> = ({ ph
 
         <View style={styles.labels}>
           <View style={[styles.label, { backgroundColor: theme.text + '99', opacity: (100 - sliderValue) / 100 }]}>
-            <Text style={styles.labelText}>Before</Text>
+            <Text style={styles.labelText}>{t("common.before")}</Text>
           </View>
           <View style={[styles.label, { backgroundColor: theme.text + '99', opacity: sliderValue / 100 }]}>
-            <Text style={styles.labelText}>After</Text>
+            <Text style={styles.labelText}>{t("common.after")}</Text>
           </View>
         </View>
       </View>

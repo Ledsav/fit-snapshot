@@ -42,7 +42,7 @@ export const BeforeAfterComparison: React.FC<BeforeAfterComparisonProps> = ({
             />
           )}
           <Text style={[styles.label, { color: theme.text }]}>
-            {t("progress.before")}
+            {t("common.before")}
           </Text>
         </View>
         <View style={styles.photoWrapper}>
@@ -57,7 +57,7 @@ export const BeforeAfterComparison: React.FC<BeforeAfterComparisonProps> = ({
             />
           )}
           <Text style={[styles.label, { color: theme.text }]}>
-            {t("progress.after")}
+            {t("common.after")}
           </Text>
         </View>
       </View>

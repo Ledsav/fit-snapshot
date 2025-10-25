@@ -1,7 +1,10 @@
+import { FeatureGate } from "@/components/monetization/FeatureGate";
 import Colors from "@/constants/Colors";
+import { Feature } from "@/constants/Features";
 import { useLocalization } from "@/context/LocalizationContext";
 import { usePhotos } from "@/context/PhotoContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useUser } from "@/context/UserContext";
 import { PhotoType } from "@/enums/Photos";
 import { Photo } from "@/services/photoStorage";
 import { getTimeDifference } from "@/utils/dateUtils";
@@ -9,20 +12,17 @@ import { Ionicons } from "@expo/vector-icons";
 import * as MediaLibrary from "expo-media-library";
 import React, { useCallback, useRef, useState } from "react";
 import {
-    Alert,
-    Animated,
-    Dimensions,
-    Image,
-    PanResponder,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  Animated,
+  Dimensions,
+  Image,
+  PanResponder,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { FeatureGate } from "@/components/monetization/FeatureGate";
-import { Feature } from "@/constants/Features";
-import { useUser } from "@/context/UserContext";
 
 interface PhotoMorphProps {
   type: PhotoType.front | PhotoType.side | PhotoType.back;
@@ -166,7 +166,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
           </TouchableOpacity>
         </View>
         <Text style={[styles.singlePhotoHint, { color: theme.text }]}>
-          Take more photos to see your progress over time
+          {t("progress.takeMorePhotosHint")}
         </Text>
       </View>
     );
@@ -180,7 +180,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
         showPreview={false}
         compact={false}
         customMessage="Upgrade to Premium to select any photos for comparison"
-        containerStyle={[styles.container, { backgroundColor: theme.transparent }]}
+        containerStyle={{ ...styles.container, backgroundColor: theme.transparent }}
       >
         <View style={[styles.container, { backgroundColor: theme.transparent }]}>
           <View style={styles.selectionHeader}>
@@ -190,10 +190,10 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
               </Text>
               <Text style={[styles.selectionSubtitle, { color: theme.text }]}>
                 {!selectedPhoto1
-                  ? t("progress.selectFirstPhoto") || "Select first photo"
+                  ? t("progress.selectFirstPhoto")
                   : !selectedPhoto2
-                  ? t("progress.selectSecondPhoto") || "Select second photo"
-                  : "Tap to change selection"}
+                  ? t("progress.selectSecondPhoto")
+                  : t("progress.tapToChangeSelection")}
               </Text>
             </View>
             <TouchableOpacity
@@ -210,13 +210,13 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
           <View style={styles.selectionProgress}>
             <View style={[styles.selectionStep, { backgroundColor: selectedPhoto1 ? theme.primary : theme.text + '20' }]}>
               <Text style={[styles.selectionStepText, { color: selectedPhoto1 ? 'white' : theme.text }]}>
-                1st Photo {selectedPhoto1 ? '✓' : ''}
+                {t("progress.firstPhoto")} {selectedPhoto1 ? '✓' : ''}
               </Text>
             </View>
             <View style={[styles.selectionConnector, { backgroundColor: theme.text + '30' }]} />
             <View style={[styles.selectionStep, { backgroundColor: selectedPhoto2 ? theme.success : theme.text + '20' }]}>
               <Text style={[styles.selectionStepText, { color: selectedPhoto2 ? 'white' : theme.text }]}>
-                2nd Photo {selectedPhoto2 ? '✓' : ''}
+                {t("progress.secondPhoto")} {selectedPhoto2 ? '✓' : ''}
               </Text>
             </View>
           </View>
@@ -280,7 +280,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
               onPress={() => setIsSelectingPhotos(false)}
             >
               <Ionicons name="checkmark" size={24} color="white" />
-              <Text style={styles.confirmSelectionText}>Compare Selected Photos</Text>
+              <Text style={styles.confirmSelectionText}>{t("progress.compareSelectedPhotos")}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -457,8 +457,8 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
               </Animated.View>
             </View>
             <View style={styles.sliderLabels}>
-              <Text style={[styles.sliderLabel, { color: theme.text }]}>Before</Text>
-              <Text style={[styles.sliderLabel, { color: theme.text }]}>After</Text>
+              <Text style={[styles.sliderLabel, { color: theme.text }]}>{t("common.before")}</Text>
+              <Text style={[styles.sliderLabel, { color: theme.text }]}>{t("common.after")}</Text>
             </View>
           </View>
         </>
@@ -476,7 +476,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
             <View style={[styles.sideBySidePhoto, { borderColor: theme.primary }]}>
               <Image source={{ uri: photo1.uri }} style={styles.image} />
               <View style={[styles.sideBySideLabel, { backgroundColor: theme.text + 'B3' }]}>
-                <Text style={styles.sideBySideLabelText}>Before</Text>
+                <Text style={styles.sideBySideLabelText}>{t("common.before")}</Text>
                 <Text style={styles.sideBySideDateText}>
                   {new Date(photo1.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </Text>
@@ -485,7 +485,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
             <View style={[styles.sideBySidePhoto, { borderColor: theme.primary }]}>
               <Image source={{ uri: photo2.uri }} style={styles.image} />
               <View style={[styles.sideBySideLabel, { backgroundColor: theme.text + 'B3' }]}>
-                <Text style={styles.sideBySideLabelText}>After</Text>
+                <Text style={styles.sideBySideLabelText}>{t("common.after")}</Text>
                 <Text style={styles.sideBySideDateText}>
                   {new Date(photo2.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </Text>

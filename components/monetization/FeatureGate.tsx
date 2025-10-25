@@ -7,6 +7,7 @@
 
 import Colors from '@/constants/Colors';
 import { Feature } from '@/constants/Features';
+import { useLocalization } from '@/context/LocalizationContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useUser } from '@/context/UserContext';
 import { Ionicons } from '@expo/vector-icons';
@@ -37,6 +38,7 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
   const { effectiveColorScheme } = useTheme();
   const theme = Colors[effectiveColorScheme];
   const { hasFeatureAccess } = useUser();
+  const { t } = useLocalization();
   const [showPaywall, setShowPaywall] = useState(false);
 
   const hasAccess = hasFeatureAccess(feature);
@@ -81,11 +83,11 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
                 { color: theme.text },
                 compact && styles.lockTitleCompact
               ]}>
-                Premium Feature
+                {t("featureGate.premiumFeature")}
               </Text>
               {!compact && (
                 <Text style={[styles.lockMessage, { color: theme.text }]}>
-                  {customMessage || 'Upgrade to Premium to unlock this feature'}
+                  {customMessage || t("featureGate.upgradeMessage")}
                 </Text>
               )}
               <TouchableOpacity
@@ -103,7 +105,7 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
                   { color: theme.background },
                   compact && styles.upgradeButtonTextCompact
                 ]}>
-                  {compact ? 'Upgrade' : 'Upgrade Now'}
+                  {compact ? t("featureGate.upgrade") : t("featureGate.upgradeNow")}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -129,11 +131,11 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
             { color: theme.text },
             compact && styles.lockTitleCompact
           ]}>
-            Premium Feature
+            {t("featureGate.premiumFeature")}
           </Text>
           {!compact && (
             <Text style={[styles.lockMessage, { color: theme.text }]}>
-              {customMessage || 'Upgrade to Premium to unlock this feature'}
+              {customMessage || t("featureGate.upgradeMessage")}
             </Text>
           )}
           <TouchableOpacity
@@ -151,7 +153,7 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
               { color: theme.background },
               compact && styles.upgradeButtonTextCompact
             ]}>
-              {compact ? 'Upgrade' : 'Upgrade Now'}
+              {compact ? t("featureGate.upgrade") : t("featureGate.upgradeNow")}
             </Text>
           </TouchableOpacity>
         </View>

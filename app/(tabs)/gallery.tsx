@@ -3,6 +3,7 @@ import { Header } from "@/components/home/Header";
 import PaywallModal from "@/components/monetization/PaywallModal";
 import BackgroundImage from "@/components/style/BackgroundImage";
 import Colors from "@/constants/Colors";
+import { FREE_TIER_LIMITS } from "@/constants/Features";
 import { useLocalization } from "@/context/LocalizationContext";
 import { usePhotos } from "@/context/PhotoContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -154,6 +155,15 @@ export default function GalleryScreen() {
       newSelection.add(id);
     }
     setSelectedPhotoIds(newSelection);
+  };
+
+  const selectAllPhotos = () => {
+    const allPhotoIds = new Set(photos.map(photo => photo.id));
+    setSelectedPhotoIds(allPhotoIds);
+  };
+
+  const deselectAllPhotos = () => {
+    setSelectedPhotoIds(new Set());
   };
 
   const handleBulkDelete = async () => {
@@ -454,7 +464,7 @@ export default function GalleryScreen() {
           <View style={[styles.warningBanner, { backgroundColor: theme.warning + '20' }]}>
             <Ionicons name="warning-outline" size={20} color={theme.warning} />
             <Text style={[styles.warningText, { color: theme.warning }]}>
-              {featureUsage.photoCount} / 50 photos used ({storageUsagePercentage}%)
+              {featureUsage.photoCount} / {FREE_TIER_LIMITS.MAX_PHOTOS} photos used ({storageUsagePercentage}%)
             </Text>
             <TouchableOpacity onPress={() => setIsPaywallVisible(true)}>
               <Text style={[styles.upgradeLink, { color: theme.primary }]}>
@@ -534,9 +544,30 @@ export default function GalleryScreen() {
         {/* Bulk Delete Bar */}
         {selectionMode && (
           <View style={[styles.bulkActionsBar, { backgroundColor: theme.cardBackground }]}>
-            <Text style={[styles.bulkActionsText, { color: theme.text }]}>
-              {selectedPhotoIds.size} {t("gallery.selected") || "selected"}
-            </Text>
+            <View style={styles.bulkActionsLeft}>
+              <Text style={[styles.bulkActionsText, { color: theme.text }]} numberOfLines={1}>
+                {selectedPhotoIds.size}
+              </Text>
+              {selectedPhotoIds.size === photos.length && selectedPhotoIds.size > 0 ? (
+                <TouchableOpacity
+                  style={[styles.selectAllButton, { borderColor: theme.primary }]}
+                  onPress={deselectAllPhotos}
+                >
+                  <Text style={[styles.selectAllText, { color: theme.primary }]} numberOfLines={1}>
+                    {t("gallery.deselectAll") || "Deselect All"}
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={[styles.selectAllButton, { borderColor: theme.primary }]}
+                  onPress={selectAllPhotos}
+                >
+                  <Text style={[styles.selectAllText, { color: theme.primary }]} numberOfLines={1}>
+                    {t("gallery.selectAll") || "Select All"}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
             <TouchableOpacity
               style={[
                 styles.bulkDeleteButton,
@@ -546,10 +577,7 @@ export default function GalleryScreen() {
               onPress={handleBulkDelete}
               disabled={selectedPhotoIds.size === 0}
             >
-              <Ionicons name="trash-outline" size={20} color="white" />
-              <Text style={styles.bulkDeleteText}>
-                {t("gallery.delete") || "Delete"}
-              </Text>
+              <Ionicons name="trash-outline" size={18} color="white" />
             </TouchableOpacity>
           </View>
         )}
@@ -734,17 +762,36 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     borderRadius: 10,
   },
+  bulkActionsLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+    marginRight: 8,
+  },
   bulkActionsText: {
     fontSize: 16,
     fontWeight: '600',
+    minWidth: 20,
+  },
+  selectAllButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+    borderWidth: 1,
+    flexShrink: 1,
+  },
+  selectAllText: {
+    fontSize: 12,
+    fontWeight: '600',
   },
   bulkDeleteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    width: 44,
+    height: 44,
     borderRadius: 8,
-    gap: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexShrink: 0,
   },
   bulkDeleteText: {
     color: 'white',

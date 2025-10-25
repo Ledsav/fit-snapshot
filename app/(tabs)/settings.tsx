@@ -5,6 +5,7 @@ import { ThemeSelector } from "@/components/settings/ThemeSelector";
 import { StorageManager } from "@/components/settings/StorageManager";
 import { OnboardingCarousel } from "@/components/onBoarding/OnboardingCarousel";
 import Colors from "@/constants/Colors";
+import { FREE_TIER_LIMITS } from "@/constants/Features";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useUser } from "@/context/UserContext";
@@ -160,22 +161,22 @@ export default function SettingsScreen() {
               <View style={styles.premiumHeader}>
                 <PremiumBadge size="large" />
                 <Text style={[styles.premiumTitle, { color: theme.text }]}>
-                  Premium Active
+                  {t("settings.premiumActive")}
                 </Text>
               </View>
               <Text style={[styles.premiumSubtitle, { color: theme.text }]}>
-                Thank you for supporting FitSnapshot!
+                {t("settings.thankYouMessage")}
               </Text>
               <View style={styles.premiumStats}>
                 <View style={styles.statItem}>
                   <Text style={[styles.statValue, { color: theme.primary }]}>
                     {featureUsage.photoCount}
                   </Text>
-                  <Text style={[styles.statLabel, { color: theme.text }]}>Photos</Text>
+                  <Text style={[styles.statLabel, { color: theme.text }]}>{t("settings.photos")}</Text>
                 </View>
                 <View style={styles.statItem}>
                   <Text style={[styles.statValue, { color: theme.primary }]}>∞</Text>
-                  <Text style={[styles.statLabel, { color: theme.text }]}>Limit</Text>
+                  <Text style={[styles.statLabel, { color: theme.text }]}>{t("settings.limit")}</Text>
                 </View>
               </View>
               <TouchableOpacity
@@ -183,7 +184,7 @@ export default function SettingsScreen() {
                 onPress={handleManageSubscription}
               >
                 <Text style={[styles.manageButtonText, { color: theme.primary }]}>
-                  Manage Subscription
+                  {t("settings.manageSubscription")}
                 </Text>
               </TouchableOpacity>
             </LinearGradient>
@@ -198,17 +199,17 @@ export default function SettingsScreen() {
                 style={styles.upgradeGradient}
               >
                 <Ionicons name="star" size={40} color="#FFF" />
-                <Text style={styles.upgradeTitle}>Upgrade to Premium</Text>
+                <Text style={styles.upgradeTitle}>{t("settings.upgradeToPremium")}</Text>
                 <Text style={styles.upgradeSubtitle}>
-                  Unlimited photos, analytics & more
+                  {t("settings.unlimitedPhotosAnalytics")}
                 </Text>
                 <View style={styles.upgradeStats}>
                   <Text style={styles.upgradeStatsText}>
-                    {featureUsage.photoCount} / 50 photos used
+                    {featureUsage.photoCount} / {FREE_TIER_LIMITS.MAX_PHOTOS} {t("settings.photosUsed")}
                   </Text>
                 </View>
                 <View style={styles.upgradeButton}>
-                  <Text style={styles.upgradeButtonText}>See Plans</Text>
+                  <Text style={styles.upgradeButtonText}>{t("settings.seePlans")}</Text>
                   <Ionicons name="arrow-forward" size={20} color="#FFF" />
                 </View>
               </LinearGradient>
@@ -232,7 +233,7 @@ export default function SettingsScreen() {
               <Ionicons name="flask-outline" size={24} color={theme.warning} />
             </View>
             <Text style={[styles.settingText, { color: theme.text }]}>
-              Test Premium ({isPremium ? 'ON' : 'OFF'})
+              {t("settings.testPremium")} ({isPremium ? t("settings.on") : t("settings.off")})
             </Text>
             <Ionicons name="chevron-forward" size={20} color={theme.text} />
           </TouchableOpacity>

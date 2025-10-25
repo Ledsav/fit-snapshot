@@ -5,6 +5,9 @@
  * Used to control access to premium features and implement monetization.
  */
 
+import limitsConfig from '@/config/limits.json';
+import pricingConfig from '@/config/pricing.json';
+
 // Subscription Tiers
 export enum SubscriptionTier {
   FREE = 'free',
@@ -58,17 +61,18 @@ export enum Feature {
   EARLY_ACCESS = 'early_access',
 }
 
-// Feature Limits
+// Feature Limits - Loaded from config/limits.json
+// You can easily modify limits by editing config/limits.json
 export const FREE_TIER_LIMITS = {
-  MAX_PHOTOS: 50,
-  MAX_COMPARISONS_PER_DAY: 5,
-  MAX_EXPORTS_PER_MONTH: 2,
+  MAX_PHOTOS: limitsConfig.freeTier.maxPhotos,
+  MAX_COMPARISONS_PER_DAY: limitsConfig.freeTier.maxComparisonsPerDay,
+  MAX_EXPORTS_PER_MONTH: limitsConfig.freeTier.maxExportsPerMonth,
 };
 
 export const PREMIUM_TIER_LIMITS = {
-  MAX_PHOTOS: -1, // Unlimited
-  MAX_COMPARISONS_PER_DAY: -1, // Unlimited
-  MAX_EXPORTS_PER_MONTH: -1, // Unlimited
+  MAX_PHOTOS: limitsConfig.premiumTier.maxPhotos,
+  MAX_COMPARISONS_PER_DAY: limitsConfig.premiumTier.maxComparisonsPerDay,
+  MAX_EXPORTS_PER_MONTH: limitsConfig.premiumTier.maxExportsPerMonth,
 };
 
 // Feature Configuration Interface
@@ -101,6 +105,42 @@ export interface FeatureUsage {
 }
 
 // Premium Benefits for UI Display
+// Note: This is a factory function that takes a translation function
+// to support internationalization
+export const getPremiumBenefits = (t: (key: string) => string) => [
+  {
+    icon: 'cloud-upload-outline' as const,
+    title: t('premiumBenefits.unlimitedStorageTitle'),
+    description: t('premiumBenefits.unlimitedStorageDesc'),
+  },
+  {
+    icon: 'analytics-outline' as const,
+    title: t('premiumBenefits.advancedAnalyticsTitle'),
+    description: t('premiumBenefits.advancedAnalyticsDesc'),
+  },
+  {
+    icon: 'images-outline' as const,
+    title: t('premiumBenefits.advancedComparisonsTitle'),
+    description: t('premiumBenefits.advancedComparisonsDesc'),
+  },
+  {
+    icon: 'download-outline' as const,
+    title: t('premiumBenefits.exportShareTitle'),
+    description: t('premiumBenefits.exportShareDesc'),
+  },
+  {
+    icon: 'color-palette-outline' as const,
+    title: t('premiumBenefits.premiumThemesTitle'),
+    description: t('premiumBenefits.premiumThemesDesc'),
+  },
+  {
+    icon: 'flash-off-outline' as const,
+    title: t('premiumBenefits.adFreeTitle'),
+    description: t('premiumBenefits.adFreeDesc'),
+  },
+];
+
+// Backward compatibility: Keep PREMIUM_BENEFITS for any code that uses it directly
 export const PREMIUM_BENEFITS = [
   {
     icon: 'cloud-upload-outline' as const,
@@ -134,22 +174,23 @@ export const PREMIUM_BENEFITS = [
   },
 ];
 
-// Pricing Configuration
+// Pricing Configuration - Loaded from config/pricing.json
+// You can easily modify pricing by editing config/pricing.json
 export const PRICING = {
   monthly: {
-    price: 6.99,
-    priceId: 'monthly_subscription', // Will be replaced with actual store IDs
-    savings: 0,
+    price: pricingConfig.monthly.price,
+    priceId: pricingConfig.monthly.priceId,
+    savings: pricingConfig.monthly.savings,
   },
   annual: {
-    price: 49.99,
-    priceId: 'annual_subscription',
-    savings: 40, // 40% savings
-    monthlyEquivalent: 4.16,
+    price: pricingConfig.annual.price,
+    priceId: pricingConfig.annual.priceId,
+    savings: pricingConfig.annual.savings,
+    monthlyEquivalent: pricingConfig.annual.monthlyEquivalent,
   },
   lifetime: {
-    price: 99.99,
-    priceId: 'lifetime_purchase',
-    savings: 0,
+    price: pricingConfig.lifetime.price,
+    priceId: pricingConfig.lifetime.priceId,
+    savings: pricingConfig.lifetime.savings,
   },
 };
