@@ -1,9 +1,9 @@
-import React from "react";
-import { StyleSheet, Text, View, Animated } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "@/context/ThemeContext";
 import Colors from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
+import { useTheme } from "@/context/ThemeContext";
+import { Ionicons } from "@expo/vector-icons";
+import React from "react";
+import { Animated, StyleSheet, Text, View } from "react-native";
 
 interface StreakCardProps {
   streak: number;
@@ -103,7 +103,7 @@ export const StreakCard: React.FC<StreakCardProps> = ({ streak }) => {
           style={[
             styles.progress,
             {
-              width: `${Math.min((streak / 30) * 100, 100)}%`, // TODO change 30 to objective
+              width: `${Math.min((streak / 30) * 100, 100)}%`, 
               backgroundColor: theme.primary,
             },
           ]}

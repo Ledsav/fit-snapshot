@@ -1,8 +1,8 @@
 import Colors from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
 import { usePhotos } from "@/context/PhotoContext";
-import { PhotoType } from "@/enums/Photos";
 import { useTheme } from "@/context/ThemeContext";
+import { PhotoType } from "@/enums/Photos";
 import { Ionicons } from "@expo/vector-icons";
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
 import { FlipType, manipulateAsync, SaveFormat } from "expo-image-manipulator";
@@ -41,11 +41,11 @@ export default function CameraScreen() {
   const { addPhoto } = usePhotos();
   const { t } = useLocalization();
 
-  // New state for camera ready status
+  
   const [isCameraReady, setIsCameraReady] = useState(false);
-  const [cameraKey, setCameraKey] = useState(0); // Force re-render key
+  const [cameraKey, setCameraKey] = useState(0); 
 
-  // Timer states
+  
   const [isTimerEnabled, setIsTimerEnabled] = useState(false);
   const [timerDuration, setTimerDuration] = useState(3);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
@@ -64,14 +64,14 @@ export default function CameraScreen() {
     return () => clearInterval(interval);
   }, [isTimerRunning, remainingTime]);
 
-  // Camera initialization effect - only run when facing changes
+  
   useEffect(() => {
-    // Reset camera ready state when switching cameras
+    
     setIsCameraReady(false);
 
-    // Small delay to ensure proper cleanup before re-mount
+    
     const timer = setTimeout(() => {
-      // Camera will set isCameraReady to true via onCameraReady callback
+      
     }, 100);
 
     return () => clearTimeout(timer);
@@ -105,7 +105,7 @@ export default function CameraScreen() {
     setFacing((current) => (current === "back" ? "front" : "back"));
   }
 
-  // Add force refresh function for black screen issues
+  
   const forceRefreshCamera = () => {
     setIsCameraReady(false);
     setCameraKey(prev => prev + 1);
@@ -158,7 +158,7 @@ export default function CameraScreen() {
       }
     } catch (error) {
       console.error("Error taking picture:", error);
-      // Reset camera state and try to recover
+      
       setIsCameraReady(false);
       setTimeout(() => {
         setCameraKey(prev => prev + 1);
@@ -183,12 +183,12 @@ export default function CameraScreen() {
 
   const confirmPicture = async () => {
     if (capturedImage) {
-      // Parse EXIF date format (YYYY:MM:DD HH:MM:SS) to ISO string
+      
       let photoDate = new Date().toISOString();
 
       if (importedPhotoDate) {
         try {
-          // EXIF date format: "2024:01:15 14:30:45"
+          
           const dateStr = importedPhotoDate.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3');
           const parsedDate = new Date(dateStr);
           if (!isNaN(parsedDate.getTime())) {
@@ -219,7 +219,7 @@ export default function CameraScreen() {
 
   const pickImage = async () => {
     try {
-      // Request permission to access media library
+      
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (status !== 'granted') {
@@ -227,22 +227,22 @@ export default function CameraScreen() {
         return;
       }
 
-      // Launch image picker with exif data
+      
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [3, 4],
         quality: 1,
-        exif: true, // Include EXIF data to get original date
+        exif: true, 
       });
 
       if (!result.canceled && result.assets[0]) {
         const selectedAsset = result.assets[0];
         setCapturedImage(selectedAsset.uri);
 
-        // Store the original creation date if available
+        
         if (selectedAsset.exif?.DateTimeOriginal) {
-          // Store in state to use later when confirming
+          
           setImportedPhotoDate(selectedAsset.exif.DateTimeOriginal);
         } else {
           setImportedPhotoDate(null);
@@ -379,7 +379,7 @@ export default function CameraScreen() {
             }}
             onMountError={(error) => {
               console.error('Camera mount error:', error);
-              // Retry initialization
+              
               setCameraKey(prev => prev + 1);
             }}
           >

@@ -1,9 +1,9 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { useColorScheme } from "@/hooks/useColorScheme";
 import Colors from "@/constants/Colors";
-import { Photo } from "@/services/photoStorage";
 import { useLocalization } from "@/context/LocalizationContext";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { Photo } from "@/services/photoStorage";
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
 
 type WeeklyProgressChartProps = {
   photos: Photo[];
@@ -14,7 +14,7 @@ export const WeeklyProgressChart: React.FC<WeeklyProgressChartProps> = ({ photos
   const theme = Colors[colorScheme ?? "light"];
   const { t } = useLocalization();
 
-  // Get photos from last 4 weeks
+  
   const now = new Date();
   const fourWeeksAgo = new Date(now.getTime() - 28 * 24 * 60 * 60 * 1000);
 

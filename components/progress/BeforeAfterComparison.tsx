@@ -1,10 +1,10 @@
-import React from "react";
-import { View, Image, Text, StyleSheet, Dimensions } from "react-native";
-import { useColorScheme } from "@/hooks/useColorScheme";
 import Colors from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
-import { Photo } from "@/services/photoStorage";
 import { PhotoType } from "@/enums/Photos";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { Photo } from "@/services/photoStorage";
+import React from "react";
+import { Dimensions, Image, StyleSheet, Text, View } from "react-native";
 
 interface BeforeAfterComparisonProps {
   beforePhoto: Photo | null;
@@ -13,7 +13,7 @@ interface BeforeAfterComparisonProps {
 }
 
 const { width } = Dimensions.get("window");
-const photoWidth = (width - 60) / 2; // Subtracting padding and gap
+const photoWidth = (width - 60) / 2; 
 
 export const BeforeAfterComparison: React.FC<BeforeAfterComparisonProps> = ({
   beforePhoto,

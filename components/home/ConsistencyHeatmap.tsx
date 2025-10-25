@@ -1,9 +1,9 @@
-import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
-import { useColorScheme } from "@/hooks/useColorScheme";
 import Colors from "@/constants/Colors";
-import { Photo } from "@/services/photoStorage";
 import { useLocalization } from "@/context/LocalizationContext";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { Photo } from "@/services/photoStorage";
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
 
 type ConsistencyHeatmapProps = {
   photos: Photo[];
@@ -14,14 +14,14 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({ photos }
   const theme = Colors[colorScheme ?? "light"];
   const { t } = useLocalization();
 
-  // Get last 10 weeks (70 days) for better fit
+  
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   const startDate = new Date(today);
-  startDate.setDate(today.getDate() - 69); // 70 days total
+  startDate.setDate(today.getDate() - 69); 
 
-  // Adjust to start on Sunday
+  
   const dayOfWeek = startDate.getDay();
   if (dayOfWeek !== 0) {
     startDate.setDate(startDate.getDate() - dayOfWeek);
@@ -33,7 +33,7 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({ photos }
     return date;
   });
 
-  // Group photos by date
+  
   const photosByDate = new Map<string, number>();
   photos.forEach(photo => {
     const photoDate = new Date(photo.date);
@@ -42,7 +42,7 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({ photos }
     photosByDate.set(dateKey, (photosByDate.get(dateKey) || 0) + 1);
   });
 
-  // Calculate intensity for each day
+  
   const maxPhotosPerDay = Math.max(...Array.from(photosByDate.values()), 1);
 
   const getIntensityColor = (count: number) => {
@@ -54,13 +54,13 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({ photos }
     return theme.primary + '50';
   };
 
-  // Group days into weeks (7 days each)
+  
   const weeks: Date[][] = [];
   for (let i = 0; i < days.length; i += 7) {
     weeks.push(days.slice(i, i + 7));
   }
 
-  // Generate month labels - only show when month changes
+  
   const monthLabels = weeks.map((week, index) => {
     const firstDay = week[0];
     if (index === 0) {

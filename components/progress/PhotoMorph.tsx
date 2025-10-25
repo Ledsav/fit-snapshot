@@ -1,25 +1,25 @@
-import React, { useState, useCallback, useRef } from "react";
-import {
-  StyleSheet,
-  View,
-  Text,
-  Image,
-  PanResponder,
-  Animated,
-  Dimensions,
-  TouchableOpacity,
-  Alert,
-  ScrollView,
-} from "react-native";
 import Colors from "@/constants/Colors";
-import { useTheme } from "@/context/ThemeContext";
-import { Ionicons } from "@expo/vector-icons";
-import { getTimeDifference } from "@/utils/dateUtils";
-import * as MediaLibrary from "expo-media-library";
-import { usePhotos } from "@/context/PhotoContext";
-import { Photo } from "@/services/photoStorage";
 import { useLocalization } from "@/context/LocalizationContext";
+import { usePhotos } from "@/context/PhotoContext";
+import { useTheme } from "@/context/ThemeContext";
 import { PhotoType } from "@/enums/Photos";
+import { Photo } from "@/services/photoStorage";
+import { getTimeDifference } from "@/utils/dateUtils";
+import { Ionicons } from "@expo/vector-icons";
+import * as MediaLibrary from "expo-media-library";
+import React, { useCallback, useRef, useState } from "react";
+import {
+    Alert,
+    Animated,
+    Dimensions,
+    Image,
+    PanResponder,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 
 interface PhotoMorphProps {
   type: PhotoType.front | PhotoType.side | PhotoType.back;
@@ -48,9 +48,9 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onPanResponderMove: (_, gesture) => {
-      // Calculate position relative to slider start, accounting for screen offset
+      
       let newX = gesture.moveX - width * 0.1;
-      // Clamp between 0 and SLIDER_WIDTH, so thumb center stays within bounds
+      
       newX = Math.max(0, Math.min(newX, SLIDER_WIDTH));
       pan.x.setValue(newX);
       setSliderValue((newX / SLIDER_WIDTH) * 100);
@@ -102,7 +102,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
     );
   }
 
-  // Use selected photos or default to oldest/newest
+  
   const photo1 = selectedPhoto1 || photos[0];
   const photo2 = selectedPhoto2 || photos[photos.length - 1];
 
@@ -164,7 +164,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
     );
   }
 
-  // Photo Selection Modal
+  
   if (isSelectingPhotos) {
     return (
       <View style={[styles.container, { backgroundColor: theme.transparent }]}>

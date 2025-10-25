@@ -5,24 +5,24 @@
  * Shows upgrade prompt or locked state when user doesn't have access.
  */
 
-import React, { useState, ReactNode } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
+import Colors from '@/constants/Colors';
+import { Feature } from '@/constants/Features';
 import { useTheme } from '@/context/ThemeContext';
 import { useUser } from '@/context/UserContext';
-import { Feature } from '@/constants/Features';
-import Colors from '@/constants/Colors';
+import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
+import React, { ReactNode, useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import PaywallModal from './PaywallModal';
 
 interface FeatureGateProps {
   feature: Feature;
   children: ReactNode;
   fallback?: ReactNode;
-  showPreview?: boolean; // Show blurred preview of content
+  showPreview?: boolean; 
   customMessage?: string;
-  containerStyle?: ViewStyle; // Allow custom container styling
-  compact?: boolean; // Compact mode for smaller locks
+  containerStyle?: ViewStyle; 
+  compact?: boolean; 
 }
 
 export const FeatureGate: React.FC<FeatureGateProps> = ({
@@ -45,12 +45,12 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
     return <View style={containerStyle}>{children}</View>;
   }
 
-  // If custom fallback provided, use it
+  
   if (fallback) {
     return <View style={containerStyle}>{fallback}</View>;
   }
 
-  // Default locked UI with blur preview
+  
   return (
     <View style={[styles.container, containerStyle]}>
       {showPreview ? (

@@ -1,17 +1,17 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Modal,
-  SafeAreaView,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "@/context/ThemeContext";
 import Colors from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
+import { useTheme } from "@/context/ThemeContext";
+import { Ionicons } from "@expo/vector-icons";
 import * as Linking from "expo-linking";
+import React from "react";
+import {
+  Modal,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface ContactsModalProps {
   isVisible: boolean;
@@ -66,15 +66,6 @@ const ContactsModal: React.FC<ContactsModalProps> = ({
               alberto.valdes.rey.official@gmail.com
             </Text>
           </TouchableOpacity>
-          {/* <TouchableOpacity
-            style={styles.contactItem}
-            onPress={handlePhonePress}
-          >
-            <Ionicons name="call-outline" size={24} color={theme.text} />
-            <Text style={[styles.contactText, { color: theme.text }]}>
-              +1 (234) 567-890
-            </Text>
-          </TouchableOpacity> */}
           <TouchableOpacity
             style={styles.contactItem}
             onPress={handleWebsitePress}

@@ -1,11 +1,11 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, Image, Dimensions, Animated, PanResponder, TouchableOpacity } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "@/context/ThemeContext";
 import Colors from "@/constants/Colors";
-import { Photo } from "@/services/photoStorage";
 import { useLocalization } from "@/context/LocalizationContext";
+import { useTheme } from "@/context/ThemeContext";
+import { Photo } from "@/services/photoStorage";
+import { Ionicons } from "@expo/vector-icons";
 import { Href, useRouter } from "expo-router";
+import React, { useState } from "react";
+import { Animated, Dimensions, Image, PanResponder, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const { width } = Dimensions.get("window");
 const MINI_SLIDER_WIDTH = width - 80;
@@ -34,9 +34,9 @@ export const MiniComparisonPreview: React.FC<MiniComparisonPreviewProps> = ({ ph
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onPanResponderMove: (_, gesture) => {
-      // Calculate position relative to slider start
+      
       let newX = gesture.moveX - 40;
-      // Clamp between 0 and MINI_SLIDER_WIDTH so thumb center stays within bounds
+      
       newX = Math.max(0, Math.min(newX, MINI_SLIDER_WIDTH));
       pan.x.setValue(newX);
       setSliderValue((newX / MINI_SLIDER_WIDTH) * 100);

@@ -4,12 +4,12 @@
  * Visual indicator for premium features and premium users.
  */
 
-import React from 'react';
-import { View, Text, StyleSheet, ViewStyle } from 'react-native';
+import Colors from '@/constants/Colors';
+import { useTheme } from '@/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useTheme } from '@/context/ThemeContext';
-import Colors from '@/constants/Colors';
+import React from 'react';
+import { StyleSheet, Text, View, ViewStyle } from 'react-native';
 
 interface PremiumBadgeProps {
   size?: 'small' | 'medium' | 'large';
@@ -59,7 +59,7 @@ export const PremiumBadge: React.FC<PremiumBadgeProps> = ({
     );
   }
 
-  // Full variant with gradient
+  
   return (
     <LinearGradient
       colors={[theme.primary, theme.primary + 'CC']}

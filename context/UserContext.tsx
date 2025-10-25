@@ -5,42 +5,42 @@
  * Provides hooks for checking premium status and feature availability.
  */
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import {
-  Feature,
-  UserSubscriptionStatus,
-  FeatureUsage,
-  SubscriptionTier,
+    Feature,
+    FeatureUsage,
+    SubscriptionTier,
+    UserSubscriptionStatus,
 } from '@/constants/Features';
 import featureFlagService from '@/services/featureFlagService';
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
 interface UserContextType {
-  // Subscription Status
+  
   subscriptionStatus: UserSubscriptionStatus;
   isPremium: boolean;
   isLifetime: boolean;
 
-  // Feature Access
+  
   hasFeatureAccess: (feature: Feature) => boolean;
   canAddPhoto: () => { allowed: boolean; reason?: string; limit?: number };
   canMakeComparison: () => { allowed: boolean; reason?: string; limit?: number };
   canExport: () => { allowed: boolean; reason?: string; limit?: number };
 
-  // Usage Tracking
+  
   featureUsage: FeatureUsage;
   storageUsagePercentage: number;
 
-  // Actions
+  
   incrementPhotoCount: () => Promise<void>;
   decrementPhotoCount: () => Promise<void>;
   incrementComparisonCount: () => Promise<void>;
   incrementExportCount: () => Promise<void>;
   refreshSubscriptionStatus: () => Promise<void>;
 
-  // Testing (remove in production or gate behind dev mode)
+  
   setTestPremiumStatus: (isPremium: boolean) => Promise<void>;
 
-  // Loading state
+  
   isLoading: boolean;
 }
 
@@ -65,7 +65,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const [storageUsagePercentage, setStorageUsagePercentage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize service on mount
+  
   useEffect(() => {
     initializeUserContext();
   }, []);

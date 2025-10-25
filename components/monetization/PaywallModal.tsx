@@ -5,31 +5,31 @@
  * This is where users will be directed to upgrade to premium.
  */
 
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Modal,
-  ScrollView,
-  TouchableOpacity,
-  Dimensions,
-  Platform,
-  StatusBar,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
+import Colors from '@/constants/Colors';
+import { Feature, PREMIUM_BENEFITS, PRICING } from '@/constants/Features';
 import { useTheme } from '@/context/ThemeContext';
 import { useUser } from '@/context/UserContext';
-import { PREMIUM_BENEFITS, PRICING, Feature } from '@/constants/Features';
-import Colors from '@/constants/Colors';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { useState } from 'react';
+import {
+    Dimensions,
+    Modal,
+    Platform,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface PaywallModalProps {
   visible: boolean;
   onClose: () => void;
-  source?: string; // Track where the paywall was triggered from
-  feature?: Feature; // Specific feature that triggered the paywall
+  source?: string; 
+  feature?: Feature; 
 }
 
 type PricingPlan = 'monthly' | 'annual' | 'lifetime';
@@ -52,8 +52,8 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
     setIsProcessing(true);
 
     try {
-      // TODO: Implement actual purchase flow
-      // For now, just activate premium for testing
+      
+      
       console.log('Purchase initiated:', {
         plan: selectedPlan,
         source,
@@ -61,10 +61,10 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
         priceId: PRICING[selectedPlan].priceId,
       });
 
-      // Simulate purchase delay
+      
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // For testing: activate premium
+      
       await setTestPremiumStatus(true);
 
       alert('Premium activated! (Testing mode)');

@@ -1,18 +1,18 @@
 import { FullScreenPhotoModal } from "@/components/gallery/FullScreenPhotoModal";
 import { Header } from "@/components/home/Header";
+import PaywallModal from "@/components/monetization/PaywallModal";
 import BackgroundImage from "@/components/style/BackgroundImage";
 import Colors from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
 import { usePhotos } from "@/context/PhotoContext";
+import { useTheme } from "@/context/ThemeContext";
 import { useUser } from "@/context/UserContext";
 import { PhotoType } from "@/enums/Photos";
-import PaywallModal from "@/components/monetization/PaywallModal";
-import { useTheme } from "@/context/ThemeContext";
 import { Photo } from "@/services/photoStorage";
 import { Ionicons } from "@expo/vector-icons";
+import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
-import * as FileSystem from 'expo-file-system';
 import { usePathname } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -80,7 +80,7 @@ export default function GalleryScreen() {
     loadGallery();
   }, [pathname]);
 
-  // Reload gallery when photos or view mode change
+  
   useEffect(() => {
     loadPhotos();
   }, [photos, viewMode]);
@@ -92,7 +92,7 @@ export default function GalleryScreen() {
       );
 
       if (viewMode === 'timeline') {
-        // Group by date for timeline view
+        
         const groupedByDate = sortedPhotos.reduce((acc, photo) => {
           const dateKey = new Date(photo.date).toLocaleDateString('en-US', {
             year: 'numeric',
@@ -114,7 +114,7 @@ export default function GalleryScreen() {
 
         setSections(newSections);
       } else {
-        // Group by type for grouped view
+        
         const newSections: Section[] = [
           {
             title: "Front",
@@ -143,7 +143,7 @@ export default function GalleryScreen() {
 
   const handleDeletePhoto = async (id: string) => {
     await removePhoto(id);
-    // Photos will auto-refresh via useEffect watching photos array
+    
   };
 
   const togglePhotoSelection = (id: string) => {
@@ -190,7 +190,7 @@ export default function GalleryScreen() {
   };
 
   const pickImage = async () => {
-    // Check storage limits before proceeding
+    
     const storageCheck = canAddPhoto();
     if (!storageCheck.allowed) {
       setIsPaywallVisible(true);
@@ -217,11 +217,11 @@ export default function GalleryScreen() {
         const selectedAsset = result.assets[0];
         setPendingImageUri(selectedAsset.uri);
 
-        // Log EXIF data to debug
+        
         console.log('Selected asset EXIF data:', selectedAsset.exif);
         console.log('Selected asset full data:', selectedAsset);
 
-        // Store the original creation date if available - try multiple EXIF fields
+        
         let dateFromExif = null;
         if (selectedAsset.exif) {
           dateFromExif = selectedAsset.exif.DateTimeOriginal ||
@@ -233,11 +233,11 @@ export default function GalleryScreen() {
           console.log('Found EXIF date:', dateFromExif);
           setPendingImageDate(dateFromExif);
         } else {
-          // Try to get file creation/modification time from the file system
+          
           let fileDate = null;
 
           try {
-            // Get file info from the URI
+            
             const fileInfo = await FileSystem.getInfoAsync(selectedAsset.uri);
             console.log('File info:', fileInfo);
 
@@ -249,18 +249,18 @@ export default function GalleryScreen() {
             console.log('Could not get file info:', error);
           }
 
-          // If file date worked, use it, otherwise try MediaLibrary as last resort
+          
           if (fileDate) {
             setPendingImageDate(fileDate);
           } else {
             try {
-              // Try to get asset info from MediaLibrary using the filename
+              
               const assets = await MediaLibrary.getAssetsAsync({
                 first: 1000,
                 sortBy: MediaLibrary.SortBy.creationTime,
               });
 
-              // Try to find the asset by matching filename
+              
               const matchedAsset = assets.assets.find(asset =>
                 selectedAsset.uri.includes(asset.filename) ||
                 asset.uri === selectedAsset.uri
@@ -281,7 +281,7 @@ export default function GalleryScreen() {
           }
         }
 
-        // Show type selection modal
+        
         setIsTypeSelectionVisible(true);
       }
     } catch (error) {
@@ -293,19 +293,19 @@ export default function GalleryScreen() {
   const handleTypeSelection = async (type: PhotoType) => {
     if (!pendingImageUri) return;
 
-    // Parse EXIF date format to ISO string
+    
     let photoDate = new Date().toISOString();
 
     if (pendingImageDate) {
       try {
         console.log('Processing pending image date:', pendingImageDate);
 
-        // Check if it's already in ISO format (from modification time)
+        
         if (pendingImageDate.includes('T') && pendingImageDate.includes('Z')) {
           photoDate = pendingImageDate;
           console.log('Using ISO date directly:', photoDate);
         } else {
-          // Parse EXIF date format (YYYY:MM:DD HH:MM:SS)
+          
           const dateStr = pendingImageDate.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3');
           const parsedDate = new Date(dateStr);
           if (!isNaN(parsedDate.getTime())) {
@@ -331,7 +331,7 @@ export default function GalleryScreen() {
 
     await addPhoto(newPhoto);
 
-    // Reset state
+    
     setPendingImageUri(null);
     setPendingImageDate(null);
     setIsTypeSelectionVisible(false);
@@ -870,9 +870,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-  },
-  errorText: {
-    fontSize: 16,
   },
   modalOverlay: {
     flex: 1,

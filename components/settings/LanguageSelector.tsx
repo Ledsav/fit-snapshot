@@ -1,16 +1,16 @@
+import Colors from "@/constants/Colors";
+import { useLocalization } from "@/context/LocalizationContext";
+import { useTheme } from "@/context/ThemeContext";
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Modal,
-  FlatList,
+    FlatList,
+    Modal,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useLocalization } from "@/context/LocalizationContext";
-import Colors from "@/constants/Colors";
-import { useTheme } from "@/context/ThemeContext";
 
 interface Language {
   code: string;
@@ -23,7 +23,7 @@ const languages: Language[] = [
   { code: "it", name: "Italiano" },
   { code: "de", name: "Deutsch" },
   { code: "fr", name: "Français" },
-  // Add more languages here
+  
 ];
 
 interface LanguageSelectorProps {

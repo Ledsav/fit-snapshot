@@ -1,4 +1,5 @@
 import { PhotoType } from "@/enums/Photos";
+import featureFlagService from "@/services/featureFlagService";
 import {
   Photo,
   cleanupOrphanedFiles,
@@ -8,7 +9,6 @@ import {
   savePhoto,
 } from "@/services/photoStorage";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import featureFlagService from "@/services/featureFlagService";
 
 interface PhotoContextType {
   photos: Photo[];
@@ -60,7 +60,7 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsLoading(true);
     try {
       await cleanupOrphanedFiles();
-      await refreshPhotos(); // Refresh after cleanup
+      await refreshPhotos(); 
     } catch (err) {
       setError("Failed to cleanup storage. Please try again.");
       console.error("Error cleaning up storage:", err);
@@ -78,7 +78,7 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const addPhoto = async (photo: Photo): Promise<{ success: boolean; error?: string }> => {
-    // Check storage limits before adding
+    
     const canAdd = featureFlagService.canAddPhoto();
     if (!canAdd.allowed) {
       return { success: false, error: canAdd.reason };
