@@ -327,33 +327,72 @@ export default function CameraScreen() {
     return (
       <View style={[styles.container, { backgroundColor: theme.background }]}>
         <Image source={{ uri: capturedImage }} style={styles.preview} />
-        <View
-          style={[
-            styles.overlayText,
-            { backgroundColor: theme.cardBackground },
-          ]}
-        >
-          <Text style={[styles.overlayTextContent, { color: theme.text }]}>
-            {t(`camera.${overlay}`)}
-          </Text>
-        </View>
-        <View style={styles.confirmationButtons}>
-          <TouchableOpacity
-            style={[styles.confirmButton, { backgroundColor: theme.success }]}
-            onPress={confirmPicture}
-          >
-            <Ionicons name="checkmark" size={32} color={theme.background} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.retakeButton, { backgroundColor: theme.error }]}
-            onPress={retakePicture}
+
+        {/* Photo Type Badge */}
+        <View style={styles.photoTypeBadgeContainer}>
+          <View
+            style={[
+              styles.photoTypeBadge,
+              { backgroundColor: theme.primary },
+            ]}
           >
             <Ionicons
-              name="refresh-outline"
-              size={32}
-              color={theme.background}
+              name={
+                overlay === PhotoType.front ? "body-outline" :
+                overlay === PhotoType.side ? "arrow-forward-outline" :
+                "person-outline"
+              }
+              size={20}
+              color="white"
             />
-          </TouchableOpacity>
+            <Text style={styles.photoTypeBadgeText}>
+              {t(`camera.${overlay}`).toUpperCase()}
+            </Text>
+          </View>
+        </View>
+
+        {/* Action Buttons */}
+        <View style={styles.confirmationButtonsContainer}>
+          <View style={styles.confirmationButtons}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={retakePicture}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.actionButtonCircle, { backgroundColor: theme.cardBackground, borderColor: theme.error }]}>
+                <Ionicons
+                  name="refresh-outline"
+                  size={32}
+                  color={theme.error}
+                />
+              </View>
+              <View style={styles.actionButtonLabelContainer}>
+                <Text style={styles.actionButtonLabel}>
+                  {t("camera.retake") || "Retake"}
+                </Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={confirmPicture}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.actionButtonCircle, { backgroundColor: theme.success }]}>
+                <Ionicons name="checkmark" size={36} color="white" />
+              </View>
+              <View style={styles.actionButtonLabelContainer}>
+                <Text style={styles.actionButtonLabel}>
+                  {t("camera.confirm") || "Confirm"}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          {/* Optional helper text */}
+          <Text style={[styles.helperText, { color: theme.text }]}>
+            {t("camera.confirmHelper") || "Review your photo before saving"}
+          </Text>
         </View>
       </View>
     );
@@ -594,23 +633,85 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
   },
-  confirmationButtons: {
+  photoTypeBadgeContainer: {
     position: "absolute",
-    bottom: 40,
+    top: 60,
     left: 0,
     right: 0,
+    alignItems: "center",
+  },
+  photoTypeBadge: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    gap: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
-  confirmButton: {
-    backgroundColor: "green",
-    padding: 15,
-    borderRadius: 30,
+  photoTypeBadgeText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "700",
+    letterSpacing: 1,
   },
-  retakeButton: {
-    backgroundColor: "red",
-    padding: 15,
-    borderRadius: 30,
+  confirmationButtonsContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingBottom: 40,
+    paddingHorizontal: 20,
+    alignItems: "center",
+  },
+  confirmationButtons: {
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    alignItems: "center",
+    width: "100%",
+    gap: 60,
+    marginBottom: 16,
+  },
+  actionButton: {
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 12,
+  },
+  actionButtonCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+    borderWidth: 3,
+    borderColor: "transparent",
+  },
+  actionButtonLabelContainer: {
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+  },
+  actionButtonLabel: {
+    fontSize: 16,
+    fontWeight: "700",
+    textAlign: "center",
+    color: "white",
+  },
+  helperText: {
+    fontSize: 13,
+    opacity: 0.6,
+    textAlign: "center",
+    fontStyle: "italic",
   },
   importButton: {
     alignSelf: "center",

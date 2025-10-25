@@ -29,7 +29,7 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
   feature,
   children,
   fallback,
-  showPreview = true,
+  showPreview = false,
   customMessage,
   containerStyle,
   compact = false,
@@ -54,9 +54,11 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
   return (
     <View style={[styles.container, containerStyle]}>
       {showPreview ? (
-        <>
-          <View style={styles.previewContainer}>
-            <View style={{ opacity: 0.3 }}>{children}</View>
+        <View style={styles.previewContainer}>
+          <View style={styles.contentWrapper}>
+            {children}
+          </View>
+          <View style={styles.blurOverlay}>
             <BlurView intensity={80} style={StyleSheet.absoluteFill} tint={effectiveColorScheme} />
           </View>
 
@@ -106,7 +108,7 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
               </TouchableOpacity>
             </View>
           </View>
-        </>
+        </View>
       ) : (
         <View style={[
           styles.lockContainer,
@@ -171,16 +173,21 @@ const styles = StyleSheet.create({
   },
   previewContainer: {
     position: 'relative',
-    minHeight: 150,
     borderRadius: 12,
     overflow: 'hidden',
   },
-  lockedOverlay: {
+  contentWrapper: {
+    opacity: 0.3,
+  },
+  blurOverlay: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
+  },
+  lockedOverlay: {
+    position: 'relative',
     justifyContent: 'center',
     alignItems: 'stretch',
     padding: 12,

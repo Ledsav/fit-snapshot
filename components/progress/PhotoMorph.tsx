@@ -20,6 +20,9 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { FeatureGate } from "@/components/monetization/FeatureGate";
+import { Feature } from "@/constants/Features";
+import { useUser } from "@/context/UserContext";
 
 interface PhotoMorphProps {
   type: PhotoType.front | PhotoType.side | PhotoType.back;
@@ -40,10 +43,15 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   const { getPhotosByType } = usePhotos();
   const photos = getPhotosByType(type);
   const { t } = useLocalization();
+  const { hasFeatureAccess } = useUser();
   const [comparisonMode, setComparisonMode] = useState<ComparisonMode>('slider');
   const [isSelectingPhotos, setIsSelectingPhotos] = useState(false);
   const [selectedPhoto1, setSelectedPhoto1] = useState<Photo | null>(null);
   const [selectedPhoto2, setSelectedPhoto2] = useState<Photo | null>(null);
+
+  const hasSideBySideAccess = hasFeatureAccess(Feature.SIDE_BY_SIDE_COMPARISON);
+  const hasGridViewAccess = hasFeatureAccess(Feature.GRID_VIEW_COMPARISON);
+  const hasCustomSelectionAccess = hasFeatureAccess(Feature.CUSTOM_PHOTO_SELECTION);
 
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
@@ -164,111 +172,119 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
     );
   }
 
-  
+
   if (isSelectingPhotos) {
     return (
-      <View style={[styles.container, { backgroundColor: theme.transparent }]}>
-        <View style={styles.selectionHeader}>
-          <View style={styles.selectionHeaderContent}>
-            <Text style={[styles.selectionTitle, { color: theme.text }]}>
-              {t("progress.selectPhotos") || "Select Photos"}
-            </Text>
-            <Text style={[styles.selectionSubtitle, { color: theme.text }]}>
-              {!selectedPhoto1
-                ? t("progress.selectFirstPhoto") || "Select first photo"
-                : !selectedPhoto2
-                ? t("progress.selectSecondPhoto") || "Select second photo"
-                : "Tap to change selection"}
-            </Text>
+      <FeatureGate
+        feature={Feature.CUSTOM_PHOTO_SELECTION}
+        showPreview={false}
+        compact={false}
+        customMessage="Upgrade to Premium to select any photos for comparison"
+        containerStyle={[styles.container, { backgroundColor: theme.transparent }]}
+      >
+        <View style={[styles.container, { backgroundColor: theme.transparent }]}>
+          <View style={styles.selectionHeader}>
+            <View style={styles.selectionHeaderContent}>
+              <Text style={[styles.selectionTitle, { color: theme.text }]}>
+                {t("progress.selectPhotos") || "Select Photos"}
+              </Text>
+              <Text style={[styles.selectionSubtitle, { color: theme.text }]}>
+                {!selectedPhoto1
+                  ? t("progress.selectFirstPhoto") || "Select first photo"
+                  : !selectedPhoto2
+                  ? t("progress.selectSecondPhoto") || "Select second photo"
+                  : "Tap to change selection"}
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={[styles.closeButton, { backgroundColor: theme.cardBackground }]}
+              onPress={() => {
+                setIsSelectingPhotos(false);
+                resetSelection();
+              }}
+            >
+              <Ionicons name="close" size={24} color={theme.text} />
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            style={[styles.closeButton, { backgroundColor: theme.cardBackground }]}
-            onPress={() => {
-              setIsSelectingPhotos(false);
-              resetSelection();
-            }}
+
+          <View style={styles.selectionProgress}>
+            <View style={[styles.selectionStep, { backgroundColor: selectedPhoto1 ? theme.primary : theme.text + '20' }]}>
+              <Text style={[styles.selectionStepText, { color: selectedPhoto1 ? 'white' : theme.text }]}>
+                1st Photo {selectedPhoto1 ? '✓' : ''}
+              </Text>
+            </View>
+            <View style={[styles.selectionConnector, { backgroundColor: theme.text + '30' }]} />
+            <View style={[styles.selectionStep, { backgroundColor: selectedPhoto2 ? theme.success : theme.text + '20' }]}>
+              <Text style={[styles.selectionStepText, { color: selectedPhoto2 ? 'white' : theme.text }]}>
+                2nd Photo {selectedPhoto2 ? '✓' : ''}
+              </Text>
+            </View>
+          </View>
+
+          <ScrollView
+            style={styles.photoSelectionScroll}
+            contentContainerStyle={styles.photoSelectionGrid}
+            showsVerticalScrollIndicator={false}
           >
-            <Ionicons name="close" size={24} color={theme.text} />
-          </TouchableOpacity>
+            {photos.map((photo, index) => {
+              const isFirst = selectedPhoto1?.id === photo.id;
+              const isSecond = selectedPhoto2?.id === photo.id;
+              const isSelected = isFirst || isSecond;
+
+              return (
+                <TouchableOpacity
+                  key={photo.id}
+                  style={[
+                    styles.selectionPhotoContainer,
+                    {
+                      borderColor: isFirst ? theme.primary : isSecond ? theme.success : 'transparent',
+                      borderWidth: isSelected ? 3 : 2,
+                    }
+                  ]}
+                  onPress={() => handlePhotoSelection(photo)}
+                  activeOpacity={0.7}
+                >
+                  <Image source={{ uri: photo.uri }} style={styles.selectionPhoto} />
+                  <View style={[styles.selectionPhotoOverlay, { backgroundColor: theme.text + '99' }]}>
+                    <Text style={styles.selectionPhotoDate}>
+                      {new Date(photo.date).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}
+                    </Text>
+                  </View>
+                  {isFirst && (
+                    <View style={[styles.selectionBadge, { backgroundColor: theme.primary }]}>
+                      <Text style={styles.selectionBadgeText}>1</Text>
+                    </View>
+                  )}
+                  {isSecond && (
+                    <View style={[styles.selectionBadge, { backgroundColor: theme.success }]}>
+                      <Text style={styles.selectionBadgeText}>2</Text>
+                    </View>
+                  )}
+                  {isSelected && (
+                    <View style={styles.selectionCheckmark}>
+                      <Ionicons name="checkmark-circle" size={32} color={isFirst ? theme.primary : theme.success} />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+
+          {selectedPhoto1 && selectedPhoto2 && (
+            <TouchableOpacity
+              style={[styles.confirmSelectionButton, { backgroundColor: theme.primary }]}
+              onPress={() => setIsSelectingPhotos(false)}
+            >
+              <Ionicons name="checkmark" size={24} color="white" />
+              <Text style={styles.confirmSelectionText}>Compare Selected Photos</Text>
+            </TouchableOpacity>
+          )}
         </View>
-
-        <View style={styles.selectionProgress}>
-          <View style={[styles.selectionStep, { backgroundColor: selectedPhoto1 ? theme.primary : theme.text + '20' }]}>
-            <Text style={[styles.selectionStepText, { color: selectedPhoto1 ? 'white' : theme.text }]}>
-              1st Photo {selectedPhoto1 ? '✓' : ''}
-            </Text>
-          </View>
-          <View style={[styles.selectionConnector, { backgroundColor: theme.text + '30' }]} />
-          <View style={[styles.selectionStep, { backgroundColor: selectedPhoto2 ? theme.success : theme.text + '20' }]}>
-            <Text style={[styles.selectionStepText, { color: selectedPhoto2 ? 'white' : theme.text }]}>
-              2nd Photo {selectedPhoto2 ? '✓' : ''}
-            </Text>
-          </View>
-        </View>
-
-        <ScrollView
-          style={styles.photoSelectionScroll}
-          contentContainerStyle={styles.photoSelectionGrid}
-          showsVerticalScrollIndicator={false}
-        >
-          {photos.map((photo, index) => {
-            const isFirst = selectedPhoto1?.id === photo.id;
-            const isSecond = selectedPhoto2?.id === photo.id;
-            const isSelected = isFirst || isSecond;
-
-            return (
-              <TouchableOpacity
-                key={photo.id}
-                style={[
-                  styles.selectionPhotoContainer,
-                  {
-                    borderColor: isFirst ? theme.primary : isSecond ? theme.success : 'transparent',
-                    borderWidth: isSelected ? 3 : 2,
-                  }
-                ]}
-                onPress={() => handlePhotoSelection(photo)}
-                activeOpacity={0.7}
-              >
-                <Image source={{ uri: photo.uri }} style={styles.selectionPhoto} />
-                <View style={[styles.selectionPhotoOverlay, { backgroundColor: theme.text + '99' }]}>
-                  <Text style={styles.selectionPhotoDate}>
-                    {new Date(photo.date).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric'
-                    })}
-                  </Text>
-                </View>
-                {isFirst && (
-                  <View style={[styles.selectionBadge, { backgroundColor: theme.primary }]}>
-                    <Text style={styles.selectionBadgeText}>1</Text>
-                  </View>
-                )}
-                {isSecond && (
-                  <View style={[styles.selectionBadge, { backgroundColor: theme.success }]}>
-                    <Text style={styles.selectionBadgeText}>2</Text>
-                  </View>
-                )}
-                {isSelected && (
-                  <View style={styles.selectionCheckmark}>
-                    <Ionicons name="checkmark-circle" size={32} color={isFirst ? theme.primary : theme.success} />
-                  </View>
-                )}
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-
-        {selectedPhoto1 && selectedPhoto2 && (
-          <TouchableOpacity
-            style={[styles.confirmSelectionButton, { backgroundColor: theme.primary }]}
-            onPress={() => setIsSelectingPhotos(false)}
-          >
-            <Ionicons name="checkmark" size={24} color="white" />
-            <Text style={styles.confirmSelectionText}>Compare Selected Photos</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+      </FeatureGate>
     );
   }
 
@@ -322,34 +338,52 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
         <TouchableOpacity
           style={[
             styles.modeButton,
-            { backgroundColor: comparisonMode === 'sideBySide' ? theme.primary : theme.text + '20' }
+            { backgroundColor: comparisonMode === 'sideBySide' ? theme.primary : theme.text + '20', opacity: hasSideBySideAccess ? 1 : 0.5 }
           ]}
-          onPress={() => setComparisonMode('sideBySide')}
+          onPress={() => hasSideBySideAccess && setComparisonMode('sideBySide')}
+          disabled={!hasSideBySideAccess}
         >
-          <Ionicons
-            name="copy-outline"
-            size={18}
-            color={comparisonMode === 'sideBySide' ? theme.background : theme.text}
-          />
+          <View style={styles.modeButtonContent}>
+            <Ionicons
+              name="copy-outline"
+              size={18}
+              color={comparisonMode === 'sideBySide' ? theme.background : theme.text}
+            />
+            {!hasSideBySideAccess && (
+              <Ionicons name="lock-closed" size={10} color={theme.text} style={styles.lockIcon} />
+            )}
+          </View>
         </TouchableOpacity>
         <TouchableOpacity
           style={[
             styles.modeButton,
-            { backgroundColor: comparisonMode === 'grid' ? theme.primary : theme.text + '20' }
+            { backgroundColor: comparisonMode === 'grid' ? theme.primary : theme.text + '20', opacity: hasGridViewAccess ? 1 : 0.5 }
           ]}
-          onPress={() => setComparisonMode('grid')}
+          onPress={() => hasGridViewAccess && setComparisonMode('grid')}
+          disabled={!hasGridViewAccess}
         >
-          <Ionicons
-            name="grid-outline"
-            size={18}
-            color={comparisonMode === 'grid' ? theme.background : theme.text}
-          />
+          <View style={styles.modeButtonContent}>
+            <Ionicons
+              name="grid-outline"
+              size={18}
+              color={comparisonMode === 'grid' ? theme.background : theme.text}
+            />
+            {!hasGridViewAccess && (
+              <Ionicons name="lock-closed" size={10} color={theme.text} style={styles.lockIcon} />
+            )}
+          </View>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.modeButton, { backgroundColor: theme.cardBackground }]}
-          onPress={() => setIsSelectingPhotos(true)}
+          style={[styles.modeButton, { backgroundColor: theme.cardBackground, opacity: hasCustomSelectionAccess ? 1 : 0.5 }]}
+          onPress={() => hasCustomSelectionAccess && setIsSelectingPhotos(true)}
+          disabled={!hasCustomSelectionAccess}
         >
-          <Ionicons name="images-outline" size={18} color={theme.text} />
+          <View style={styles.modeButtonContent}>
+            <Ionicons name="images-outline" size={18} color={theme.text} />
+            {!hasCustomSelectionAccess && (
+              <Ionicons name="lock-closed" size={10} color={theme.text} style={styles.lockIcon} />
+            )}
+          </View>
         </TouchableOpacity>
       </View>
       {/* Slider Mode */}
@@ -432,42 +466,56 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
 
       {/* Side by Side Mode */}
       {comparisonMode === 'sideBySide' && (
-        <View style={styles.sideBySideContainer}>
-          <View style={[styles.sideBySidePhoto, { borderColor: theme.primary }]}>
-            <Image source={{ uri: photo1.uri }} style={styles.image} />
-            <View style={[styles.sideBySideLabel, { backgroundColor: theme.text + 'B3' }]}>
-              <Text style={styles.sideBySideLabelText}>Before</Text>
-              <Text style={styles.sideBySideDateText}>
-                {new Date(photo1.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-              </Text>
+        <FeatureGate
+          feature={Feature.SIDE_BY_SIDE_COMPARISON}
+          showPreview={false}
+          compact={false}
+          customMessage="Upgrade to Premium to compare photos side-by-side"
+        >
+          <View style={styles.sideBySideContainer}>
+            <View style={[styles.sideBySidePhoto, { borderColor: theme.primary }]}>
+              <Image source={{ uri: photo1.uri }} style={styles.image} />
+              <View style={[styles.sideBySideLabel, { backgroundColor: theme.text + 'B3' }]}>
+                <Text style={styles.sideBySideLabelText}>Before</Text>
+                <Text style={styles.sideBySideDateText}>
+                  {new Date(photo1.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </Text>
+              </View>
+            </View>
+            <View style={[styles.sideBySidePhoto, { borderColor: theme.primary }]}>
+              <Image source={{ uri: photo2.uri }} style={styles.image} />
+              <View style={[styles.sideBySideLabel, { backgroundColor: theme.text + 'B3' }]}>
+                <Text style={styles.sideBySideLabelText}>After</Text>
+                <Text style={styles.sideBySideDateText}>
+                  {new Date(photo2.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </Text>
+              </View>
             </View>
           </View>
-          <View style={[styles.sideBySidePhoto, { borderColor: theme.primary }]}>
-            <Image source={{ uri: photo2.uri }} style={styles.image} />
-            <View style={[styles.sideBySideLabel, { backgroundColor: theme.text + 'B3' }]}>
-              <Text style={styles.sideBySideLabelText}>After</Text>
-              <Text style={styles.sideBySideDateText}>
-                {new Date(photo2.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-              </Text>
-            </View>
-          </View>
-        </View>
+        </FeatureGate>
       )}
 
       {/* Grid Mode - Show progression */}
       {comparisonMode === 'grid' && (
-        <View style={styles.gridContainer}>
-          {photos.slice(0, 6).map((photo, index) => (
-            <View key={photo.id} style={[styles.gridPhoto, { borderColor: theme.primary }]}>
-              <Image source={{ uri: photo.uri }} style={styles.gridImage} />
-              <View style={[styles.gridLabel, { backgroundColor: theme.text + 'B3' }]}>
-                <Text style={styles.gridDateText}>
-                  {new Date(photo.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                </Text>
+        <FeatureGate
+          feature={Feature.GRID_VIEW_COMPARISON}
+          showPreview={false}
+          compact={false}
+          customMessage="Upgrade to Premium to view all photos in grid layout"
+        >
+          <View style={styles.gridContainer}>
+            {photos.slice(0, 6).map((photo, index) => (
+              <View key={photo.id} style={[styles.gridPhoto, { borderColor: theme.primary }]}>
+                <Image source={{ uri: photo.uri }} style={styles.gridImage} />
+                <View style={[styles.gridLabel, { backgroundColor: theme.text + 'B3' }]}>
+                  <Text style={styles.gridDateText}>
+                    {new Date(photo.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </Text>
+                </View>
               </View>
-            </View>
-          ))}
-        </View>
+            ))}
+          </View>
+        </FeatureGate>
       )}
     </View>
   );
@@ -507,6 +555,14 @@ const styles = StyleSheet.create({
   modeButton: {
     padding: 10,
     borderRadius: 8,
+  },
+  modeButtonContent: {
+    position: 'relative',
+  },
+  lockIcon: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
   },
   selectionHeader: {
     flexDirection: "row",

@@ -186,18 +186,21 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     marginHorizontal: -20,
+    flexGrow: 0,
+    flexShrink: 0,
   },
   scrollViewContent: {
     paddingHorizontal: 20,
-    paddingRight: 40,
   },
   badge: {
     width: 140,
+    height: 160,
     padding: 16,
     borderRadius: 12,
     borderWidth: 2,
     marginRight: 12,
     alignItems: "center",
+    justifyContent: "center",
   },
   badgeTitle: {
     fontSize: 14,

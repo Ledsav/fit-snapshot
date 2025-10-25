@@ -1,35 +1,33 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  StyleSheet,
-  View,
-  SafeAreaView,
-  Text,
-  ScrollView,
-  RefreshControl,
-  TouchableOpacity,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter, Href } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import Colors from "@/constants/Colors";
-import { useTheme } from "@/context/ThemeContext";
-import { StreakService, StreakData } from "@/services/streakService";
-import { Header } from "@/components/home/Header";
-import { StreakCard } from "@/components/home/StreakCard";
-import { LatestPhotoCard } from "@/components/home/LatestPhotoCard";
-import BackgroundImage from "@/components/style/BackgroundImage";
-import { ShreddedTipsCarousel } from "@/components/home/ShreddedTipsCarousel";
-import { ProgressSummary } from "@/components/home/ProgressSummary";
-import { OnboardingCarousel } from "@/components/onBoarding/OnboardingCarousel";
-import { WeeklyProgressChart } from "@/components/home/WeeklyProgressChart";
-import { NextPhotoReminder } from "@/components/home/NextPhotoReminder";
-import { MiniComparisonPreview } from "@/components/home/MiniComparisonPreview";
 import { AchievementBadges } from "@/components/home/AchievementBadges";
 import { ConsistencyHeatmap } from "@/components/home/ConsistencyHeatmap";
-import { usePhotos } from "@/context/PhotoContext";
-import { useLocalization } from "@/context/LocalizationContext";
+import { Header } from "@/components/home/Header";
+import { LatestPhotoCard } from "@/components/home/LatestPhotoCard";
+import { MiniComparisonPreview } from "@/components/home/MiniComparisonPreview";
+import { NextPhotoReminder } from "@/components/home/NextPhotoReminder";
+import { ProgressSummary } from "@/components/home/ProgressSummary";
+import { ShreddedTipsCarousel } from "@/components/home/ShreddedTipsCarousel";
+import { StreakCard } from "@/components/home/StreakCard";
+import { WeeklyProgressChart } from "@/components/home/WeeklyProgressChart";
 import { FeatureGate } from "@/components/monetization/FeatureGate";
+import { OnboardingCarousel } from "@/components/onBoarding/OnboardingCarousel";
+import BackgroundImage from "@/components/style/BackgroundImage";
+import Colors from "@/constants/Colors";
 import { Feature } from "@/constants/Features";
+import { useLocalization } from "@/context/LocalizationContext";
+import { usePhotos } from "@/context/PhotoContext";
+import { useTheme } from "@/context/ThemeContext";
+import { StreakData, StreakService } from "@/services/streakService";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Href, useRouter } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  RefreshControl,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View
+} from "react-native";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -154,7 +152,7 @@ export default function HomeScreen() {
           {/* Achievements - Gamification for engagement - PREMIUM */}
           <FeatureGate
             feature={Feature.ACHIEVEMENT_BADGES}
-            showPreview={true}
+            showPreview={false}
             containerStyle={styles.section}
             compact={false}
           >
@@ -164,7 +162,7 @@ export default function HomeScreen() {
           {/* Weekly Progress Chart - Recent activity trend - PREMIUM */}
           <FeatureGate
             feature={Feature.WEEKLY_PROGRESS_CHART}
-            showPreview={true}
+            showPreview={false}
             containerStyle={styles.section}
             compact={false}
           >
@@ -174,7 +172,7 @@ export default function HomeScreen() {
           {/* Consistency Heatmap - Long-term view - PREMIUM */}
           <FeatureGate
             feature={Feature.CONSISTENCY_HEATMAP}
-            showPreview={true}
+            showPreview={false}
             containerStyle={styles.section}
             compact={false}
           >

@@ -33,6 +33,7 @@ interface TranslationKeys {
     permissionMessage: string;
     grantPermission: string;
     confirm: string;
+    confirmHelper: string;
     galleryPermissionDenied: string;
     imagePickerError: string;
   };
@@ -227,6 +228,7 @@ export const translations: Translations = {
       takePicture: "Take Picture",
       retake: "Retake",
       confirm: "Confirm",
+      confirmHelper: "Review your photo before saving",
       permissionMessage: "We need your permission to show the camera",
       grantPermission: "Grant permission",
       galleryPermissionDenied: "We need media library permissions to import images",
@@ -450,6 +452,7 @@ export const translations: Translations = {
       takePicture: "Tomar Foto",
       retake: "Volver a Tomar",
       confirm: "Confirmar",
+      confirmHelper: "Revisa tu foto antes de guardar",
       permissionMessage: "Necesitamos tu permiso para mostrar la cámara",
       grantPermission: "Conceder permiso",
       galleryPermissionDenied: "Necesitamos permisos para acceder a la galería de fotos",
@@ -674,6 +677,7 @@ export const translations: Translations = {
       takePicture: "Scatta Foto",
       retake: "Rifare",
       confirm: "Conferma",
+      confirmHelper: "Rivedi la tua foto prima di salvarla",
       permissionMessage:
         "Abbiamo bisogno del tuo permesso per mostrare la fotocamera",
       grantPermission: "Concedi permesso",
@@ -897,6 +901,7 @@ export const translations: Translations = {
       takePicture: "Foto aufnehmen",
       retake: "Neu aufnehmen",
       confirm: "Bestätigen",
+      confirmHelper: "Überprüfen Sie Ihr Foto vor dem Speichern",
       permissionMessage:
         "Wir benötigen Ihre Erlaubnis, um die Kamera zu zeigen",
       grantPermission: "Erlaubnis erteilen",
@@ -1122,6 +1127,7 @@ export const translations: Translations = {
       takePicture: "Prendre une Photo",
       retake: "Reprendre",
       confirm: "Confirmer",
+      confirmHelper: "Vérifiez votre photo avant de l'enregistrer",
       permissionMessage:
         "Nous avons besoin de votre permission pour afficher l'appareil photo",
       grantPermission: "Accorder la permission",
