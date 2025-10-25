@@ -14,7 +14,10 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
+  Platform,
+  StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/context/ThemeContext';
@@ -144,12 +147,14 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="pageSheet"
+      presentationStyle="fullScreen"
       onRequestClose={onClose}
+      statusBarTranslucent={true}
     >
-      <View style={[styles.container, { backgroundColor: theme.background }]}>
-        {/* Header */}
-        <View style={styles.header}>
+      <View style={[styles.fullContainer, { backgroundColor: theme.background }]}>
+        <SafeAreaView style={styles.container}>
+          {/* Header */}
+          <View style={styles.header}>
           <TouchableOpacity
             style={styles.closeButton}
             onPress={onClose}
@@ -262,12 +267,17 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
             </Text>
           </View>
         </ScrollView>
+        </SafeAreaView>
       </View>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
+  fullContainer: {
+    flex: 1,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0,
+  },
   container: {
     flex: 1,
   },
@@ -276,11 +286,13 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingTop: 8,
     paddingBottom: 8,
+    zIndex: 10,
   },
   closeButton: {
     padding: 8,
+    zIndex: 11,
   },
   content: {
     flex: 1,

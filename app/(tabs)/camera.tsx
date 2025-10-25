@@ -256,7 +256,7 @@ export default function CameraScreen() {
 
   const renderSilhouette = () => (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      <TorsoSilhouette />
+      <TorsoSilhouette type={overlay} />
     </View>
   );
 

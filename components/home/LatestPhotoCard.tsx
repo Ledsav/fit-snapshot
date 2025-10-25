@@ -43,7 +43,7 @@ export const LatestPhotoCard: React.FC<LatestPhotoCardProps> = ({
           imageStyle={{ borderRadius: 15 }}
         >
           <LinearGradient
-            colors={["transparent", theme.text + 'B3']}
+            colors={["transparent", "rgba(0, 0, 0, 0.7)"]}
             style={styles.latestPhotoGradient}
           >
             <Text style={styles.latestPhotoText}>

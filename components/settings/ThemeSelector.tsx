@@ -97,7 +97,7 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
     >
       <View style={styles.modalContainer}>
         <TouchableOpacity
-          style={[styles.backdrop, { backgroundColor: theme.text + '80' }]}
+          style={[styles.backdrop, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
           activeOpacity={1}
           onPress={onClose}
         />

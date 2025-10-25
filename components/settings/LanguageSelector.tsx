@@ -67,11 +67,14 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
       transparent={true}
       onRequestClose={onClose}
     >
-      <View
-        style={[styles.modalContainer, { backgroundColor: theme.background }]}
-      >
+      <View style={styles.modalContainer}>
+        <TouchableOpacity
+          style={[styles.backdrop, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
+          activeOpacity={1}
+          onPress={onClose}
+        />
         <View
-          style={[styles.modalContent, { backgroundColor: theme.background }]}
+          style={[styles.modalContent, { backgroundColor: theme.cardBackground }]}
         >
           <View style={styles.modalHeader}>
             <Text style={[styles.modalTitle, { color: theme.text }]}>
@@ -97,6 +100,9 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     justifyContent: "flex-end",
+  },
+  backdrop: {
+    flex: 1,
   },
   modalContent: {
     borderTopLeftRadius: 20,

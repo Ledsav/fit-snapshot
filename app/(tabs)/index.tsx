@@ -152,25 +152,34 @@ export default function HomeScreen() {
           </View>
 
           {/* Achievements - Gamification for engagement - PREMIUM */}
-          <View style={styles.section}>
-            <FeatureGate feature={Feature.ACHIEVEMENT_BADGES} showPreview={true}>
-              <AchievementBadges photos={photos} currentStreak={streakData.currentStreak} />
-            </FeatureGate>
-          </View>
+          <FeatureGate
+            feature={Feature.ACHIEVEMENT_BADGES}
+            showPreview={true}
+            containerStyle={styles.section}
+            compact={false}
+          >
+            <AchievementBadges photos={photos} currentStreak={streakData.currentStreak} />
+          </FeatureGate>
 
           {/* Weekly Progress Chart - Recent activity trend - PREMIUM */}
-          <View style={styles.section}>
-            <FeatureGate feature={Feature.WEEKLY_PROGRESS_CHART} showPreview={true}>
-              <WeeklyProgressChart photos={photos} />
-            </FeatureGate>
-          </View>
+          <FeatureGate
+            feature={Feature.WEEKLY_PROGRESS_CHART}
+            showPreview={true}
+            containerStyle={styles.section}
+            compact={false}
+          >
+            <WeeklyProgressChart photos={photos} />
+          </FeatureGate>
 
           {/* Consistency Heatmap - Long-term view - PREMIUM */}
-          <View style={styles.section}>
-            <FeatureGate feature={Feature.CONSISTENCY_HEATMAP} showPreview={true}>
-              <ConsistencyHeatmap photos={photos} />
-            </FeatureGate>
-          </View>
+          <FeatureGate
+            feature={Feature.CONSISTENCY_HEATMAP}
+            showPreview={true}
+            containerStyle={styles.section}
+            compact={false}
+          >
+            <ConsistencyHeatmap photos={photos} />
+          </FeatureGate>
 
           {/* Latest Photo - Quick gallery preview */}
           <View style={styles.section}>

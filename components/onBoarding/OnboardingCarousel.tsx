@@ -9,6 +9,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Image,
 } from "react-native";
 import PagerView from "react-native-pager-view";
 
@@ -27,23 +28,23 @@ export const OnboardingCarousel: React.FC<OnboardingCarouselProps> = ({
 
   const onboardingSteps = [
     {
-      title: t("onboardingCarousel.takePhoto.title"),
-      subtitle: t("onboardingCarousel.takePhoto.subtitle"),
-      icon: "camera",
-      gradient: [theme.primary, theme.accent],
+      title: t("onboardingCarousel.seeProgress.title"),
+      subtitle: t("onboardingCarousel.seeProgress.subtitle"),
+      image: require("@/assets/images/onbording/progress.jpg"),
+      gradient: [theme.accent, theme.secondary],
       backgroundColor: theme.cardBackground,
     },
     {
-      title: t("onboardingCarousel.seeProgress.title"),
-      subtitle: t("onboardingCarousel.seeProgress.subtitle"),
-      icon: "trending-up",
-      gradient: [theme.accent, theme.secondary],
+      title: t("onboardingCarousel.takePhoto.title"),
+      subtitle: t("onboardingCarousel.takePhoto.subtitle"),
+      image: require("@/assets/images/onbording/photo.jpg"),
+      gradient: [theme.primary, theme.accent],
       backgroundColor: theme.cardBackground,
     },
     {
       title: t("onboardingCarousel.shareResults.title"),
       subtitle: t("onboardingCarousel.shareResults.subtitle"),
-      icon: "trophy",
+      image: require("@/assets/images/onbording/share.jpg"),
       gradient: [theme.primary, theme.info],
       backgroundColor: theme.cardBackground,
     },
@@ -70,41 +71,17 @@ export const OnboardingCarousel: React.FC<OnboardingCarouselProps> = ({
         onPageSelected={handlePageSelected}
       >
         {onboardingSteps.map((step, index) => (
-          <View key={index} style={[styles.page, { backgroundColor: step.backgroundColor }]}>
-            <View style={styles.contentWrapper}>
-              <LinearGradient
-                colors={step.gradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.gradientCircle}
-              >
-                <View style={styles.iconContainer}>
-                  <Ionicons
-                    name={step.icon as any}
-                    size={100}
-                    color={theme.background}
-                  />
-                </View>
-              </LinearGradient>
-
-              <View style={styles.decorativeCircle1}>
-                <LinearGradient
-                  colors={[step.gradient[0] + '30', step.gradient[1] + '20']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.decorativeGradient}
-                />
-              </View>
-
-              <View style={styles.decorativeCircle2}>
-                <LinearGradient
-                  colors={[step.gradient[1] + '20', step.gradient[0] + '30']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.decorativeGradient}
-                />
-              </View>
-            </View>
+          <View key={index} style={[styles.page, { backgroundColor: theme.background }]}>
+            <Image
+              source={step.image}
+              style={styles.onboardingImage}
+              resizeMode="cover"
+            />
+            <LinearGradient
+              colors={['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0.4)', theme.background]}
+              locations={[0, 0.6, 1]}
+              style={styles.imageGradient}
+            />
           </View>
         ))}
       </PagerView>
@@ -169,52 +146,21 @@ const styles = StyleSheet.create({
   },
   page: {
     flex: 1,
-  },
-  contentWrapper: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
     position: "relative",
   },
-  gradientCircle: {
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 12,
-    zIndex: 10,
-  },
-  iconContainer: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  decorativeCircle1: {
+  onboardingImage: {
+    width: "100%",
+    height: "100%",
     position: "absolute",
-    top: "15%",
-    right: "10%",
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    overflow: "hidden",
-    opacity: 0.6,
+    top: 0,
+    left: 0,
   },
-  decorativeCircle2: {
+  imageGradient: {
     position: "absolute",
-    bottom: "25%",
-    left: "8%",
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    overflow: "hidden",
-    opacity: 0.5,
-  },
-  decorativeGradient: {
-    flex: 1,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: "60%",
   },
   footer: {
     position: "absolute",

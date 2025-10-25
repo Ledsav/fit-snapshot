@@ -6,7 +6,7 @@
  */
 
 import React, { useState, ReactNode } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useTheme } from '@/context/ThemeContext';
@@ -21,6 +21,8 @@ interface FeatureGateProps {
   fallback?: ReactNode;
   showPreview?: boolean; // Show blurred preview of content
   customMessage?: string;
+  containerStyle?: ViewStyle; // Allow custom container styling
+  compact?: boolean; // Compact mode for smaller locks
 }
 
 export const FeatureGate: React.FC<FeatureGateProps> = ({
@@ -29,6 +31,8 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
   fallback,
   showPreview = true,
   customMessage,
+  containerStyle,
+  compact = false,
 }) => {
   const { effectiveColorScheme } = useTheme();
   const theme = Colors[effectiveColorScheme];
@@ -38,43 +42,118 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
   const hasAccess = hasFeatureAccess(feature);
 
   if (hasAccess) {
-    return <>{children}</>;
+    return <View style={containerStyle}>{children}</View>;
   }
 
   // If custom fallback provided, use it
   if (fallback) {
-    return <>{fallback}</>;
+    return <View style={containerStyle}>{fallback}</View>;
   }
 
   // Default locked UI with blur preview
   return (
-    <View style={styles.container}>
-      {showPreview && (
-        <View style={styles.previewContainer}>
-          <View style={{ opacity: 0.3 }}>{children}</View>
-          <BlurView intensity={80} style={StyleSheet.absoluteFill} tint={effectiveColorScheme} />
-        </View>
-      )}
+    <View style={[styles.container, containerStyle]}>
+      {showPreview ? (
+        <>
+          <View style={styles.previewContainer}>
+            <View style={{ opacity: 0.3 }}>{children}</View>
+            <BlurView intensity={80} style={StyleSheet.absoluteFill} tint={effectiveColorScheme} />
+          </View>
 
-      <View style={[styles.lockedOverlay, !showPreview && { position: 'relative' }]}>
-        <View style={[styles.lockContainer, { backgroundColor: theme.cardBackground }]}>
-          <Ionicons name="lock-closed" size={32} color={theme.primary} />
-          <Text style={[styles.lockTitle, { color: theme.text }]}>Premium Feature</Text>
-          <Text style={[styles.lockMessage, { color: theme.text }]}>
-            {customMessage || 'Upgrade to Premium to unlock this feature'}
+          <View style={styles.lockedOverlay}>
+            <View style={[
+              styles.lockContainer,
+              {
+                backgroundColor: theme.cardBackground,
+                borderColor: theme.primary,
+              },
+              compact && styles.lockContainerCompact
+            ]}>
+              <Ionicons
+                name="lock-closed"
+                size={compact ? 24 : 32}
+                color={theme.primary}
+              />
+              <Text style={[
+                styles.lockTitle,
+                { color: theme.text },
+                compact && styles.lockTitleCompact
+              ]}>
+                Premium Feature
+              </Text>
+              {!compact && (
+                <Text style={[styles.lockMessage, { color: theme.text }]}>
+                  {customMessage || 'Upgrade to Premium to unlock this feature'}
+                </Text>
+              )}
+              <TouchableOpacity
+                style={[
+                  styles.upgradeButton,
+                  { backgroundColor: theme.primary },
+                  compact && styles.upgradeButtonCompact
+                ]}
+                onPress={() => setShowPaywall(true)}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="star" size={compact ? 16 : 20} color={theme.background} />
+                <Text style={[
+                  styles.upgradeButtonText,
+                  { color: theme.background },
+                  compact && styles.upgradeButtonTextCompact
+                ]}>
+                  {compact ? 'Upgrade' : 'Upgrade Now'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </>
+      ) : (
+        <View style={[
+          styles.lockContainer,
+          {
+            backgroundColor: theme.cardBackground,
+            borderColor: theme.primary,
+          },
+          compact && styles.lockContainerCompact,
+          styles.lockContainerStandalone
+        ]}>
+          <Ionicons
+            name="lock-closed"
+            size={compact ? 24 : 32}
+            color={theme.primary}
+          />
+          <Text style={[
+            styles.lockTitle,
+            { color: theme.text },
+            compact && styles.lockTitleCompact
+          ]}>
+            Premium Feature
           </Text>
+          {!compact && (
+            <Text style={[styles.lockMessage, { color: theme.text }]}>
+              {customMessage || 'Upgrade to Premium to unlock this feature'}
+            </Text>
+          )}
           <TouchableOpacity
-            style={[styles.upgradeButton, { backgroundColor: theme.primary }]}
+            style={[
+              styles.upgradeButton,
+              { backgroundColor: theme.primary },
+              compact && styles.upgradeButtonCompact
+            ]}
             onPress={() => setShowPaywall(true)}
             activeOpacity={0.8}
           >
-            <Ionicons name="star" size={20} color={theme.background} />
-            <Text style={[styles.upgradeButtonText, { color: theme.background }]}>
-              Upgrade Now
+            <Ionicons name="star" size={compact ? 16 : 20} color={theme.background} />
+            <Text style={[
+              styles.upgradeButtonText,
+              { color: theme.background },
+              compact && styles.upgradeButtonTextCompact
+            ]}>
+              {compact ? 'Upgrade' : 'Upgrade Now'}
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
+      )}
 
       <PaywallModal
         visible={showPaywall}
@@ -89,10 +168,12 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
-    minHeight: 150,
   },
   previewContainer: {
     position: 'relative',
+    minHeight: 150,
+    borderRadius: 12,
+    overflow: 'hidden',
   },
   lockedOverlay: {
     position: 'absolute',
@@ -101,24 +182,30 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    alignItems: 'stretch',
+    padding: 12,
   },
   lockContainer: {
-    padding: 24,
-    borderRadius: 16,
+    padding: 20,
+    borderRadius: 12,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5,
-    maxWidth: 300,
+    borderWidth: 2,
+  },
+  lockContainerCompact: {
+    padding: 16,
+  },
+  lockContainerStandalone: {
+    width: '100%',
   },
   lockTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     marginTop: 12,
+    marginBottom: 8,
+  },
+  lockTitleCompact: {
+    fontSize: 16,
+    marginTop: 8,
     marginBottom: 8,
   },
   lockMessage: {
@@ -135,9 +222,17 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     gap: 8,
   },
+  upgradeButtonCompact: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    gap: 6,
+  },
   upgradeButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  upgradeButtonTextCompact: {
+    fontSize: 14,
   },
 });
 

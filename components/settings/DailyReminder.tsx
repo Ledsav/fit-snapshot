@@ -183,9 +183,9 @@ export const DailyReminder: React.FC = () => {
         visible={showModal}
         onRequestClose={() => setShowModal(false)}
       >
-        <View style={[styles.modalContainer, { backgroundColor: theme.text + '80' }]}>
+        <View style={[styles.modalContainer, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}>
           <View
-            style={[styles.modalContent, { backgroundColor: theme.background }]}
+            style={[styles.modalContent, { backgroundColor: theme.cardBackground }]}
           >
             <Text style={[styles.modalTitle, { color: theme.text }]}>
               {t("dailyReminder.setDailyReminder")}
