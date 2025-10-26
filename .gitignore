@@ -30,6 +30,7 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
 .env*.local
 
 # typescript
@@ -50,3 +51,5 @@ _active.uusver
 
 #android folder
 android/app/google-services.json
+
+ai-support/
