@@ -191,6 +191,15 @@
       "requiredTier": "premium",
       "enabled": true,
       "betaOnly": false
+    },
+    "gif_generation": {
+      "key": "gif_generation",
+      "category": "export",
+      "name": "GIF Before/After Export",
+      "description": "Generate a GIF from before and after photos (1 per month)",
+      "requiredTier": "premium",
+      "enabled": true,
+      "betaOnly": false
     }
   },
   "limits": {
@@ -202,7 +211,8 @@
     "premium": {
       "maxPhotos": -1,
       "maxComparisonsPerDay": -1,
-      "maxExportsPerMonth": -1
+      "maxExportsPerMonth": -1,
+      "maxGifGenerationsPerMonth": 1
     }
   }
 }

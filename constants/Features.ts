@@ -48,6 +48,7 @@ export enum Feature {
   PDF_REPORTS = 'pdf_reports',
   BULK_EXPORT = 'bulk_export',
   SOCIAL_SHARING = 'social_sharing',
+  GIF_GENERATION = 'gif_generation',
 
   // Customization Features
   CUSTOM_CATEGORIES = 'custom_categories',

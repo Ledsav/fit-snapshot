@@ -46,3 +46,7 @@ repopack-output.txt
 
 #ignore _active.uusver
 _active.uusver
+
+
+#android folder
+android/app/google-services.json

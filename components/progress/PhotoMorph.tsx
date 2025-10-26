@@ -33,7 +33,10 @@ const SLIDER_WIDTH = width * 0.8;
 const THUMB_SIZE = 40;
 const THUMB_RADIUS = THUMB_SIZE / 2;
 
-type ComparisonMode = 'slider' | 'sideBySide' | 'grid';
+type ComparisonMode = 'slider' | 'sideBySide' | 'grid' | 'gif';
+
+import { createBeforeAfterGif } from '@/services/gifService';
+
 
 const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   const [sliderValue, setSliderValue] = useState(0);
@@ -45,6 +48,9 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   const { t } = useLocalization();
   const { hasFeatureAccess } = useUser();
   const [comparisonMode, setComparisonMode] = useState<ComparisonMode>('slider');
+  const [isGeneratingGif, setIsGeneratingGif] = useState(false);
+  const [gifUrl, setGifUrl] = useState<string | null>(null);
+  const [gifError, setGifError] = useState<string | null>(null);
   const [isSelectingPhotos, setIsSelectingPhotos] = useState(false);
   const [selectedPhoto1, setSelectedPhoto1] = useState<Photo | null>(null);
   const [selectedPhoto2, setSelectedPhoto2] = useState<Photo | null>(null);
@@ -52,6 +58,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   const hasSideBySideAccess = hasFeatureAccess(Feature.SIDE_BY_SIDE_COMPARISON);
   const hasGridViewAccess = hasFeatureAccess(Feature.GRID_VIEW_COMPARISON);
   const hasCustomSelectionAccess = hasFeatureAccess(Feature.CUSTOM_PHOTO_SELECTION);
+  const hasGifAccess = hasFeatureAccess(Feature.GIF_GENERATION);
 
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
@@ -106,7 +113,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
             {t("progress.noPhotosAvailable") + " " + t(`progress.${type}`)}
           </Text>
         </View>
-      </View>
+  </View>
     );
   }
 
@@ -321,71 +328,135 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
       </View>
 
       {/* Comparison Mode Switcher */}
-      <View style={styles.modeSwitcher}>
-        <TouchableOpacity
-          style={[
-            styles.modeButton,
-            { backgroundColor: comparisonMode === 'slider' ? theme.primary : theme.text + '20' }
-          ]}
-          onPress={() => setComparisonMode('slider')}
-        >
-          <Ionicons
-            name="swap-horizontal-outline"
-            size={18}
-            color={comparisonMode === 'slider' ? theme.background : theme.text}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.modeButton,
-            { backgroundColor: comparisonMode === 'sideBySide' ? theme.primary : theme.text + '20', opacity: hasSideBySideAccess ? 1 : 0.5 }
-          ]}
-          onPress={() => hasSideBySideAccess && setComparisonMode('sideBySide')}
-          disabled={!hasSideBySideAccess}
-        >
-          <View style={styles.modeButtonContent}>
-            <Ionicons
-              name="copy-outline"
-              size={18}
-              color={comparisonMode === 'sideBySide' ? theme.background : theme.text}
-            />
-            {!hasSideBySideAccess && (
-              <Ionicons name="lock-closed" size={10} color={theme.text} style={styles.lockIcon} />
-            )}
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.modeButton,
-            { backgroundColor: comparisonMode === 'grid' ? theme.primary : theme.text + '20', opacity: hasGridViewAccess ? 1 : 0.5 }
-          ]}
-          onPress={() => hasGridViewAccess && setComparisonMode('grid')}
-          disabled={!hasGridViewAccess}
-        >
-          <View style={styles.modeButtonContent}>
-            <Ionicons
-              name="grid-outline"
-              size={18}
-              color={comparisonMode === 'grid' ? theme.background : theme.text}
-            />
-            {!hasGridViewAccess && (
-              <Ionicons name="lock-closed" size={10} color={theme.text} style={styles.lockIcon} />
-            )}
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.modeButton, { backgroundColor: theme.cardBackground, opacity: hasCustomSelectionAccess ? 1 : 0.5 }]}
-          onPress={() => hasCustomSelectionAccess && setIsSelectingPhotos(true)}
-          disabled={!hasCustomSelectionAccess}
-        >
-          <View style={styles.modeButtonContent}>
-            <Ionicons name="images-outline" size={18} color={theme.text} />
-            {!hasCustomSelectionAccess && (
-              <Ionicons name="lock-closed" size={10} color={theme.text} style={styles.lockIcon} />
-            )}
-          </View>
-        </TouchableOpacity>
+  <View style={styles.modeSwitcher}>
+    <TouchableOpacity
+      style={[
+        styles.modeButton,
+        { backgroundColor: comparisonMode === 'slider' ? theme.primary : theme.text + '20' }
+      ]}
+      onPress={() => setComparisonMode('slider')}
+    >
+      <Ionicons
+        name="swap-horizontal-outline"
+        size={18}
+        color={comparisonMode === 'slider' ? theme.background : theme.text}
+      />
+    </TouchableOpacity>
+    <TouchableOpacity
+      style={[
+        styles.modeButton,
+        { backgroundColor: comparisonMode === 'sideBySide' ? theme.primary : theme.text + '20', opacity: hasSideBySideAccess ? 1 : 0.5 }
+      ]}
+      onPress={() => hasSideBySideAccess && setComparisonMode('sideBySide')}
+      disabled={!hasSideBySideAccess}
+    >
+      <View style={styles.modeButtonContent}>
+        <Ionicons
+          name="copy-outline"
+          size={18}
+          color={comparisonMode === 'sideBySide' ? theme.background : theme.text}
+        />
+        {!hasSideBySideAccess && (
+          <Ionicons name="lock-closed" size={10} color={theme.text} style={styles.lockIcon} />
+        )}
       </View>
+    </TouchableOpacity>
+    {/* GIF mode as third tab */}
+    <TouchableOpacity
+      style={[
+        styles.modeButton,
+        { backgroundColor: comparisonMode === 'gif' ? theme.primary : theme.text + '20', opacity: hasGifAccess ? 1 : 0.5 }
+      ]}
+      onPress={() => hasGifAccess && setComparisonMode('gif')}
+      disabled={!hasGifAccess}
+    >
+      <View style={styles.modeButtonContent}>
+        <Ionicons name="film-outline" size={18} color={comparisonMode === 'gif' ? theme.background : theme.text} />
+        {!hasGifAccess && (
+          <Ionicons name="lock-closed" size={10} color={theme.text} style={styles.lockIcon} />
+        )}
+      </View>
+    </TouchableOpacity>
+    <TouchableOpacity
+      style={[
+        styles.modeButton,
+        { backgroundColor: comparisonMode === 'grid' ? theme.primary : theme.text + '20', opacity: hasGridViewAccess ? 1 : 0.5 }
+      ]}
+      onPress={() => hasGridViewAccess && setComparisonMode('grid')}
+      disabled={!hasGridViewAccess}
+    >
+      <View style={styles.modeButtonContent}>
+        <Ionicons
+          name="grid-outline"
+          size={18}
+          color={comparisonMode === 'grid' ? theme.background : theme.text}
+        />
+        {!hasGridViewAccess && (
+          <Ionicons name="lock-closed" size={10} color={theme.text} style={styles.lockIcon} />
+        )}
+      </View>
+    </TouchableOpacity>
+    <TouchableOpacity
+      style={[styles.modeButton, { backgroundColor: theme.cardBackground, opacity: hasCustomSelectionAccess ? 1 : 0.5 }]}
+      onPress={() => hasCustomSelectionAccess && setIsSelectingPhotos(true)}
+      disabled={!hasCustomSelectionAccess}
+    >
+      <View style={styles.modeButtonContent}>
+        <Ionicons name="images-outline" size={18} color={theme.text} />
+        {!hasCustomSelectionAccess && (
+          <Ionicons name="lock-closed" size={10} color={theme.text} style={styles.lockIcon} />
+        )}
+      </View>
+    </TouchableOpacity>
+  </View>
+
+  {/* GIF Mode */}
+  {comparisonMode === 'gif' && (
+    <FeatureGate
+      feature={Feature.GIF_GENERATION}
+      showPreview={false}
+      compact={false}
+      customMessage="Upgrade to Premium to generate before/after GIFs"
+    >
+      <View style={{ alignItems: 'center', marginTop: 16 }}>
+        <TouchableOpacity
+          style={{ backgroundColor: theme.primary, padding: 14, borderRadius: 10, marginBottom: 16 }}
+          onPress={async () => {
+            setIsGeneratingGif(true);
+            setGifError(null);
+            setGifUrl(null);
+            try {
+              const result = await createBeforeAfterGif(photo1.uri, photo2.uri);
+              setGifUrl(result.gifUri);
+            } catch (e) {
+              setGifError('Failed to generate GIF. Please try again.');
+            } finally {
+              setIsGeneratingGif(false);
+            }
+          }}
+          disabled={isGeneratingGif}
+        >
+          <Ionicons name="film-outline" size={20} color={theme.background} />
+          <Text style={{ color: theme.background, fontWeight: 'bold', marginLeft: 8 }}>Generate Before/After GIF</Text>
+        </TouchableOpacity>
+        {isGeneratingGif && <Text style={{ color: theme.text }}>Generating GIF...</Text>}
+        {gifError && <Text style={{ color: 'red', marginTop: 8 }}>{gifError}</Text>}
+        {gifUrl && (
+          <View style={{ alignItems: 'center', marginTop: 16 }}>
+            <Image source={{ uri: gifUrl }} style={{ width: 240, height: 320, borderRadius: 16 }} />
+            <TouchableOpacity
+              style={{ marginTop: 12, backgroundColor: theme.primary, padding: 10, borderRadius: 8 }}
+              onPress={() => {
+                setGifUrl(null);
+              }}
+            >
+              <Text style={{ color: theme.background }}>Clear GIF</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    </FeatureGate>
+  )}
       {/* Slider Mode */}
       {comparisonMode === 'slider' && (
         <>
