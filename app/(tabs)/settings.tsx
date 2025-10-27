@@ -9,7 +9,9 @@ import { FREE_TIER_LIMITS } from "@/constants/Features";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useUser } from "@/context/UserContext";
+import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   SafeAreaView,
@@ -63,6 +65,8 @@ export default function SettingsScreen() {
   const theme = Colors[effectiveColorScheme];
   const { t, locale } = useLocalization();
   const { isPremium, subscriptionStatus, featureUsage, setTestPremiumStatus } = useUser();
+  const { user, userInfo, signIn, signOut: handleSignOut } = useAuth();
+  const router = useRouter();
   const [isLanguageSelectorVisible, setIsLanguageSelectorVisible] =
     useState(false);
   const [isThemeSelectorVisible, setIsThemeSelectorVisible] = useState(false);
@@ -112,6 +116,37 @@ export default function SettingsScreen() {
     );
   };
 
+  const handleSignInPress = async () => {
+    try {
+      await signIn();
+      Alert.alert("Success", "Signed in successfully!");
+    } catch (error: any) {
+      Alert.alert("Sign In Failed", error.message || "Failed to sign in with Google");
+    }
+  };
+
+  const handleSignOutPress = () => {
+    Alert.alert(
+      "Sign Out",
+      "Are you sure you want to sign out?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Sign Out",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await handleSignOut();
+              Alert.alert("Signed Out", "You have been signed out successfully.");
+            } catch (error: any) {
+              Alert.alert("Error", error.message || "Failed to sign out");
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const getThemeDisplayName = () => {
     switch (themeMode) {
       case 'light':
@@ -150,6 +185,53 @@ export default function SettingsScreen() {
         <Text style={[styles.title, { color: theme.text }]}>
           {t("settings.title")}
         </Text>
+
+        {/* Account Section */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>
+            Account
+          </Text>
+          {user ? (
+            <View>
+              <View
+                style={[
+                  styles.settingItem,
+                  {
+                    backgroundColor: theme.cardBackground,
+                    borderColor: theme.primary + '40',
+                  },
+                ]}
+              >
+                <View style={[styles.iconContainer, { backgroundColor: theme.primary + '20' }]}>
+                  <Ionicons name="person" size={24} color={theme.primary} />
+                </View>
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <Text style={[styles.settingText, { color: theme.text }]}>
+                    {userInfo?.displayName || userInfo?.email || 'User'}
+                  </Text>
+                  {userInfo?.email && userInfo?.displayName && (
+                    <Text style={[styles.settingValue, { color: theme.text, opacity: 0.6 }]}>
+                      {userInfo.email}
+                    </Text>
+                  )}
+                </View>
+              </View>
+              <SettingItem
+                title="Sign Out"
+                onPress={handleSignOutPress}
+                icon="log-out-outline"
+                theme={theme}
+              />
+            </View>
+          ) : (
+            <SettingItem
+              title="Sign In"
+              onPress={handleSignInPress}
+              icon="log-in-outline"
+              theme={theme}
+            />
+          )}
+        </View>
 
         {/* Premium Section */}
         <View style={styles.section}>

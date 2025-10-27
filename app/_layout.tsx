@@ -10,6 +10,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
 
+import { AuthProvider } from "@/context/AuthContext";
 import { LocalizationProvider } from "@/context/LocalizationContext";
 import { PhotoProvider } from "@/context/PhotoContext";
 import { ThemeProvider as AppThemeProvider } from "@/context/ThemeContext";
@@ -17,15 +18,12 @@ import { UserProvider } from "@/context/UserContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 
 export {
-
     ErrorBoundary
 } from "expo-router";
 
 export const unstable_settings = {
-  
   initialRouteName: "(tabs)",
 };
-
 
 SplashScreen.preventAutoHideAsync();
 
@@ -35,7 +33,6 @@ export default function RootLayout() {
     ...FontAwesome.font,
   });
 
-  
   useEffect(() => {
     if (error) throw error;
   }, [error]);
@@ -58,18 +55,20 @@ function RootLayoutNav() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <LocalizationProvider>
-        <AppThemeProvider>
-          <UserProvider>
-            <PhotoProvider>
-              <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="modal" options={{ presentation: "modal" }} />
-              </Stack>
-            </PhotoProvider>
-          </UserProvider>
-        </AppThemeProvider>
-      </LocalizationProvider>
+      <AuthProvider>
+        <LocalizationProvider>
+          <AppThemeProvider>
+            <UserProvider>
+              <PhotoProvider>
+                <Stack>
+                  <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                  <Stack.Screen name="modal" options={{ presentation: "modal" }} />
+                </Stack>
+              </PhotoProvider>
+            </UserProvider>
+          </AppThemeProvider>
+        </LocalizationProvider>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

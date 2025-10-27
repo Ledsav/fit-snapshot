@@ -1,6 +1,7 @@
 import { FeatureGate } from "@/components/monetization/FeatureGate";
 import Colors from "@/constants/Colors";
 import { Feature } from "@/constants/Features";
+import { useAuth } from "@/context/AuthContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { usePhotos } from "@/context/PhotoContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -36,6 +37,7 @@ const THUMB_RADIUS = THUMB_SIZE / 2;
 type ComparisonMode = 'slider' | 'sideBySide' | 'grid' | 'gif';
 
 import { createBeforeAfterGif } from '@/services/gifService';
+import { useRouter } from 'expo-router';
 
 
 const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
@@ -47,6 +49,8 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   const photos = getPhotosByType(type);
   const { t } = useLocalization();
   const { hasFeatureAccess } = useUser();
+  const { user, getToken } = useAuth();
+  const router = useRouter();
   const [comparisonMode, setComparisonMode] = useState<ComparisonMode>('slider');
   const [isGeneratingGif, setIsGeneratingGif] = useState(false);
   const [gifUrl, setGifUrl] = useState<string | null>(null);
@@ -419,39 +423,81 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
       customMessage="Upgrade to Premium to generate before/after GIFs"
     >
       <View style={{ alignItems: 'center', marginTop: 16 }}>
-        <TouchableOpacity
-          style={{ backgroundColor: theme.primary, padding: 14, borderRadius: 10, marginBottom: 16 }}
-          onPress={async () => {
-            setIsGeneratingGif(true);
-            setGifError(null);
-            setGifUrl(null);
-            try {
-              const result = await createBeforeAfterGif(photo1.uri, photo2.uri);
-              setGifUrl(result.gifUri);
-            } catch (e) {
-              setGifError('Failed to generate GIF. Please try again.');
-            } finally {
-              setIsGeneratingGif(false);
-            }
-          }}
-          disabled={isGeneratingGif}
-        >
-          <Ionicons name="film-outline" size={20} color={theme.background} />
-          <Text style={{ color: theme.background, fontWeight: 'bold', marginLeft: 8 }}>Generate Before/After GIF</Text>
-        </TouchableOpacity>
+        {!user ? (
+          <TouchableOpacity
+            style={{ backgroundColor: theme.primary, padding: 14, borderRadius: 10, marginBottom: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
+            onPress={() => router.push('/(tabs)/settings')}
+          >
+            <Ionicons name="log-in-outline" size={20} color={theme.background} />
+            <Text style={{ color: theme.background, fontWeight: 'bold', marginLeft: 8 }}>Go to Settings to Sign In</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={{ backgroundColor: theme.primary, padding: 14, borderRadius: 10, marginBottom: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
+            onPress={async () => {
+              setIsGeneratingGif(true);
+              setGifError(null);
+              setGifUrl(null);
+              try {
+                const token = await getToken();
+                if (!token) {
+                  setGifError('Authentication failed. Please sign in again.');
+                  return;
+                }
+
+                const result = await createBeforeAfterGif([photo1.uri, photo2.uri], token);
+                if (result.error) {
+                  setGifError(result.error);
+                } else {
+                  setGifUrl(result.gifUri);
+                }
+              } catch (e) {
+                setGifError('Failed to generate GIF. Please try again.');
+              } finally {
+                setIsGeneratingGif(false);
+              }
+            }}
+            disabled={isGeneratingGif}
+          >
+            <Ionicons name="film-outline" size={20} color={theme.background} />
+            <Text style={{ color: theme.background, fontWeight: 'bold', marginLeft: 8 }}>Generate Before/After GIF</Text>
+          </TouchableOpacity>
+        )}
         {isGeneratingGif && <Text style={{ color: theme.text }}>Generating GIF...</Text>}
         {gifError && <Text style={{ color: 'red', marginTop: 8 }}>{gifError}</Text>}
         {gifUrl && (
           <View style={{ alignItems: 'center', marginTop: 16 }}>
             <Image source={{ uri: gifUrl }} style={{ width: 240, height: 320, borderRadius: 16 }} />
-            <TouchableOpacity
-              style={{ marginTop: 12, backgroundColor: theme.primary, padding: 10, borderRadius: 8 }}
-              onPress={() => {
-                setGifUrl(null);
-              }}
-            >
-              <Text style={{ color: theme.background }}>Clear GIF</Text>
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', marginTop: 12, gap: 10 }}>
+              <TouchableOpacity
+                style={{ backgroundColor: theme.primary, padding: 10, borderRadius: 8, flexDirection: 'row', alignItems: 'center' }}
+                onPress={async () => {
+                  try {
+                    const { status } = await MediaLibrary.requestPermissionsAsync();
+                    if (status !== 'granted') {
+                      Alert.alert('Permission needed', 'Please allow access to save GIF to gallery');
+                      return;
+                    }
+
+                    await MediaLibrary.saveToLibraryAsync(gifUrl);
+                    Alert.alert('Success!', 'GIF saved to gallery');
+                  } catch (error) {
+                    Alert.alert('Error', 'Failed to save GIF');
+                  }
+                }}
+              >
+                <Ionicons name="download-outline" size={18} color={theme.background} />
+                <Text style={{ color: theme.background, marginLeft: 6, fontWeight: 'bold' }}>Download</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{ backgroundColor: theme.error || 'red', padding: 10, borderRadius: 8 }}
+                onPress={() => {
+                  setGifUrl(null);
+                }}
+              >
+                <Text style={{ color: theme.background, fontWeight: 'bold' }}>Clear</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
       </View>
