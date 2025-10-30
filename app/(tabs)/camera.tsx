@@ -1,4 +1,14 @@
-import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
+import { Button } from "@/components/ui";
+import Colors, { overlayOpacity, withOpacity } from "@/constants/Colors";
+import {
+  borderRadius,
+  opacity as designOpacity,
+  elevation,
+  iconSize,
+  spacing,
+  touchTarget,
+  typography,
+} from "@/constants/DesignSystem";
 import { useLocalization } from "@/context/LocalizationContext";
 import { usePhotos } from "@/context/PhotoContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -22,16 +32,6 @@ import {
   View
 } from "react-native";
 import TorsoSilhouette from "../../images/TorsoSilhouette";
-import { IconButton, Button, Badge } from "@/components/ui";
-import {
-  spacing,
-  borderRadius,
-  elevation,
-  typography,
-  iconSize,
-  opacity as designOpacity,
-  touchTarget,
-} from "@/constants/DesignSystem";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const aspectRatio = 4 / 3;
@@ -57,6 +57,7 @@ export default function CameraScreen() {
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [cameraKey, setCameraKey] = useState(0);
   const [isFocused, setIsFocused] = useState(true);
+  const [showCamera, setShowCamera] = useState(true); // for unmount/remount
 
 
   const [isTimerEnabled, setIsTimerEnabled] = useState(false);
@@ -74,19 +75,29 @@ export default function CameraScreen() {
       console.log('Camera screen focused - reinitializing camera');
       setIsFocused(true);
       setIsCameraReady(false);
-      // Force camera re-mount when screen comes into focus
+      setShowCamera(true);
       setCameraKey(prev => prev + 1);
 
       return () => {
         console.log('Camera screen blurred - releasing camera resources');
         setIsFocused(false);
         setIsCameraReady(false);
+        setShowCamera(false);
         // Cancel any running timer when leaving the screen
         setIsTimerRunning(false);
         setRemainingTime(0);
       };
     }, [])
   );
+  // Unmount and remount CameraView on facing change to release resource
+  useEffect(() => {
+    setShowCamera(false);
+    const timeout = setTimeout(() => {
+      setCameraKey(prev => prev + 1);
+      setShowCamera(true);
+    }, 200); // 200ms to ensure unmount
+    return () => clearTimeout(timeout);
+  }, [facing]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -102,17 +113,7 @@ export default function CameraScreen() {
   }, [isTimerRunning, remainingTime]);
 
   
-  useEffect(() => {
-    
-    setIsCameraReady(false);
-
-    
-    const timer = setTimeout(() => {
-      
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [facing]);
+  // Removed unnecessary useEffect on [facing] that set isCameraReady to false.
 
   if (!permission) {
     return <View />;
@@ -448,7 +449,7 @@ export default function CameraScreen() {
       style={[styles.container, { backgroundColor: theme.background }]}
     >
       <StatusBar style="light" />
-      {permission.granted && isFocused && (
+      {permission.granted && isFocused && showCamera && (
         <>
           <CameraView
             key={`camera-${facing}-${cameraKey}`}
@@ -463,8 +464,10 @@ export default function CameraScreen() {
             }}
             onMountError={(error) => {
               console.error('Camera mount error:', error);
-
-              setCameraKey(prev => prev + 1);
+              setIsCameraReady(false);
+              setTimeout(() => {
+                setCameraKey(prev => prev + 1);
+              }, 1000);
             }}
           >
             {renderSilhouette()}
