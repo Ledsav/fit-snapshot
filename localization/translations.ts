@@ -71,6 +71,13 @@ interface TranslationKeys {
     firstPhoto: string;
     secondPhoto: string;
     compareSelectedPhotos: string;
+    gifGenerating: string;
+    gifGenerateButton: string;
+    gifRateLimitTitle: string;
+    gifRateLimitMessage: string;
+    gifErrorTitle: string;
+    gifAuthRequired: string;
+    gifGoToSettings: string;
   };
   achievements: {
     firstPhoto: string;
@@ -331,6 +338,13 @@ export const translations: Translations = {
       firstPhoto: "1st Photo",
       secondPhoto: "2nd Photo",
       compareSelectedPhotos: "Compare Selected Photos",
+      gifGenerating: "Generating GIF...",
+      gifGenerateButton: "Generate Before/After GIF",
+      gifRateLimitTitle: "Weekly Limit Reached",
+      gifRateLimitMessage: "You can generate 1 GIF per week. Your next GIF will be available soon.",
+      gifErrorTitle: "Unable to Generate GIF",
+      gifAuthRequired: "Sign in required to generate GIFs",
+      gifGoToSettings: "Go to Settings to Sign In",
     },
     achievements: {
       firstPhoto: "First Step",
@@ -619,6 +633,13 @@ export const translations: Translations = {
       firstPhoto: "1ª Foto",
       secondPhoto: "2ª Foto",
       compareSelectedPhotos: "Comparar Fotos Seleccionadas",
+      gifGenerating: "Generando GIF...",
+      gifGenerateButton: "Generar GIF Antes/Después",
+      gifRateLimitTitle: "Límite Semanal Alcanzado",
+      gifRateLimitMessage: "Puedes generar 1 GIF por semana. Tu próximo GIF estará disponible pronto.",
+      gifErrorTitle: "No se Puede Generar GIF",
+      gifAuthRequired: "Se requiere iniciar sesión para generar GIFs",
+      gifGoToSettings: "Ir a Configuración para Iniciar Sesión",
     },
     achievements: {
       firstPhoto: "Primer Paso",
@@ -907,6 +928,13 @@ export const translations: Translations = {
       firstPhoto: "1ª Foto",
       secondPhoto: "2ª Foto",
       compareSelectedPhotos: "Confronta Foto Selezionate",
+      gifGenerating: "Generazione GIF...",
+      gifGenerateButton: "Genera GIF Prima/Dopo",
+      gifRateLimitTitle: "Limite Settimanale Raggiunto",
+      gifRateLimitMessage: "Puoi generare 1 GIF a settimana. La tua prossima GIF sarà disponibile pronto.",
+      gifErrorTitle: "Impossibile Generare GIF",
+      gifAuthRequired: "Accesso richiesto per generare GIF",
+      gifGoToSettings: "Vai alle Impostazioni per Accedere",
     },
     achievements: {
       firstPhoto: "Primo Passo",
@@ -1195,6 +1223,13 @@ export const translations: Translations = {
       firstPhoto: "1. Foto",
       secondPhoto: "2. Foto",
       compareSelectedPhotos: "Ausgewählte Fotos Vergleichen",
+      gifGenerating: "GIF wird erstellt...",
+      gifGenerateButton: "Vorher/Nachher-GIF Erstellen",
+      gifRateLimitTitle: "Wöchentliches Limit Erreicht",
+      gifRateLimitMessage: "Sie können 1 GIF pro Woche erstellen. Ihr nächstes GIF wird bald verfügbar sein.",
+      gifErrorTitle: "GIF Konnte Nicht Erstellt Werden",
+      gifAuthRequired: "Anmeldung erforderlich zum Erstellen von GIFs",
+      gifGoToSettings: "Zu Einstellungen Gehen um sich Anzumelden",
     },
     achievements: {
       firstPhoto: "Erster Schritt",
@@ -1484,6 +1519,13 @@ export const translations: Translations = {
       firstPhoto: "1ère Photo",
       secondPhoto: "2ème Photo",
       compareSelectedPhotos: "Comparer les Photos Sélectionnées",
+      gifGenerating: "Génération du GIF...",
+      gifGenerateButton: "Générer un GIF Avant/Après",
+      gifRateLimitTitle: "Limite Hebdomadaire Atteinte",
+      gifRateLimitMessage: "Vous pouvez générer 1 GIF par semaine. Votre prochain GIF sera bientôt disponible.",
+      gifErrorTitle: "Impossible de Générer le GIF",
+      gifAuthRequired: "Connexion requise pour générer des GIF",
+      gifGoToSettings: "Aller aux Paramètres pour se Connecter",
     },
     achievements: {
       firstPhoto: "Premier Pas",

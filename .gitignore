@@ -53,3 +53,5 @@ _active.uusver
 android/app/google-services.json
 
 ai-support/
+
+.claude/

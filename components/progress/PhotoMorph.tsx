@@ -422,80 +422,153 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
       compact={false}
       customMessage="Upgrade to Premium to generate before/after GIFs"
     >
-      <View style={{ alignItems: 'center', marginTop: 16 }}>
+      <View style={styles.gifContainer}>
         {!user ? (
-          <TouchableOpacity
-            style={{ backgroundColor: theme.primary, padding: 14, borderRadius: 10, marginBottom: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
-            onPress={() => router.push('/(tabs)/settings')}
-          >
-            <Ionicons name="log-in-outline" size={20} color={theme.background} />
-            <Text style={{ color: theme.background, fontWeight: 'bold', marginLeft: 8 }}>Go to Settings to Sign In</Text>
-          </TouchableOpacity>
+          <View style={[styles.gifMessageCard, { backgroundColor: theme.cardBackground, borderColor: theme.primary }]}>
+            <View style={[styles.gifMessageIconContainer, { backgroundColor: theme.primary + '20' }]}>
+              <Ionicons name="log-in-outline" size={32} color={theme.primary} />
+            </View>
+            <Text style={[styles.gifMessageTitle, { color: theme.text }]}>
+              {t("progress.gifAuthRequired")}
+            </Text>
+            <Text style={[styles.gifMessageSubtitle, { color: theme.text }]}>
+              Sign in to start creating amazing before/after transformation GIFs
+            </Text>
+            <TouchableOpacity
+              style={[styles.gifActionButton, { backgroundColor: theme.primary }]}
+              onPress={() => router.push('/(tabs)/settings')}
+            >
+              <Ionicons name="settings-outline" size={20} color={theme.background} />
+              <Text style={[styles.gifActionButtonText, { color: theme.background }]}>
+                {t("progress.gifGoToSettings")}
+              </Text>
+            </TouchableOpacity>
+          </View>
         ) : (
-          <TouchableOpacity
-            style={{ backgroundColor: theme.primary, padding: 14, borderRadius: 10, marginBottom: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
-            onPress={async () => {
-              setIsGeneratingGif(true);
-              setGifError(null);
-              setGifUrl(null);
-              try {
-                const token = await getToken();
-                if (!token) {
-                  setGifError('Authentication failed. Please sign in again.');
-                  return;
-                }
+          <>
+            <TouchableOpacity
+              style={[styles.gifGenerateButton, { backgroundColor: theme.primary }]}
+              onPress={async () => {
+                setIsGeneratingGif(true);
+                setGifError(null);
+                setGifUrl(null);
+                try {
+                  const token = await getToken();
+                  if (!token) {
+                    setGifError('Authentication failed. Please sign in again.');
+                    return;
+                  }
 
-                const result = await createBeforeAfterGif([photo1.uri, photo2.uri], token);
-                if (result.error) {
-                  setGifError(result.error);
-                } else {
-                  setGifUrl(result.gifUri);
+                  const result = await createBeforeAfterGif([photo1.uri, photo2.uri], token);
+                  if (result.error) {
+                    setGifError(result.error);
+                  } else {
+                    setGifUrl(result.gifUri);
+                  }
+                } catch (e) {
+                  setGifError('Failed to generate GIF. Please try again.');
+                } finally {
+                  setIsGeneratingGif(false);
                 }
-              } catch (e) {
-                setGifError('Failed to generate GIF. Please try again.');
-              } finally {
-                setIsGeneratingGif(false);
-              }
-            }}
-            disabled={isGeneratingGif}
-          >
-            <Ionicons name="film-outline" size={20} color={theme.background} />
-            <Text style={{ color: theme.background, fontWeight: 'bold', marginLeft: 8 }}>Generate Before/After GIF</Text>
-          </TouchableOpacity>
+              }}
+              disabled={isGeneratingGif}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="film-outline" size={22} color={theme.background} />
+              <Text style={[styles.gifGenerateButtonText, { color: theme.background }]}>
+                {t("progress.gifGenerateButton")}
+              </Text>
+            </TouchableOpacity>
+
+            {isGeneratingGif && (
+              <View style={[styles.gifLoadingCard, { backgroundColor: theme.cardBackground }]}>
+                <Ionicons name="hourglass-outline" size={24} color={theme.primary} />
+                <Text style={[styles.gifLoadingText, { color: theme.text }]}>
+                  {t("progress.gifGenerating")}
+                </Text>
+              </View>
+            )}
+
+            {gifError && (
+              <View style={[styles.gifMessageCard, {
+                backgroundColor: theme.cardBackground,
+                borderColor: gifError.toLowerCase().includes('rate limit') || gifError.toLowerCase().includes('limit exceeded')
+                  ? '#FFA500'
+                  : theme.error || '#FF3B30'
+              }]}>
+                <View style={[styles.gifMessageIconContainer, {
+                  backgroundColor: (gifError.toLowerCase().includes('rate limit') || gifError.toLowerCase().includes('limit exceeded')
+                    ? '#FFA500'
+                    : theme.error || '#FF3B30') + '20'
+                }]}>
+                  <Ionicons
+                    name={gifError.toLowerCase().includes('rate limit') || gifError.toLowerCase().includes('limit exceeded')
+                      ? "time-outline"
+                      : "alert-circle-outline"
+                    }
+                    size={32}
+                    color={gifError.toLowerCase().includes('rate limit') || gifError.toLowerCase().includes('limit exceeded')
+                      ? '#FFA500'
+                      : theme.error || '#FF3B30'
+                    }
+                  />
+                </View>
+                <Text style={[styles.gifMessageTitle, { color: theme.text }]}>
+                  {gifError.toLowerCase().includes('rate limit') || gifError.toLowerCase().includes('limit exceeded')
+                    ? t("progress.gifRateLimitTitle")
+                    : t("progress.gifErrorTitle")
+                  }
+                </Text>
+                <Text style={[styles.gifMessageSubtitle, { color: theme.text }]}>
+                  {gifError.toLowerCase().includes('rate limit') || gifError.toLowerCase().includes('limit exceeded')
+                    ? t("progress.gifRateLimitMessage")
+                    : gifError
+                  }
+                </Text>
+              </View>
+            )}
+          </>
         )}
-        {isGeneratingGif && <Text style={{ color: theme.text }}>Generating GIF...</Text>}
-        {gifError && <Text style={{ color: 'red', marginTop: 8 }}>{gifError}</Text>}
+
         {gifUrl && (
-          <View style={{ alignItems: 'center', marginTop: 16 }}>
-            <Image source={{ uri: gifUrl }} style={{ width: 240, height: 320, borderRadius: 16 }} />
-            <View style={{ flexDirection: 'row', marginTop: 12, gap: 10 }}>
+          <View style={styles.gifResultContainer}>
+            <Image source={{ uri: gifUrl }} style={styles.gifImage} />
+            <View style={styles.gifActionsRow}>
               <TouchableOpacity
-                style={{ backgroundColor: theme.primary, padding: 10, borderRadius: 8, flexDirection: 'row', alignItems: 'center' }}
+                style={[styles.gifDownloadButton, { backgroundColor: theme.primary }]}
                 onPress={async () => {
                   try {
                     const { status } = await MediaLibrary.requestPermissionsAsync();
                     if (status !== 'granted') {
-                      Alert.alert('Permission needed', 'Please allow access to save GIF to gallery');
+                      Alert.alert(t("permissions.title"), t("permissions.photoSaveMessage"));
                       return;
                     }
 
                     await MediaLibrary.saveToLibraryAsync(gifUrl);
-                    Alert.alert('Success!', 'GIF saved to gallery');
+                    Alert.alert(t("common.success"), 'GIF saved to gallery');
                   } catch (error) {
-                    Alert.alert('Error', 'Failed to save GIF');
+                    Alert.alert(t("common.error"), 'Failed to save GIF');
                   }
                 }}
+                activeOpacity={0.8}
               >
-                <Ionicons name="download-outline" size={18} color={theme.background} />
-                <Text style={{ color: theme.background, marginLeft: 6, fontWeight: 'bold' }}>Download</Text>
+                <Ionicons name="download-outline" size={20} color={theme.background} />
+                <Text style={[styles.gifDownloadButtonText, { color: theme.background }]}>
+                  Download
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={{ backgroundColor: theme.error || 'red', padding: 10, borderRadius: 8 }}
+                style={[styles.gifClearButton, { backgroundColor: theme.text + '20' }]}
                 onPress={() => {
                   setGifUrl(null);
+                  setGifError(null);
                 }}
+                activeOpacity={0.8}
               >
-                <Text style={{ color: theme.background, fontWeight: 'bold' }}>Clear</Text>
+                <Ionicons name="close-outline" size={20} color={theme.text} />
+                <Text style={[styles.gifClearButtonText, { color: theme.text }]}>
+                  Clear
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -1013,6 +1086,143 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 6,
+  },
+  // GIF-specific styles
+  gifContainer: {
+    width: "100%",
+    alignItems: "center",
+    paddingVertical: 16,
+  },
+  gifMessageCard: {
+    width: "100%",
+    padding: 24,
+    borderRadius: 16,
+    borderWidth: 2,
+    alignItems: "center",
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  gifMessageIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+  },
+  gifMessageTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  gifMessageSubtitle: {
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: "center",
+    opacity: 0.8,
+    marginBottom: 16,
+  },
+  gifActionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    gap: 8,
+    marginTop: 8,
+  },
+  gifActionButtonText: {
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  gifGenerateButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    gap: 10,
+    marginBottom: 16,
+    width: "100%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  gifGenerateButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  gifLoadingCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    borderRadius: 12,
+    gap: 12,
+    marginBottom: 16,
+    width: "100%",
+  },
+  gifLoadingText: {
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  gifResultContainer: {
+    width: "100%",
+    alignItems: "center",
+    marginTop: 16,
+  },
+  gifImage: {
+    width: 280,
+    height: 373,
+    borderRadius: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  gifActionsRow: {
+    flexDirection: "row",
+    gap: 12,
+    width: "100%",
+    justifyContent: "center",
+  },
+  gifDownloadButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    gap: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  gifDownloadButtonText: {
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  gifClearButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    gap: 8,
+  },
+  gifClearButtonText: {
+    fontSize: 15,
+    fontWeight: "600",
   },
 });
 
