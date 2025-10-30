@@ -6,6 +6,12 @@ import Colors from "@/constants/Colors";
 import { Photo } from "@/services/photoStorage";
 import { useLocalization } from "@/context/LocalizationContext";
 import { Href, useRouter } from "expo-router";
+import {
+  spacing,
+  borderRadius,
+  typography,
+  iconSize,
+} from "@/constants/DesignSystem";
 
 type NextPhotoReminderProps = {
   latestPhoto: Photo | null;
@@ -24,7 +30,7 @@ export const NextPhotoReminder: React.FC<NextPhotoReminderProps> = ({ latestPhot
         onPress={() => router.push("(tabs)/camera" as Href<string>)}
         activeOpacity={0.9}
       >
-        <Ionicons name="camera-outline" size={32} color={theme.background} />
+        <Ionicons name="camera-outline" size={iconSize.lg} color={theme.background} />
         <View style={styles.textContainer}>
           <Text style={[styles.title, { color: theme.background }]}>
             {t("home.takeFirstPhoto") || "Take Your First Photo!"}
@@ -33,7 +39,7 @@ export const NextPhotoReminder: React.FC<NextPhotoReminderProps> = ({ latestPhot
             {t("home.startJourney") || "Start your transformation journey today"}
           </Text>
         </View>
-        <Ionicons name="arrow-forward" size={24} color={theme.background} />
+        <Ionicons name="arrow-forward" size={iconSize.md} color={theme.background} />
       </TouchableOpacity>
     );
   }
@@ -82,12 +88,12 @@ export const NextPhotoReminder: React.FC<NextPhotoReminderProps> = ({ latestPhot
       onPress={() => router.push("(tabs)/camera" as Href<string>)}
       activeOpacity={0.9}
     >
-      <Ionicons name={message.icon} size={32} color="white" />
+      <Ionicons name={message.icon} size={iconSize.lg} color="white" />
       <View style={styles.textContainer}>
         <Text style={[styles.title, { color: "white" }]}>{message.title}</Text>
         <Text style={[styles.subtitle, { color: "white" }]}>{message.subtitle}</Text>
       </View>
-      <Ionicons name="camera" size={24} color="white" />
+      <Ionicons name="camera" size={iconSize.md} color="white" />
     </TouchableOpacity>
   );
 };
@@ -96,20 +102,20 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
-    borderRadius: 12,
-    gap: 12,
+    padding: spacing.lg,
+    borderRadius: borderRadius.md,
+    gap: spacing.md,
   },
   textContainer: {
     flex: 1,
   },
   title: {
-    fontSize: 16,
+    ...typography.body,
     fontWeight: "bold",
   },
   subtitle: {
-    fontSize: 13,
-    marginTop: 4,
+    ...typography.caption,
+    marginTop: spacing.xs,
     opacity: 0.9,
   },
 });

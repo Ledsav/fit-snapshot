@@ -1,4 +1,4 @@
-import Colors from "@/constants/Colors";
+import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useTheme } from "@/context/ThemeContext";
 import { Photo } from "@/services/photoStorage";
@@ -6,9 +6,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { Href, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Animated, Dimensions, Image, PanResponder, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  spacing,
+  borderRadius,
+  typography,
+  iconSize,
+} from "@/constants/DesignSystem";
 
 const { width } = Dimensions.get("window");
-const MINI_SLIDER_WIDTH = width - 80;
+const MINI_SLIDER_WIDTH = width - (spacing.huge * 2);
 const MINI_THUMB_SIZE = 28;
 const MINI_THUMB_RADIUS = MINI_THUMB_SIZE / 2;
 
@@ -34,9 +40,7 @@ export const MiniComparisonPreview: React.FC<MiniComparisonPreviewProps> = ({ ph
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onPanResponderMove: (_, gesture) => {
-      
-      let newX = gesture.moveX - 40;
-      
+      let newX = gesture.moveX - spacing.huge;
       newX = Math.max(0, Math.min(newX, MINI_SLIDER_WIDTH));
       pan.x.setValue(newX);
       setSliderValue((newX / MINI_SLIDER_WIDTH) * 100);
@@ -53,7 +57,7 @@ export const MiniComparisonPreview: React.FC<MiniComparisonPreviewProps> = ({ ph
         <Text style={[styles.title, { color: theme.text }]}>
           {t("home.transformation") || "Your Transformation"}
         </Text>
-        <Ionicons name="chevron-forward" size={20} color={theme.text} />
+        <Ionicons name="chevron-forward" size={iconSize.sm} color={theme.text} />
       </View>
 
       <View style={styles.imageContainer}>
@@ -67,10 +71,10 @@ export const MiniComparisonPreview: React.FC<MiniComparisonPreviewProps> = ({ ph
         />
 
         <View style={styles.labels}>
-          <View style={[styles.label, { backgroundColor: theme.text + '99', opacity: (100 - sliderValue) / 100 }]}>
+          <View style={[styles.label, { backgroundColor: withOpacity(theme.text, overlayOpacity.heavy), opacity: (100 - sliderValue) / 100 }]}>
             <Text style={styles.labelText}>{t("common.before")}</Text>
           </View>
-          <View style={[styles.label, { backgroundColor: theme.text + '99', opacity: sliderValue / 100 }]}>
+          <View style={[styles.label, { backgroundColor: withOpacity(theme.text, overlayOpacity.heavy), opacity: sliderValue / 100 }]}>
             <Text style={styles.labelText}>{t("common.after")}</Text>
           </View>
         </View>
@@ -78,7 +82,7 @@ export const MiniComparisonPreview: React.FC<MiniComparisonPreviewProps> = ({ ph
 
       <View style={styles.sliderWrapper}>
         <View style={styles.sliderContainer} {...panResponder.panHandlers}>
-          <View style={[styles.sliderTrack, { backgroundColor: theme.text + '20' }]} />
+          <View style={[styles.sliderTrack, { backgroundColor: withOpacity(theme.text, overlayOpacity.light) }]} />
           <View
             style={[
               styles.sliderProgress,
@@ -111,26 +115,26 @@ export const MiniComparisonPreview: React.FC<MiniComparisonPreviewProps> = ({ ph
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
-    borderRadius: 12,
+    padding: spacing.lg,
+    borderRadius: borderRadius.md,
     borderWidth: 2,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   title: {
-    fontSize: 16,
+    ...typography.body,
     fontWeight: "bold",
   },
   imageContainer: {
     width: "100%",
     height: 220,
-    borderRadius: 10,
+    borderRadius: borderRadius.sm,
     overflow: "hidden",
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   image: {
     width: "100%",
@@ -144,48 +148,48 @@ const styles = StyleSheet.create({
   },
   labels: {
     position: "absolute",
-    top: 12,
-    left: 12,
-    right: 12,
+    top: spacing.md,
+    left: spacing.md,
+    right: spacing.md,
     flexDirection: "row",
     justifyContent: "space-between",
   },
   label: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs + 2,
+    borderRadius: borderRadius.sm,
   },
   labelText: {
     color: "white",
-    fontSize: 11,
+    ...typography.small,
     fontWeight: "600",
   },
   sliderWrapper: {
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   sliderContainer: {
     width: MINI_SLIDER_WIDTH,
-    height: 32,
+    height: spacing.lg * 2,
     justifyContent: "center",
     alignSelf: "center",
     position: "relative",
   },
   sliderTrack: {
     width: "100%",
-    height: 4,
-    borderRadius: 2,
+    height: spacing.xs,
+    borderRadius: borderRadius.sm / 4,
     position: "absolute",
   },
   sliderProgress: {
-    height: 4,
-    borderRadius: 2,
+    height: spacing.xs,
+    borderRadius: borderRadius.sm / 4,
     position: "absolute",
     left: 0,
   },
   sliderThumb: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: MINI_THUMB_SIZE,
+    height: MINI_THUMB_SIZE,
+    borderRadius: MINI_THUMB_RADIUS,
     position: "absolute",
     top: 2,
     justifyContent: "center",
@@ -193,12 +197,12 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   sliderThumbInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: spacing.sm + 2,
+    height: spacing.sm + 2,
+    borderRadius: (spacing.sm + 2) / 2,
   },
   hint: {
-    fontSize: 12,
+    ...typography.small,
     textAlign: "center",
     opacity: 0.6,
     fontStyle: "italic",

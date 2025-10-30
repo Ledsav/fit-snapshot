@@ -9,12 +9,18 @@ import {
 import PagerView from "react-native-pager-view";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/context/ThemeContext";
-import Colors from "@/constants/Colors";
+import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
+import {
+  spacing,
+  borderRadius,
+  typography,
+  iconSize,
+} from "@/constants/DesignSystem";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
-const CARD_MARGIN = 10;
-const CARD_WIDTH = SCREEN_WIDTH - 40 - 2 * CARD_MARGIN;
+const CARD_MARGIN = spacing.sm;
+const CARD_WIDTH = SCREEN_WIDTH - spacing.huge - 2 * CARD_MARGIN;
 
 interface Tip {
   main: string;
@@ -60,7 +66,7 @@ export const ShreddedTipsCarousel: React.FC = () => {
               <View style={styles.iconContainer}>
                 <Ionicons
                   name={tip.icon as any}
-                  size={40}
+                  size={iconSize.xl}
                   color={theme.cardBackground}
                 />
               </View>
@@ -93,7 +99,7 @@ export const ShreddedTipsCarousel: React.FC = () => {
                 backgroundColor:
                   index === activeIndex
                     ? theme.primary
-                    : theme.text + '80',
+                    : withOpacity(theme.text, overlayOpacity.heavy),
               },
             ]}
             onPress={() => scrollToIndex(index)}
@@ -106,7 +112,7 @@ export const ShreddedTipsCarousel: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     height: SCREEN_HEIGHT * 0.25,
-    marginVertical: 20,
+    marginVertical: spacing.xl,
   },
   pagerView: {
     flex: 1,
@@ -120,36 +126,36 @@ const styles = StyleSheet.create({
   slide: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 15,
-    padding: 20,
+    borderRadius: borderRadius.lg,
+    padding: spacing.xl,
     width: CARD_WIDTH,
     height: "100%",
   },
   iconContainer: {
-    marginRight: 20,
+    marginRight: spacing.xl,
   },
   textContainer: {
     flex: 1,
   },
   mainText: {
-    fontSize: 22,
+    ...typography.h3,
     fontWeight: "bold",
-    marginBottom: 5,
+    marginBottom: spacing.xs,
   },
   clarificationText: {
-    fontSize: 16,
+    ...typography.body,
     flexWrap: "wrap",
   },
   pagination: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 10,
+    marginTop: spacing.sm,
   },
   paginationDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginHorizontal: 4,
+    width: spacing.sm,
+    height: spacing.sm,
+    borderRadius: spacing.xs,
+    marginHorizontal: spacing.xs,
   },
 });

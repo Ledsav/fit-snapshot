@@ -5,7 +5,7 @@
  * This is where users will be directed to upgrade to premium.
  */
 
-import Colors from '@/constants/Colors';
+import Colors, { withOpacity, overlayOpacity } from '@/constants/Colors';
 import { Feature, getPremiumBenefits, PRICING } from '@/constants/Features';
 import { useLocalization } from '@/context/LocalizationContext';
 import { useTheme } from '@/context/ThemeContext';
@@ -25,6 +25,15 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  spacing,
+  borderRadius,
+  elevation,
+  typography,
+  iconSize,
+  opacity as designOpacity,
+} from '@/constants/DesignSystem';
+import { Button } from '@/components/ui';
 
 interface PaywallModalProps {
   visible: boolean;
@@ -246,21 +255,17 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
           </View>
 
           {/* Purchase Button */}
-          <TouchableOpacity
-            style={[
-              styles.purchaseButton,
-              { backgroundColor: theme.primary },
-              isProcessing && { opacity: 0.6 },
-            ]}
+          <Button
+            title={isProcessing ? t("paywall.processing") : t("paywall.continueToPayment")}
             onPress={handlePurchase}
+            variant="primary"
+            size="large"
+            loading={isProcessing}
             disabled={isProcessing}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="cart" size={24} color={theme.background} />
-            <Text style={[styles.purchaseButtonText, { color: theme.background }]}>
-              {isProcessing ? t("paywall.processing") : t("paywall.continueToPayment")}
-            </Text>
-          </TouchableOpacity>
+            icon={<Ionicons name="cart" size={iconSize.md} color={theme.background} />}
+            iconPosition="left"
+            style={styles.purchaseButton}
+          />
 
           {/* Footer */}
           <View style={styles.footer}>
@@ -303,115 +308,112 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
-    paddingBottom: 40,
+    paddingBottom: spacing.huge,
   },
   hero: {
     alignItems: 'center',
-    paddingVertical: 40,
-    paddingHorizontal: 20,
-    marginHorizontal: 20,
-    marginBottom: 32,
-    borderRadius: 20,
+    paddingVertical: spacing.huge,
+    paddingHorizontal: spacing.xl,
+    marginHorizontal: spacing.xl,
+    marginBottom: spacing.xxxl,
+    borderRadius: borderRadius.xl,
   },
   heroTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginTop: 16,
-    marginBottom: 8,
+    ...typography.h2,
+    marginTop: spacing.lg,
+    marginBottom: spacing.sm,
   },
   heroSubtitle: {
-    fontSize: 16,
-    opacity: 0.7,
+    ...typography.body,
+    opacity: designOpacity.medium,
     textAlign: 'center',
   },
   benefitsContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 32,
+    paddingHorizontal: spacing.xl,
+    marginBottom: spacing.xxxl,
   },
   sectionTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 20,
+    ...typography.h3,
+    marginBottom: spacing.xl,
   },
   benefitItem: {
     flexDirection: 'row',
-    marginBottom: 20,
+    marginBottom: spacing.xl,
     alignItems: 'flex-start',
   },
   benefitIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+    width: iconSize.xxl,
+    height: iconSize.xxl,
+    borderRadius: borderRadius.md,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: spacing.lg,
   },
   benefitText: {
     flex: 1,
   },
   benefitTitle: {
-    fontSize: 16,
+    ...typography.body,
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   benefitDescription: {
-    fontSize: 14,
-    opacity: 0.7,
+    ...typography.caption,
+    opacity: designOpacity.medium,
     lineHeight: 20,
   },
   pricingContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 24,
+    paddingHorizontal: spacing.xl,
+    marginBottom: spacing.xxl,
   },
   pricingCard: {
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 12,
+    borderRadius: borderRadius.lg,
+    padding: spacing.xl,
+    marginBottom: spacing.md,
     position: 'relative',
   },
   popularBadge: {
     position: 'absolute',
-    top: -8,
+    top: -spacing.sm,
     alignSelf: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.md,
   },
   popularBadgeText: {
-    fontSize: 11,
+    ...typography.tiny,
     fontWeight: 'bold',
     letterSpacing: 0.5,
   },
   pricingHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   radioButton: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: iconSize.md,
+    height: iconSize.md,
+    borderRadius: borderRadius.round,
     borderWidth: 2,
-    borderColor: '#ccc',
+    borderColor: withOpacity('#cccccc', 1),
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: spacing.md,
   },
   radioButtonInner: {
     width: 14,
     height: 14,
-    borderRadius: 7,
+    borderRadius: borderRadius.round,
   },
   pricingInfo: {
     flex: 1,
   },
   pricingTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    ...typography.h4,
   },
   pricingSubtitle: {
-    fontSize: 14,
-    opacity: 0.6,
+    ...typography.caption,
+    opacity: designOpacity.secondary,
     marginTop: 2,
   },
   pricingBottom: {
@@ -421,46 +423,30 @@ const styles = StyleSheet.create({
     marginLeft: 36,
   },
   pricingPrice: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    ...typography.h2,
   },
   savingsBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.sm,
   },
   savingsText: {
-    fontSize: 12,
+    ...typography.small,
     fontWeight: '600',
   },
   purchaseButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 20,
-    paddingVertical: 18,
-    borderRadius: 16,
-    gap: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  purchaseButtonText: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    marginHorizontal: spacing.xl,
   },
   footer: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xxl,
     alignItems: 'center',
   },
   footerText: {
-    fontSize: 12,
-    opacity: 0.5,
+    ...typography.small,
+    opacity: designOpacity.hint,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
 });
 

@@ -1,9 +1,15 @@
-import Colors from "@/constants/Colors";
+import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Photo } from "@/services/photoStorage";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
+import {
+  spacing,
+  borderRadius,
+  typography,
+  elevation,
+} from "@/constants/DesignSystem";
 
 type ConsistencyHeatmapProps = {
   photos: Photo[];
@@ -46,12 +52,12 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({ photos }
   const maxPhotosPerDay = Math.max(...Array.from(photosByDate.values()), 1);
 
   const getIntensityColor = (count: number) => {
-    if (count === 0) return theme.text + '15';
+    if (count === 0) return withOpacity(theme.text, overlayOpacity.subtle);
     const intensity = count / maxPhotosPerDay;
     if (intensity >= 0.75) return theme.primary;
-    if (intensity >= 0.5) return theme.primary + 'CC';
-    if (intensity >= 0.25) return theme.primary + '80';
-    return theme.primary + '50';
+    if (intensity >= 0.5) return withOpacity(theme.primary, overlayOpacity.veryHeavy);
+    if (intensity >= 0.25) return withOpacity(theme.primary, overlayOpacity.heavy);
+    return withOpacity(theme.primary, overlayOpacity.medium);
   };
 
   
@@ -76,7 +82,13 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({ photos }
   });
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.cardBackground, borderColor: theme.primary }]}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: theme.cardBackground, borderColor: theme.primary },
+        elevation.md,
+      ]}
+    >
       <Text style={[styles.title, { color: theme.text }]}>
         {t("home.consistency") || "Consistency Tracker"}
       </Text>
@@ -123,10 +135,10 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({ photos }
       <View style={styles.legend}>
         <Text style={[styles.legendText, { color: theme.text }]}>Less</Text>
         <View style={styles.legendSquares}>
-          <View style={[styles.legendSquare, { backgroundColor: theme.text + '10' }]} />
-          <View style={[styles.legendSquare, { backgroundColor: theme.primary + '66' }]} />
-          <View style={[styles.legendSquare, { backgroundColor: theme.primary + '99' }]} />
-          <View style={[styles.legendSquare, { backgroundColor: theme.primary + 'CC' }]} />
+          <View style={[styles.legendSquare, { backgroundColor: withOpacity(theme.text, overlayOpacity.subtle) }]} />
+          <View style={[styles.legendSquare, { backgroundColor: withOpacity(theme.primary, overlayOpacity.medium) }]} />
+          <View style={[styles.legendSquare, { backgroundColor: withOpacity(theme.primary, overlayOpacity.heavy) }]} />
+          <View style={[styles.legendSquare, { backgroundColor: withOpacity(theme.primary, overlayOpacity.veryHeavy) }]} />
           <View style={[styles.legendSquare, { backgroundColor: theme.primary }]} />
         </View>
         <Text style={[styles.legendText, { color: theme.text }]}>More</Text>
@@ -137,70 +149,70 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({ photos }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
-    borderRadius: 12,
+    padding: spacing.lg,
+    borderRadius: borderRadius.md,
     borderWidth: 2,
   },
   title: {
-    fontSize: 16,
+    ...typography.body,
     fontWeight: "bold",
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   subtitle: {
-    fontSize: 12,
+    ...typography.small,
     opacity: 0.6,
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   calendarWrapper: {
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   heatmapContainer: {
     alignItems: "center",
   },
   monthLabels: {
     flexDirection: "row",
-    marginBottom: 4,
-    height: 16,
+    marginBottom: spacing.xs,
+    height: spacing.lg,
   },
   monthLabelContainer: {
     width: 28,
     alignItems: "center",
   },
   monthLabel: {
-    fontSize: 9,
+    ...typography.tiny,
     opacity: 0.6,
     fontWeight: "600",
   },
   grid: {
     flexDirection: "row",
-    gap: 4,
+    gap: spacing.xs,
   },
   week: {
-    gap: 4,
+    gap: spacing.xs,
   },
   day: {
-    width: 24,
-    height: 24,
-    borderRadius: 3,
+    width: iconSize.md,
+    height: iconSize.md,
+    borderRadius: borderRadius.sm / 2,
   },
   legend: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 16,
-    gap: 4,
+    marginTop: spacing.lg,
+    gap: spacing.xs,
   },
   legendText: {
-    fontSize: 11,
+    ...typography.small,
     opacity: 0.6,
   },
   legendSquares: {
     flexDirection: "row",
-    gap: 3,
+    gap: spacing.xs / 2,
   },
   legendSquare: {
-    width: 16,
-    height: 16,
-    borderRadius: 2,
+    width: spacing.lg,
+    height: spacing.lg,
+    borderRadius: borderRadius.sm / 4,
   },
 });

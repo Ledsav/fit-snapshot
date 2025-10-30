@@ -4,8 +4,18 @@ import { LanguageSelector } from "@/components/settings/LanguageSelector";
 import { ThemeSelector } from "@/components/settings/ThemeSelector";
 import { StorageManager } from "@/components/settings/StorageManager";
 import { OnboardingCarousel } from "@/components/onBoarding/OnboardingCarousel";
-import Colors from "@/constants/Colors";
+import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
 import { FREE_TIER_LIMITS } from "@/constants/Features";
+import {
+  spacing,
+  borderRadius,
+  elevation,
+  typography,
+  iconSize,
+  opacity as designOpacity,
+  touchTarget,
+} from "@/constants/DesignSystem";
+import { Button, Card } from "@/components/ui";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useUser } from "@/context/UserContext";
@@ -39,13 +49,13 @@ const SettingItem: React.FC<{
       styles.settingItem,
       {
         backgroundColor: theme.cardBackground,
-        borderColor: theme.primary + '40'
+        borderColor: withOpacity(theme.primary, overlayOpacity.light)
       }
     ]}
     onPress={onPress}
     activeOpacity={0.7}
   >
-    <View style={[styles.iconContainer, { backgroundColor: theme.primary + '20' }]}>
+    <View style={[styles.iconContainer, { backgroundColor: withOpacity(theme.primary, overlayOpacity.subtle) }]}>
       <Ionicons
         name={icon as any}
         size={24}
@@ -415,146 +425,142 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: spacing.xl,
   },
   title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    marginBottom: 30,
-    marginTop: 40,
+    ...typography.h1,
+    marginBottom: spacing.xxxl,
+    marginTop: spacing.huge,
   },
   section: {
-    marginBottom: 32,
+    marginBottom: spacing.xxxl,
   },
   sectionTitle: {
-    fontSize: 14,
+    ...typography.caption,
     fontWeight: "600",
-    marginBottom: 12,
+    marginBottom: spacing.md,
     textTransform: "uppercase",
     letterSpacing: 0.5,
-    opacity: 0.6,
+    opacity: designOpacity.secondary,
   },
   settingItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    marginBottom: 8,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.sm,
     borderWidth: 1,
   },
   settingText: {
-    fontSize: 16,
+    ...typography.body,
     flex: 1,
-    marginLeft: 12,
+    marginLeft: spacing.md,
     fontWeight: "500",
   },
   settingValue: {
-    fontSize: 14,
-    marginRight: 8,
-    opacity: 0.7,
+    ...typography.caption,
+    marginRight: spacing.sm,
+    opacity: designOpacity.medium,
   },
   iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
+    width: iconSize.xl,
+    height: iconSize.xl,
+    borderRadius: borderRadius.md,
     alignItems: "center",
     justifyContent: "center",
   },
   premiumCard: {
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 8,
+    borderRadius: borderRadius.lg,
+    padding: spacing.xl,
+    marginBottom: spacing.sm,
   },
   premiumHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
-    gap: 12,
+    marginBottom: spacing.sm,
+    gap: spacing.md,
   },
   premiumTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
+    ...typography.h3,
   },
   premiumSubtitle: {
-    fontSize: 14,
-    opacity: 0.7,
-    marginBottom: 20,
+    ...typography.caption,
+    opacity: designOpacity.medium,
+    marginBottom: spacing.xl,
   },
   premiumStats: {
     flexDirection: "row",
     justifyContent: "space-around",
-    marginBottom: 20,
+    marginBottom: spacing.xl,
   },
   statItem: {
     alignItems: "center",
   },
   statValue: {
-    fontSize: 32,
-    fontWeight: "bold",
+    ...typography.h1,
   },
   statLabel: {
-    fontSize: 12,
-    opacity: 0.7,
-    marginTop: 4,
+    ...typography.small,
+    opacity: designOpacity.medium,
+    marginTop: spacing.xs,
   },
   manageButton: {
     borderWidth: 2,
-    borderRadius: 12,
-    paddingVertical: 12,
+    borderRadius: borderRadius.md,
+    paddingVertical: spacing.md,
     alignItems: "center",
   },
   manageButtonText: {
-    fontSize: 16,
+    ...typography.body,
     fontWeight: "600",
   },
   upgradeCard: {
-    borderRadius: 16,
+    borderRadius: borderRadius.lg,
     overflow: "hidden",
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   upgradeGradient: {
-    padding: 24,
+    padding: spacing.xxl,
     alignItems: "center",
   },
   upgradeTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
+    ...typography.h2,
     color: "#FFF",
-    marginTop: 12,
-    marginBottom: 8,
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
   },
   upgradeSubtitle: {
-    fontSize: 14,
+    ...typography.caption,
     color: "#FFF",
-    opacity: 0.9,
-    marginBottom: 16,
+    opacity: designOpacity.high,
+    marginBottom: spacing.lg,
     textAlign: "center",
   },
   upgradeStats: {
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginBottom: 16,
+    backgroundColor: withOpacity('#ffffff', overlayOpacity.subtle),
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.xl,
+    marginBottom: spacing.lg,
   },
   upgradeStatsText: {
     color: "#FFF",
-    fontSize: 12,
+    ...typography.small,
     fontWeight: "600",
   },
   upgradeButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 25,
-    gap: 8,
+    backgroundColor: withOpacity('#ffffff', overlayOpacity.light),
+    paddingHorizontal: spacing.xxl,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.round,
+    gap: spacing.sm,
   },
   upgradeButtonText: {
     color: "#FFF",
-    fontSize: 16,
+    ...typography.body,
     fontWeight: "bold",
   },
 });

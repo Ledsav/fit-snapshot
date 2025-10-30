@@ -13,6 +13,13 @@ import { OnboardingCarousel } from "@/components/onBoarding/OnboardingCarousel";
 import BackgroundImage from "@/components/style/BackgroundImage";
 import Colors from "@/constants/Colors";
 import { Feature } from "@/constants/Features";
+import {
+  spacing,
+  borderRadius,
+  elevation,
+  typography,
+  iconSize,
+} from "@/constants/DesignSystem";
 import { useLocalization } from "@/context/LocalizationContext";
 import { usePhotos } from "@/context/PhotoContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -211,34 +218,28 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: spacing.xl,
+    paddingBottom: spacing.huge,
   },
   section: {
-    marginBottom: 24,
+    marginBottom: spacing.xxl,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 12,
+    ...typography.h4,
+    marginBottom: spacing.md,
   },
   quickCameraButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    padding: 18,
-    borderRadius: 15,
-    marginBottom: 24,
-    gap: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    marginBottom: spacing.xxl,
+    gap: spacing.md,
+    ...elevation.md,
   },
   quickCameraText: {
-    fontSize: 18,
-    fontWeight: "bold",
+    ...typography.h4,
   },
   quickActions: {
     flexDirection: "row",
@@ -247,40 +248,38 @@ const styles = StyleSheet.create({
   quickActionButton: {
     flex: 1,
     height: 100,
-    borderRadius: 15,
+    borderRadius: borderRadius.lg,
     justifyContent: "center",
     alignItems: "center",
-    marginHorizontal: 5,
+    marginHorizontal: spacing.xs,
   },
   quickActionText: {
-    marginTop: 8,
-    fontSize: 14,
+    marginTop: spacing.sm,
+    ...typography.caption,
     fontWeight: "bold",
   },
   viewGalleryButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    padding: 15,
-    borderRadius: 15,
-    marginTop: 12,
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    marginTop: spacing.md,
   },
   viewGalleryText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginRight: 10,
+    ...typography.h4,
+    marginRight: spacing.md,
   },
   settingsButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    padding: 15,
-    borderRadius: 15,
-    marginTop: 12,
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    marginTop: spacing.md,
   },
   settingsText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginLeft: 10,
+    ...typography.h4,
+    marginLeft: spacing.md,
   },
 });

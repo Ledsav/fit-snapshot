@@ -4,6 +4,12 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { Photo } from "@/services/photoStorage";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
+import {
+  spacing,
+  borderRadius,
+  typography,
+  elevation,
+} from "@/constants/DesignSystem";
 
 type WeeklyProgressChartProps = {
   photos: Photo[];
@@ -38,7 +44,13 @@ export const WeeklyProgressChart: React.FC<WeeklyProgressChartProps> = ({ photos
   const maxCount = Math.max(...weeks.map(w => w.count), 1);
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.cardBackground, borderColor: theme.primary }]}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: theme.cardBackground, borderColor: theme.primary },
+        elevation.md,
+      ]}
+    >
       <Text style={[styles.title, { color: theme.text }]}>
         {t("home.weeklyActivity") || "Weekly Activity"}
       </Text>
@@ -67,14 +79,14 @@ export const WeeklyProgressChart: React.FC<WeeklyProgressChartProps> = ({ photos
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
-    borderRadius: 12,
+    padding: spacing.lg,
+    borderRadius: borderRadius.md,
     borderWidth: 2,
   },
   title: {
-    fontSize: 16,
+    ...typography.body,
     fontWeight: "bold",
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   chartContainer: {
     flexDirection: "row",
@@ -85,7 +97,7 @@ const styles = StyleSheet.create({
   barContainer: {
     flex: 1,
     alignItems: "center",
-    gap: 4,
+    gap: spacing.xs,
   },
   barWrapper: {
     width: "80%",
@@ -95,16 +107,16 @@ const styles = StyleSheet.create({
   },
   bar: {
     width: "100%",
-    borderRadius: 6,
-    minHeight: 4,
+    borderRadius: borderRadius.sm,
+    minHeight: spacing.xs,
   },
   barLabel: {
-    fontSize: 11,
+    ...typography.small,
     fontWeight: "600",
     opacity: 0.7,
   },
   barCount: {
-    fontSize: 13,
+    ...typography.caption,
     fontWeight: "bold",
   },
 });

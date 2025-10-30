@@ -2,9 +2,15 @@ import React from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import Colors from "@/constants/Colors";
+import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
 import { Photo } from "@/services/photoStorage";
 import { useLocalization } from "@/context/LocalizationContext";
+import {
+  spacing,
+  borderRadius,
+  typography,
+  iconSize,
+} from "@/constants/DesignSystem";
 
 type Achievement = {
   id: string;
@@ -109,14 +115,14 @@ export const AchievementBadges: React.FC<AchievementBadgesProps> = ({ photos, cu
               styles.badge,
               {
                 backgroundColor: achievement.unlocked ? theme.primary : theme.cardBackground,
-                borderColor: achievement.unlocked ? theme.primary : theme.text + '30',
+                borderColor: achievement.unlocked ? theme.primary : withOpacity(theme.text, overlayOpacity.medium),
               },
             ]}
           >
             <Ionicons
               name={achievement.icon}
-              size={32}
-              color={achievement.unlocked ? theme.background : theme.text + '40'}
+              size={iconSize.lg}
+              color={achievement.unlocked ? theme.background : withOpacity(theme.text, overlayOpacity.medium)}
             />
             <Text
               style={[
@@ -141,7 +147,7 @@ export const AchievementBadges: React.FC<AchievementBadgesProps> = ({ photos, cu
             </Text>
             {!achievement.unlocked && achievement.progress !== undefined && achievement.total !== undefined && (
               <View style={styles.progressContainer}>
-                <View style={[styles.progressBar, { backgroundColor: theme.text + '20' }]}>
+                <View style={[styles.progressBar, { backgroundColor: withOpacity(theme.text, overlayOpacity.light) }]}>
                   <View
                     style={[
                       styles.progressFill,
@@ -166,70 +172,70 @@ export const AchievementBadges: React.FC<AchievementBadgesProps> = ({ photos, cu
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 8,
+    marginVertical: spacing.sm,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
-    paddingHorizontal: 4,
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.xs,
   },
   title: {
-    fontSize: 16,
+    ...typography.body,
     fontWeight: "bold",
   },
   count: {
-    fontSize: 14,
+    ...typography.caption,
     fontWeight: "600",
     opacity: 0.7,
   },
   scrollView: {
-    marginHorizontal: -20,
+    marginHorizontal: -spacing.xl,
     flexGrow: 0,
     flexShrink: 0,
   },
   scrollViewContent: {
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.xl,
   },
   badge: {
     width: 140,
     height: 160,
-    padding: 16,
-    borderRadius: 12,
+    padding: spacing.lg,
+    borderRadius: borderRadius.md,
     borderWidth: 2,
-    marginRight: 12,
+    marginRight: spacing.md,
     alignItems: "center",
     justifyContent: "center",
   },
   badgeTitle: {
-    fontSize: 14,
+    ...typography.caption,
     fontWeight: "bold",
-    marginTop: 8,
+    marginTop: spacing.sm,
     textAlign: "center",
   },
   badgeDescription: {
-    fontSize: 11,
-    marginTop: 4,
+    ...typography.small,
+    marginTop: spacing.xs,
     textAlign: "center",
   },
   progressContainer: {
     width: "100%",
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   progressBar: {
-    height: 4,
-    borderRadius: 2,
+    height: spacing.xs,
+    borderRadius: borderRadius.sm / 4,
     overflow: "hidden",
   },
   progressFill: {
     height: "100%",
-    borderRadius: 2,
+    borderRadius: borderRadius.sm / 4,
   },
   progressText: {
-    fontSize: 10,
+    ...typography.tiny,
     textAlign: "center",
-    marginTop: 4,
+    marginTop: spacing.xs,
     fontWeight: "600",
   },
 });

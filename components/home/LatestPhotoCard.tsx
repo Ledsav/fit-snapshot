@@ -9,9 +9,16 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/context/ThemeContext";
-import Colors from "@/constants/Colors";
+import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
 import { Photo } from "@/services/photoStorage";
 import { useLocalization } from "@/context/LocalizationContext";
+import {
+  spacing,
+  borderRadius,
+  typography,
+  iconSize,
+  elevation,
+} from "@/constants/DesignSystem";
 
 interface LatestPhotoCardProps {
   latestPhoto: Photo | null;
@@ -33,6 +40,7 @@ export const LatestPhotoCard: React.FC<LatestPhotoCardProps> = ({
       style={[
         styles.latestPhotoCard,
         { backgroundColor: theme.cardBackground },
+        elevation.md,
       ]}
       onPress={onPress}
     >
@@ -40,10 +48,10 @@ export const LatestPhotoCard: React.FC<LatestPhotoCardProps> = ({
         <ImageBackground
           source={{ uri: latestPhoto.uri }}
           style={styles.latestPhotoImage}
-          imageStyle={{ borderRadius: 15 }}
+          imageStyle={{ borderRadius: borderRadius.lg }}
         >
           <LinearGradient
-            colors={["transparent", "rgba(0, 0, 0, 0.7)"]}
+            colors={["transparent", withOpacity('#000000', overlayOpacity.veryHeavy)]}
             style={styles.latestPhotoGradient}
           >
             <Text style={styles.latestPhotoText}>
@@ -72,9 +80,9 @@ export const LatestPhotoCard: React.FC<LatestPhotoCardProps> = ({
 
 const styles = StyleSheet.create({
   latestPhotoCard: {
-    borderRadius: 15,
+    borderRadius: borderRadius.lg,
     overflow: "hidden",
-    marginBottom: 20,
+    marginBottom: spacing.xl,
     height: 200,
   },
   latestPhotoImage: {
@@ -88,16 +96,15 @@ const styles = StyleSheet.create({
     bottom: 0,
     height: "50%",
     justifyContent: "flex-end",
-    padding: 15,
+    padding: spacing.lg,
   },
   latestPhotoText: {
     color: "white",
-    fontSize: 18,
-    fontWeight: "bold",
+    ...typography.h4,
   },
   latestPhotoDate: {
     color: "white",
-    fontSize: 14,
+    ...typography.caption,
   },
   noPhotoPlaceholder: {
     flex: 1,
@@ -105,7 +112,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   noPhotoText: {
-    marginTop: 10,
-    fontSize: 16,
+    marginTop: spacing.md,
+    ...typography.body,
   },
 });

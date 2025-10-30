@@ -18,6 +18,35 @@ const colors = {
 const tintColorLight = colors.emerald;
 const tintColorDark = colors.emerald;
 
+/**
+ * Helper function to add opacity to hex colors
+ * @param hex - The hex color string (e.g., "#00C676")
+ * @param opacity - The opacity value between 0 and 1 (e.g., 0.5 for 50%)
+ * @returns The hex color with opacity (e.g., "#00C67680")
+ */
+export const withOpacity = (hex: string, opacity: number): string => {
+  // Remove # if present
+  const cleanHex = hex.replace('#', '');
+
+  // Calculate alpha value (0-255) and convert to hex
+  const alpha = Math.round(opacity * 255);
+  const alphaHex = alpha.toString(16).padStart(2, '0');
+
+  return `#${cleanHex}${alphaHex}`;
+};
+
+/**
+ * Common overlay opacity values
+ * Use these with withOpacity() for consistent transparency
+ */
+export const overlayOpacity = {
+  subtle: 0.15,   // 15% - Very light overlay
+  light: 0.25,    // 25% - Light overlay
+  medium: 0.4,    // 40% - Medium overlay
+  heavy: 0.6,     // 60% - Heavy overlay
+  veryHeavy: 0.8, // 80% - Very heavy overlay
+} as const;
+
 export default {
   light: {
     text: colors.graphite,

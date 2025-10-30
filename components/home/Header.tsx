@@ -4,6 +4,11 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "@/context/ThemeContext";
 import Colors from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
+import {
+  spacing,
+  borderRadius,
+  typography,
+} from "@/constants/DesignSystem";
 
 interface HeaderProps {
   title: string;
@@ -39,22 +44,21 @@ export const Header: React.FC<HeaderProps> = ({ title }) => {
 const styles = StyleSheet.create({
   container: {
     overflow: "hidden",
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+    borderBottomLeftRadius: borderRadius.xxxl,
+    borderBottomRightRadius: borderRadius.xxxl,
   },
   headerGradient: {
-    padding: 20,
+    padding: spacing.xl,
     paddingTop: 60,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+    borderBottomLeftRadius: borderRadius.xxxl,
+    borderBottomRightRadius: borderRadius.xxxl,
   },
   title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    marginBottom: 10,
+    ...typography.h1,
+    marginBottom: spacing.md,
   },
   subtitle: {
-    fontSize: 16,
+    ...typography.body,
     fontStyle: "italic",
   },
 });

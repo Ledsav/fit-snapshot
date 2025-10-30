@@ -1,4 +1,4 @@
-import Colors from "@/constants/Colors";
+import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
 import { usePhotos } from "@/context/PhotoContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -22,6 +22,16 @@ import {
   View
 } from "react-native";
 import TorsoSilhouette from "../../images/TorsoSilhouette";
+import { IconButton, Button, Badge } from "@/components/ui";
+import {
+  spacing,
+  borderRadius,
+  elevation,
+  typography,
+  iconSize,
+  opacity as designOpacity,
+  touchTarget,
+} from "@/constants/DesignSystem";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const aspectRatio = 4 / 3;
@@ -114,16 +124,12 @@ export default function CameraScreen() {
         <Text style={[styles.message, { color: theme.text }]}>
           {t("camera.permissionMessage")}
         </Text>
-        <TouchableOpacity
-          style={[styles.permissionButton, { backgroundColor: theme.primary }]}
+        <Button
+          title={t("camera.grantPermission")}
           onPress={requestPermission}
-        >
-          <Text
-            style={[styles.permissionButtonText, { color: theme.background }]}
-          >
-            {t("camera.grantPermission")}
-          </Text>
-        </TouchableOpacity>
+          variant="primary"
+          size="large"
+        />
       </View>
     );
   }
@@ -572,7 +578,7 @@ export default function CameraScreen() {
 
       {/* Photo Counter for Free Users */}
       {!isPremium && !isPhotoLimitReached && photoLimitStatus.limit && (
-        <View style={[styles.photoCounterBanner, { backgroundColor: 'rgba(0, 0, 0, 0.6)' }]}>
+        <View style={[styles.photoCounterBanner, { backgroundColor: withOpacity('#000000', overlayOpacity.heavy) }]}>
           <Text style={styles.photoCounterText}>
             {featureUsage.photoCount} / {photoLimitStatus.limit} {t("camera.photosUsed")}
           </Text>
@@ -592,12 +598,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   loadingText: {
-    fontSize: 18,
+    ...typography.h4,
   },
   message: {
-    color: Colors.light.primary,
+    ...typography.body,
     textAlign: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.xl,
+    marginBottom: spacing.xxl,
   },
   overlayContainer: {
     ...StyleSheet.absoluteFillObject,
@@ -615,14 +622,14 @@ const styles = StyleSheet.create({
   controlsContainer: {
     position: "absolute",
     top: 50,
-    right: 20,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    borderRadius: 20,
-    padding: 10,
+    right: spacing.xl,
+    backgroundColor: withOpacity('#000000', overlayOpacity.medium),
+    borderRadius: borderRadius.xl,
+    padding: spacing.md,
   },
   bottomControlsContainer: {
     position: "absolute",
-    bottom: 40,
+    bottom: spacing.huge,
     left: 0,
     right: 0,
     flexDirection: "row",
@@ -630,31 +637,30 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   controlButton: {
-    marginVertical: 5,
-    padding: 10,
-    borderRadius: 20,
+    marginVertical: spacing.xs,
+    padding: spacing.md,
+    borderRadius: borderRadius.xl,
   },
   flipButton: {
     alignSelf: "center",
-    padding: 10,
+    padding: spacing.md,
   },
   captureButton: {
-    width: 70,
+    width: 70, // Intentionally 70 for camera UX - slightly larger than standard touch target
     height: 70,
-    borderRadius: 35,
-    backgroundColor: Colors.light.primary,
+    borderRadius: borderRadius.round,
     justifyContent: "center",
     alignItems: "center",
   },
   captureButtonInner: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: touchTarget.large + 4, // 60px - visual ring inside capture button
+    height: touchTarget.large + 4,
+    borderRadius: borderRadius.round,
     backgroundColor: "white",
   },
   placeholderButton: {
-    width: 32,
-    height: 32,
+    width: iconSize.lg,
+    height: iconSize.lg,
   },
   preview: {
     flex: 1,
@@ -663,55 +669,44 @@ const styles = StyleSheet.create({
   },
   captureButtonContainer: {
     position: "absolute",
-    bottom: 40,
+    bottom: spacing.huge,
     alignSelf: "center",
-  },
-  permissionButton: {
-    backgroundColor: "white",
-    padding: 15,
-    borderRadius: 10,
-    marginTop: 20,
-  },
-  permissionButtonText: {
-    color: "black",
-    fontWeight: "bold",
   },
   overlaySelector: {
     position: "absolute",
     top: 50,
-    left: 20,
+    left: spacing.xl,
     flexDirection: "row",
   },
   overlayButton: {
-    padding: 10,
-    marginRight: 10,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    borderRadius: 20,
+    padding: spacing.md,
+    marginRight: spacing.md,
+    backgroundColor: withOpacity('#000000', overlayOpacity.medium),
+    borderRadius: borderRadius.xl,
   },
   activeOverlayButton: {
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
+    backgroundColor: withOpacity('#ffffff', overlayOpacity.light),
   },
   overlayButtonText: {
     color: "white",
-    fontWeight: "bold",
+    ...typography.captionBold,
   },
   overlayText: {
     position: "absolute",
     top: "50%",
     left: "50%",
     transform: [{ translateX: -50 }, { translateY: -50 }],
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    padding: 10,
-    borderRadius: 10,
+    backgroundColor: withOpacity('#000000', overlayOpacity.medium),
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
   },
   overlayTextContent: {
     color: "white",
-    fontSize: 24,
-    fontWeight: "bold",
+    ...typography.h2,
   },
   photoTypeBadgeContainer: {
     position: "absolute",
-    top: 60,
+    top: spacing.huge + spacing.xl, // 60px - positioned below status bar
     left: 0,
     right: 0,
     alignItems: "center",
@@ -719,19 +714,15 @@ const styles = StyleSheet.create({
   photoTypeBadge: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    gap: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+    borderRadius: borderRadius.round,
+    gap: spacing.sm,
+    ...elevation.lg,
   },
   photoTypeBadgeText: {
     color: "white",
-    fontSize: 16,
+    ...typography.body,
     fontWeight: "700",
     letterSpacing: 1,
   },
@@ -740,8 +731,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingBottom: 40,
-    paddingHorizontal: 20,
+    paddingBottom: spacing.huge,
+    paddingHorizontal: spacing.xl,
     alignItems: "center",
   },
   confirmationButtons: {
@@ -749,49 +740,45 @@ const styles = StyleSheet.create({
     justifyContent: "space-evenly",
     alignItems: "center",
     width: "100%",
-    gap: 60,
-    marginBottom: 16,
+    gap: spacing.huge + spacing.xl, // 60px - space between action buttons
+    marginBottom: spacing.lg,
   },
   actionButton: {
     flexDirection: "column",
     alignItems: "center",
-    gap: 12,
+    gap: spacing.md,
   },
   actionButtonCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: touchTarget.xlarge + spacing.lg, // 80px - large action buttons
+    height: touchTarget.xlarge + spacing.lg,
+    borderRadius: borderRadius.round,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    ...elevation.lg,
     borderWidth: 3,
     borderColor: "transparent",
   },
   actionButtonLabelContainer: {
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-    borderRadius: 20,
+    backgroundColor: withOpacity('#000000', overlayOpacity.heavy),
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.xl,
   },
   actionButtonLabel: {
-    fontSize: 16,
+    ...typography.body,
     fontWeight: "700",
     textAlign: "center",
     color: "white",
   },
   helperText: {
-    fontSize: 13,
-    opacity: 0.6,
+    ...typography.small,
+    opacity: designOpacity.secondary,
     textAlign: "center",
     fontStyle: "italic",
   },
   importButton: {
     alignSelf: "center",
-    padding: 10,
+    padding: spacing.md,
   },
   silhouette: {
     position: "absolute",
@@ -803,59 +790,58 @@ const styles = StyleSheet.create({
   timerControls: {
     position: "absolute",
     top: 100,
-    left: 20,
+    left: spacing.xl,
     flexDirection: "column",
     alignItems: "flex-start",
   },
   timerToggle: {
-    padding: 10,
-    borderRadius: 20,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    marginBottom: 10,
+    padding: spacing.md,
+    borderRadius: borderRadius.xl,
+    backgroundColor: withOpacity('#000000', overlayOpacity.medium),
+    marginBottom: spacing.md,
   },
   timerDurationContainer: {
     flexDirection: "column",
     alignItems: "flex-start",
   },
   timerButton: {
-    padding: 10,
-    marginBottom: 10,
-    borderRadius: 20,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    width: 50,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    borderRadius: borderRadius.xl,
+    backgroundColor: withOpacity('#000000', overlayOpacity.medium),
+    width: touchTarget.comfortable + 2, // 50px - timer button width
     alignItems: "center",
   },
   timerButtonText: {
     color: "white",
-    fontWeight: "bold",
+    ...typography.captionBold,
   },
   timerRunningContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    borderRadius: 30,
-    padding: 10,
+    backgroundColor: withOpacity('#000000', overlayOpacity.medium),
+    borderRadius: borderRadius.xxxl,
+    padding: spacing.md,
   },
   timerText: {
-    fontSize: 24,
-    fontWeight: "bold",
+    ...typography.h2,
     color: "white",
-    marginRight: 10,
+    marginRight: spacing.md,
   },
   cancelTimerButton: {
-    padding: 5,
-    borderRadius: 15,
+    padding: spacing.xs,
+    borderRadius: borderRadius.lg,
   },
   refreshButton: {
     backgroundColor: "white",
-    padding: 15,
-    borderRadius: 10,
-    marginTop: 20,
+    padding: spacing.lg,
+    borderRadius: borderRadius.md,
+    marginTop: spacing.xl,
   },
   refreshButtonText: {
     color: "black",
-    fontWeight: "bold",
+    ...typography.bodyBold,
     textAlign: "center" as const,
   },
   limitBadge: {
@@ -864,49 +850,45 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   disabledButton: {
-    opacity: 0.3,
+    opacity: designOpacity.disabled,
   },
   limitWarningBanner: {
     position: "absolute",
     bottom: 140,
-    left: 20,
-    right: 20,
+    left: spacing.xl,
+    right: spacing.xl,
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
-    borderRadius: 12,
-    gap: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    padding: spacing.lg,
+    borderRadius: borderRadius.md,
+    gap: spacing.md,
+    ...elevation.lg,
   },
   limitWarningTextContainer: {
     flex: 1,
   },
   limitWarningTitle: {
     color: "white",
-    fontSize: 16,
+    ...typography.body,
     fontWeight: "700",
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   limitWarningMessage: {
     color: "white",
-    fontSize: 13,
+    ...typography.small,
     lineHeight: 18,
   },
   photoCounterBanner: {
     position: "absolute",
     top: 120,
     alignSelf: "center",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.xl,
   },
   photoCounterText: {
     color: "white",
-    fontSize: 14,
+    ...typography.caption,
     fontWeight: "600",
   },
 });

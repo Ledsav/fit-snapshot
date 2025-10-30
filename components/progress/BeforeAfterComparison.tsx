@@ -5,6 +5,11 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { Photo } from "@/services/photoStorage";
 import React from "react";
 import { Dimensions, Image, StyleSheet, Text, View } from "react-native";
+import {
+  spacing,
+  borderRadius,
+  typography,
+} from "@/constants/DesignSystem";
 
 interface BeforeAfterComparisonProps {
   beforePhoto: Photo | null;
@@ -67,12 +72,11 @@ export const BeforeAfterComparison: React.FC<BeforeAfterComparisonProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 20,
+    marginBottom: spacing.xl,
   },
   title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
+    ...typography.h4,
+    marginBottom: spacing.md,
   },
   photoContainer: {
     flexDirection: "row",
@@ -84,15 +88,15 @@ const styles = StyleSheet.create({
   photo: {
     width: photoWidth,
     height: photoWidth,
-    borderRadius: 10,
+    borderRadius: borderRadius.md,
   },
   placeholderPhoto: {
     width: photoWidth,
     height: photoWidth,
-    borderRadius: 10,
+    borderRadius: borderRadius.md,
   },
   label: {
-    marginTop: 5,
-    fontSize: 14,
+    marginTop: spacing.xs,
+    ...typography.caption,
   },
 });

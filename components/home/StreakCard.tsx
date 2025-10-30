@@ -1,9 +1,16 @@
-import Colors from "@/constants/Colors";
+import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useTheme } from "@/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
+import {
+  spacing,
+  borderRadius,
+  elevation,
+  typography,
+  iconSize,
+} from "@/constants/DesignSystem";
 
 interface StreakCardProps {
   streak: number;
@@ -72,14 +79,15 @@ export const StreakCard: React.FC<StreakCardProps> = ({ streak }) => {
     <View
       style={[
         styles.streakCard,
-        { backgroundColor: theme.cardBackground, borderColor: theme.primary },
+        { backgroundColor: theme.cardBackground },
+        elevation.md,
       ]}
     >
       <View style={styles.contentContainer}>
         <Animated.View
           style={[styles.iconContainer, { transform: [{ scale: pulseAnim }] }]}
         >
-          <Ionicons name="flame" size={60} color={theme.primary} />
+          <Ionicons name="flame" size={iconSize.xxxl} color={theme.primary} />
           <View
             style={[
               styles.streakNumberContainer,
@@ -98,12 +106,12 @@ export const StreakCard: React.FC<StreakCardProps> = ({ streak }) => {
           <Text style={[styles.subText, { color: theme.text }]}>{sub}</Text>
         </View>
       </View>
-      <View style={[styles.progressBar, { backgroundColor: theme.text + '20' }]}>
+      <View style={[styles.progressBar, { backgroundColor: withOpacity(theme.text, overlayOpacity.subtle) }]}>
         <View
           style={[
             styles.progress,
             {
-              width: `${Math.min((streak / 30) * 100, 100)}%`, 
+              width: `${Math.min((streak / 30) * 100, 100)}%`,
               backgroundColor: theme.primary,
             },
           ]}
@@ -115,58 +123,51 @@ export const StreakCard: React.FC<StreakCardProps> = ({ streak }) => {
 
 const styles = StyleSheet.create({
   streakCard: {
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 20,
-    borderWidth: 2,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    borderRadius: borderRadius.lg,
+    padding: spacing.xl,
+    marginBottom: spacing.xl,
   },
   contentContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 15,
+    marginBottom: spacing.lg,
   },
   iconContainer: {
     position: "relative",
-    marginRight: 20,
+    marginRight: spacing.xl,
   },
   streakNumberContainer: {
     position: "absolute",
-    top: -5,
-    right: -5,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    top: -spacing.xs,
+    right: -spacing.xs,
+    width: iconSize.lg,
+    height: iconSize.lg,
+    borderRadius: borderRadius.round,
     justifyContent: "center",
     alignItems: "center",
-    padding: 5,
+    padding: spacing.xs,
   },
   streakNumber: {
-    fontSize: 10,
+    ...typography.tiny,
     fontWeight: "bold",
   },
   textContainer: {
     flex: 1,
   },
   mainText: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 5,
+    ...typography.h3,
+    marginBottom: spacing.xs,
   },
   subText: {
-    fontSize: 16,
+    ...typography.body,
   },
   progressBar: {
     height: 6,
-    borderRadius: 3,
+    borderRadius: borderRadius.sm,
     overflow: "hidden",
   },
   progress: {
     height: "100%",
-    borderRadius: 3,
+    borderRadius: borderRadius.sm,
   },
 });
