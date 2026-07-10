@@ -5,13 +5,8 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
-    "scheme": "FitSnapshot",
+    "scheme": ["fitsnapshot"],
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/images/logo.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#000000"
-    },
     "ios": {
       "supportsTablet": true
     },
@@ -43,6 +38,14 @@
       "expo-router",
       "expo-notifications",
       "expo-localization",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/logo.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#000000"
+        }
+      ],
       [
         "expo-media-library",
         {

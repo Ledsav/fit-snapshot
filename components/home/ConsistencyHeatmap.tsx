@@ -9,6 +9,7 @@ import {
   borderRadius,
   typography,
   elevation,
+  iconSize,
 } from "@/constants/DesignSystem";
 
 type ConsistencyHeatmapProps = {

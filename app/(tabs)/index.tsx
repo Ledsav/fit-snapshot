@@ -99,7 +99,7 @@ export default function HomeScreen() {
     loadStreakData();
   };
 
-  const navigateTo = (route: Href<string>) => {
+  const navigateTo = (route: Href) => {
     router.push(route);
   };
 
@@ -193,7 +193,7 @@ export default function HomeScreen() {
             </Text>
             <LatestPhotoCard
               latestPhoto={latestPhoto}
-              onPress={() => navigateTo("(tabs)/gallery" as Href<string>)}
+              onPress={() => navigateTo("/(tabs)/gallery")}
             />
           </View>
 

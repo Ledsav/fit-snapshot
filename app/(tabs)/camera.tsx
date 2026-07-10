@@ -18,7 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
 import { FlipType, manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import * as ImagePicker from 'expo-image-picker';
-import { Href, useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -100,7 +100,7 @@ export default function CameraScreen() {
   }, [facing]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (isTimerRunning && remainingTime > 0) {
       interval = setInterval(() => {
         setRemainingTime((prev) => prev - 1);
@@ -184,7 +184,7 @@ export default function CameraScreen() {
       });
 
       if (photo) {
-        let manipulatedImage = photo;
+        let manipulatedImage: { uri: string } = photo;
 
         if (facing === "front") {
           manipulatedImage = await manipulateAsync(
@@ -248,7 +248,7 @@ export default function CameraScreen() {
       await addPhoto(newPhoto);
       setCapturedImage(null);
       setImportedPhotoDate(null);
-      router.push("(tabs)/gallery" as Href<string>);
+      router.push("/(tabs)/gallery");
     }
   };
 
@@ -596,7 +596,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   loadingContainer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -610,7 +610,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xxl,
   },
   overlayContainer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     justifyContent: "space-between",
   },
   cameraContainer: {

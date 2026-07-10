@@ -116,9 +116,15 @@ export const DailyReminder: React.FC = () => {
   };
 
   const getReminderTime = (
-    trigger: Notifications.NotificationTrigger
+    trigger: Notifications.NotificationTrigger | null
   ): string => {
-    if ("hour" in trigger && "minute" in trigger) {
+    if (
+      trigger &&
+      "hour" in trigger &&
+      "minute" in trigger &&
+      typeof trigger.hour === "number" &&
+      typeof trigger.minute === "number"
+    ) {
       return formatTime(trigger.hour, trigger.minute);
     }
     return "Unknown time";
@@ -253,7 +259,7 @@ interface Style {
   reminderInfo: ViewStyle;
   reminderText: TextStyle;
   deleteButton: ViewStyle;
-  icon: ViewStyle;
+  icon: TextStyle;
   modalContainer: ViewStyle;
   modalContent: ViewStyle;
   modalTitle: TextStyle;

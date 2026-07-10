@@ -156,8 +156,8 @@ export const Button: React.FC<ButtonProps> = ({
                 styles.text,
                 textSizeStyles[size],
                 textVariantStyles[variant],
-                icon && iconPosition === 'left' && { marginLeft: spacing.sm },
-                icon && iconPosition === 'right' && { marginRight: spacing.sm },
+                icon && iconPosition === 'left' ? { marginLeft: spacing.sm } : undefined,
+                icon && iconPosition === 'right' ? { marginRight: spacing.sm } : undefined,
                 textStyle,
               ]}
             >

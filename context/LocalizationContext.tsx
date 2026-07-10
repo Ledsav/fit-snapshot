@@ -16,7 +16,9 @@ const LocalizationContext = createContext<LocalizationContextType | undefined>(
 export const LocalizationProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [locale, setLocale] = useState(Localization.locale.split("-")[0]);
+  const [locale, setLocale] = useState(
+    Localization.getLocales()[0]?.languageCode || "en"
+  );
 
   useEffect(() => {
     AsyncStorage.getItem("userLocale").then((savedLocale) => {

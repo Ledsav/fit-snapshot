@@ -3,7 +3,7 @@ import { useLocalization } from "@/context/LocalizationContext";
 import { useTheme } from "@/context/ThemeContext";
 import { Photo } from "@/services/photoStorage";
 import { Ionicons } from "@expo/vector-icons";
-import { Href, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Animated, Dimensions, Image, PanResponder, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import {
@@ -50,7 +50,7 @@ export const MiniComparisonPreview: React.FC<MiniComparisonPreviewProps> = ({ ph
   return (
     <TouchableOpacity
       style={[styles.container, { backgroundColor: theme.cardBackground, borderColor: theme.primary }]}
-      onPress={() => router.push("(tabs)/progress" as Href<string>)}
+      onPress={() => router.push("/(tabs)/progress")}
       activeOpacity={0.95}
     >
       <View style={styles.header}>

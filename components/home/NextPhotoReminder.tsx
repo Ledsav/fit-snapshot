@@ -5,7 +5,7 @@ import { useTheme } from "@/context/ThemeContext";
 import Colors from "@/constants/Colors";
 import { Photo } from "@/services/photoStorage";
 import { useLocalization } from "@/context/LocalizationContext";
-import { Href, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import {
   spacing,
   borderRadius,
@@ -27,7 +27,7 @@ export const NextPhotoReminder: React.FC<NextPhotoReminderProps> = ({ latestPhot
     return (
       <TouchableOpacity
         style={[styles.container, { backgroundColor: theme.primary }]}
-        onPress={() => router.push("(tabs)/camera" as Href<string>)}
+        onPress={() => router.push("/(tabs)/camera")}
         activeOpacity={0.9}
       >
         <Ionicons name="camera-outline" size={iconSize.lg} color={theme.background} />
@@ -85,7 +85,7 @@ export const NextPhotoReminder: React.FC<NextPhotoReminderProps> = ({ latestPhot
   return (
     <TouchableOpacity
       style={[styles.container, { backgroundColor: message.color }]}
-      onPress={() => router.push("(tabs)/camera" as Href<string>)}
+      onPress={() => router.push("/(tabs)/camera")}
       activeOpacity={0.9}
     >
       <Ionicons name={message.icon} size={iconSize.lg} color="white" />

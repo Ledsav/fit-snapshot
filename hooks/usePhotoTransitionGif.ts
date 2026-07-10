@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 
 interface UsePhotoTransitionGifProps {
   oldestPhotoUri: string;

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useColorScheme as useDeviceColorScheme } from 'react-native';
+import { useColorScheme as useDeviceColorScheme } from '@/hooks/useColorScheme';
 
 type ThemeMode = 'light' | 'dark' | 'system';
 
