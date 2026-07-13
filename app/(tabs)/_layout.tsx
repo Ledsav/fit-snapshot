@@ -15,13 +15,6 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from "react-native-reanimated";
-
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof Ionicons>["name"];
@@ -45,27 +38,16 @@ function TabBarButton({
   accessibilityLabel?: string;
   testID?: string;
 }) {
-  const scale = useSharedValue(1);
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
   return (
-    <AnimatedPressable
-      style={[style, animatedStyle]}
+    <Pressable
+      style={({ pressed }) => [style, pressed && styles.tabBarButtonPressed]}
       onPress={onPress}
       onLongPress={onLongPress}
       accessibilityLabel={accessibilityLabel}
       testID={testID}
-      onPressIn={() => {
-        scale.value = withSpring(0.85, { damping: 15, stiffness: 300 });
-      }}
-      onPressOut={() => {
-        scale.value = withSpring(1, { damping: 12, stiffness: 200 });
-      }}
     >
       {children}
-    </AnimatedPressable>
+    </Pressable>
   );
 }
 
@@ -265,5 +247,8 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
+  },
+  tabBarButtonPressed: {
+    opacity: 0.5,
   },
 });
