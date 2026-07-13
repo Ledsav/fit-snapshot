@@ -1,13 +1,11 @@
-import React, { useState, useLayoutEffect } from "react";
-import { View, StyleSheet, ActivityIndicator, ColorValue } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { Tabs } from "expo-router";
+import { OnboardingCarousel } from "@/components/onBoarding/OnboardingCarousel";
 import Colors from "@/constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
+import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { OnboardingCarousel } from "@/components/onBoarding/OnboardingCarousel";
-
-const TAB_BAR_CONTENT_HEIGHT = 60;
+import { Tabs } from "expo-router";
+import React, { useLayoutEffect, useState } from "react";
+import { ActivityIndicator, ColorValue, StyleSheet, View } from "react-native";
 
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof Ionicons>["name"];
@@ -31,9 +29,6 @@ function TabNavigator() {
         tabBarInactiveTintColor: theme.tabIconDefault,
         tabBarStyle: {
           ...styles.tabBar,
-          height: TAB_BAR_CONTENT_HEIGHT,
-          paddingBottom: 0,
-          paddingTop: 0,
           backgroundColor: theme.cardBackground,
         },
         tabBarItemStyle: styles.tabBarItem,
