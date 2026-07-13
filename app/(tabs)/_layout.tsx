@@ -1,6 +1,5 @@
 import React, { useState, useLayoutEffect } from "react";
 import { View, StyleSheet, ActivityIndicator, ColorValue } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import Colors from "@/constants/Colors";
@@ -20,7 +19,6 @@ function TabBarIcon(props: {
 function TabNavigator() {
   const { effectiveColorScheme } = useTheme();
   const theme = Colors[effectiveColorScheme];
-  const insets = useSafeAreaInsets();
 
   const getActiveIconStyle = () => ({
     backgroundColor: theme.tint + "20",
@@ -33,7 +31,9 @@ function TabNavigator() {
         tabBarInactiveTintColor: theme.tabIconDefault,
         tabBarStyle: {
           ...styles.tabBar,
-          height: TAB_BAR_CONTENT_HEIGHT + insets.bottom,
+          height: TAB_BAR_CONTENT_HEIGHT,
+          paddingBottom: 0,
+          paddingTop: 0,
           backgroundColor: theme.cardBackground,
         },
         tabBarItemStyle: styles.tabBarItem,
