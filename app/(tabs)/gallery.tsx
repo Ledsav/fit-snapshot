@@ -28,6 +28,7 @@ import { usePathname } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Dimensions,
   Image,
   Modal,
@@ -152,9 +153,21 @@ export default function GalleryScreen() {
     }
   };
 
-  const handleDeletePhoto = async (id: string) => {
-    await removePhoto(id);
-    
+  const handleDeletePhoto = (id: string) => {
+    Alert.alert(
+      t("gallery.deletePhoto"),
+      t("gallery.deleteConfirmMessage"),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("gallery.delete"),
+          style: "destructive",
+          onPress: async () => {
+            await removePhoto(id);
+          },
+        },
+      ]
+    );
   };
 
   const togglePhotoSelection = (id: string) => {
@@ -176,14 +189,28 @@ export default function GalleryScreen() {
     setSelectedPhotoIds(new Set());
   };
 
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = () => {
     if (selectedPhotoIds.size === 0) return;
 
-    for (const id of selectedPhotoIds) {
-      await removePhoto(id);
-    }
-    setSelectedPhotoIds(new Set());
-    setSelectionMode(false);
+    const count = selectedPhotoIds.size;
+    Alert.alert(
+      t("gallery.deletePhoto"),
+      `${count} ${t("gallery.deleteBulkConfirmMessage")}`,
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("gallery.delete"),
+          style: "destructive",
+          onPress: async () => {
+            for (const id of selectedPhotoIds) {
+              await removePhoto(id);
+            }
+            setSelectedPhotoIds(new Set());
+            setSelectionMode(false);
+          },
+        },
+      ]
+    );
   };
 
   const toggleSelectionMode = () => {

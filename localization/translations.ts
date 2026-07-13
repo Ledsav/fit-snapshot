@@ -51,6 +51,8 @@ interface TranslationKeys {
     delete: string;
     selectAll: string;
     deselectAll: string;
+    deleteConfirmMessage: string;
+    deleteBulkConfirmMessage: string;
   };
   progress: {
     title: string;
@@ -318,6 +320,8 @@ export const translations: Translations = {
       delete: "Delete",
       selectAll: "Select All",
       deselectAll: "Deselect All",
+      deleteConfirmMessage: "This photo will be permanently deleted. This can't be undone.",
+      deleteBulkConfirmMessage: "selected photos will be permanently deleted. This can't be undone.",
     },
     progress: {
       title: "Your Progress",
@@ -612,6 +616,8 @@ export const translations: Translations = {
       delete: "Eliminar",
       selectAll: "Seleccionar Todo",
       deselectAll: "Deseleccionar Todo",
+      deleteConfirmMessage: "Esta foto se eliminará permanentemente. Esta acción no se puede deshacer.",
+      deleteBulkConfirmMessage: "fotos seleccionadas se eliminarán permanentemente. Esta acción no se puede deshacer.",
     },
     progress: {
       title: "Tu Progreso",
@@ -908,6 +914,8 @@ export const translations: Translations = {
       delete: "Elimina",
       selectAll: "Seleziona Tutto",
       deselectAll: "Deseleziona Tutto",
+      deleteConfirmMessage: "Questa foto verrà eliminata definitivamente. Questa azione non può essere annullata.",
+      deleteBulkConfirmMessage: "foto selezionate verranno eliminate definitivamente. Questa azione non può essere annullata.",
     },
     progress: {
       title: "I Tuoi Progressi",
@@ -1202,6 +1210,8 @@ export const translations: Translations = {
       delete: "Löschen",
       selectAll: "Alle Auswählen",
       deselectAll: "Alle Abwählen",
+      deleteConfirmMessage: "Dieses Foto wird dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.",
+      deleteBulkConfirmMessage: "ausgewählte Fotos werden dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.",
     },
     progress: {
       title: "Ihr Fortschritt",
@@ -1498,6 +1508,8 @@ export const translations: Translations = {
       delete: "Supprimer",
       selectAll: "Tout Sélectionner",
       deselectAll: "Tout Désélectionner",
+      deleteConfirmMessage: "Cette photo sera définitivement supprimée. Cette action est irréversible.",
+      deleteBulkConfirmMessage: "photos sélectionnées seront définitivement supprimées. Cette action est irréversible.",
     },
     progress: {
       title: "Votre Progrès",
