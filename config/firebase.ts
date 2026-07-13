@@ -1,5 +1,8 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { initializeAuth, getAuth, getReactNativePersistence, GoogleAuthProvider } from 'firebase/auth';
+import { initializeAuth, getAuth, GoogleAuthProvider, Auth } from 'firebase/auth';
+// @ts-expect-error - getReactNativePersistence exists in the RN build at runtime but is
+// missing from firebase/auth's published root type declarations (firebase/firebase-js-sdk#7615).
+import { getReactNativePersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -27,7 +30,7 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
 // Initialize Auth with AsyncStorage persistence
 // Try initializeAuth first, fall back to getAuth if already initialized
-let auth;
+let auth: Auth;
 try {
   auth = initializeAuth(app, {
     persistence: getReactNativePersistence(AsyncStorage)

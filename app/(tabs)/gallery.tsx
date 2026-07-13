@@ -21,9 +21,9 @@ import { useUser } from "@/context/UserContext";
 import { PhotoType } from "@/enums/Photos";
 import { Photo } from "@/services/photoStorage";
 import { Ionicons } from "@expo/vector-icons";
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as ImagePicker from 'expo-image-picker';
-import * as MediaLibrary from 'expo-media-library';
+import * as MediaLibrary from 'expo-media-library/legacy';
 import { usePathname } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -824,7 +824,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   selectedOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     justifyContent: 'center',
     alignItems: 'center',
   },

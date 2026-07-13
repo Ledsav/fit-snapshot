@@ -66,7 +66,7 @@ export const Modal: React.FC<ModalProps> = ({
   const theme = Colors[effectiveColorScheme];
 
   // Size configurations
-  const sizeStyles = {
+  const sizeStyles: Record<string, ViewStyle> = {
     small: {
       maxWidth: 400,
       maxHeight: '50%',

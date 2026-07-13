@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   blurView: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   content: {
     flex: 1,

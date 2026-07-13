@@ -10,7 +10,7 @@ import { PhotoType } from "@/enums/Photos";
 import { Photo } from "@/services/photoStorage";
 import { getTimeDifference } from "@/utils/dateUtils";
 import { Ionicons } from "@expo/vector-icons";
-import * as MediaLibrary from "expo-media-library";
+import * as MediaLibrary from "expo-media-library/legacy";
 import React, { useCallback, useRef, useState } from "react";
 import {
   Alert,

@@ -1,5 +1,5 @@
 import React, { useState, useLayoutEffect } from "react";
-import { View, StyleSheet, ActivityIndicator } from "react-native";
+import { View, StyleSheet, ActivityIndicator, ColorValue } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import Colors from "@/constants/Colors";
@@ -9,7 +9,7 @@ import { OnboardingCarousel } from "@/components/onBoarding/OnboardingCarousel";
 
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof Ionicons>["name"];
-  color: string;
+  color: ColorValue;
 }) {
   return <Ionicons size={24} style={{ marginBottom: -3 }} {...props} />;
 }
