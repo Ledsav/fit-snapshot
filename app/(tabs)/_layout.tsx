@@ -55,10 +55,6 @@ function TabNavigator() {
   const { effectiveColorScheme } = useTheme();
   const theme = Colors[effectiveColorScheme];
 
-  const getActiveIconStyle = () => ({
-    backgroundColor: theme.tint + "20",
-  });
-
   return (
     <Tabs
       screenOptions={{
@@ -78,13 +74,8 @@ function TabNavigator() {
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color, focused }) => (
-            <View
-              style={[
-                styles.iconContainer,
-                focused && getActiveIconStyle(),
-              ]}
-            >
+          tabBarIcon: ({ color }) => (
+            <View style={styles.iconContainer}>
               <TabBarIcon name="home" color={color} />
             </View>
           ),
@@ -94,13 +85,8 @@ function TabNavigator() {
         name="camera"
         options={{
           title: "Camera",
-          tabBarIcon: ({ color, focused }) => (
-            <View
-              style={[
-                styles.iconContainer,
-                focused && getActiveIconStyle(),
-              ]}
-            >
+          tabBarIcon: ({ color }) => (
+            <View style={styles.iconContainer}>
               <TabBarIcon name="camera" color={color} />
             </View>
           ),
@@ -110,13 +96,8 @@ function TabNavigator() {
         name="progress"
         options={{
           title: "Progress",
-          tabBarIcon: ({ color, focused }) => (
-            <View
-              style={[
-                styles.iconContainer,
-                focused && getActiveIconStyle(),
-              ]}
-            >
+          tabBarIcon: ({ color }) => (
+            <View style={styles.iconContainer}>
               <TabBarIcon name="bar-chart" color={color} />
             </View>
           ),
@@ -126,13 +107,8 @@ function TabNavigator() {
         name="gallery"
         options={{
           title: "Gallery",
-          tabBarIcon: ({ color, focused }) => (
-            <View
-              style={[
-                styles.iconContainer,
-                focused && getActiveIconStyle(),
-              ]}
-            >
+          tabBarIcon: ({ color }) => (
+            <View style={styles.iconContainer}>
               <TabBarIcon name="images" color={color} />
             </View>
           ),
@@ -142,13 +118,8 @@ function TabNavigator() {
         name="settings"
         options={{
           title: "Settings",
-          tabBarIcon: ({ color, focused }) => (
-            <View
-              style={[
-                styles.iconContainer,
-                focused && getActiveIconStyle(),
-              ]}
-            >
+          tabBarIcon: ({ color }) => (
+            <View style={styles.iconContainer}>
               <TabBarIcon name="settings" color={color} />
             </View>
           ),
