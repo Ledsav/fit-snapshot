@@ -80,6 +80,11 @@ interface TranslationKeys {
     gifErrorTitle: string;
     gifAuthRequired: string;
     gifGoToSettings: string;
+    modeSlider: string;
+    modeSideBySide: string;
+    modeGif: string;
+    modeGrid: string;
+    modeSelect: string;
   };
   achievements: {
     firstPhoto: string;
@@ -349,6 +354,11 @@ export const translations: Translations = {
       gifErrorTitle: "Unable to Generate GIF",
       gifAuthRequired: "Sign in required to generate GIFs",
       gifGoToSettings: "Go to Settings to Sign In",
+      modeSlider: "Slider",
+      modeSideBySide: "Side-by-side",
+      modeGif: "GIF",
+      modeGrid: "Grid",
+      modeSelect: "Select photos",
     },
     achievements: {
       firstPhoto: "First Step",
@@ -646,6 +656,11 @@ export const translations: Translations = {
       gifErrorTitle: "No se Puede Generar GIF",
       gifAuthRequired: "Se requiere iniciar sesión para generar GIFs",
       gifGoToSettings: "Ir a Configuración para Iniciar Sesión",
+      modeSlider: "Deslizador",
+      modeSideBySide: "Lado a lado",
+      modeGif: "GIF",
+      modeGrid: "Cuadrícula",
+      modeSelect: "Seleccionar fotos",
     },
     achievements: {
       firstPhoto: "Primer Paso",
@@ -943,6 +958,11 @@ export const translations: Translations = {
       gifErrorTitle: "Impossibile Generare GIF",
       gifAuthRequired: "Accesso richiesto per generare GIF",
       gifGoToSettings: "Vai alle Impostazioni per Accedere",
+      modeSlider: "Slider",
+      modeSideBySide: "Affiancate",
+      modeGif: "GIF",
+      modeGrid: "Griglia",
+      modeSelect: "Seleziona foto",
     },
     achievements: {
       firstPhoto: "Primo Passo",
@@ -1240,6 +1260,11 @@ export const translations: Translations = {
       gifErrorTitle: "GIF Konnte Nicht Erstellt Werden",
       gifAuthRequired: "Anmeldung erforderlich zum Erstellen von GIFs",
       gifGoToSettings: "Zu Einstellungen Gehen um sich Anzumelden",
+      modeSlider: "Schieberegler",
+      modeSideBySide: "Nebeneinander",
+      modeGif: "GIF",
+      modeGrid: "Raster",
+      modeSelect: "Fotos auswählen",
     },
     achievements: {
       firstPhoto: "Erster Schritt",
@@ -1538,6 +1563,11 @@ export const translations: Translations = {
       gifErrorTitle: "Impossible de Générer le GIF",
       gifAuthRequired: "Connexion requise pour générer des GIF",
       gifGoToSettings: "Aller aux Paramètres pour se Connecter",
+      modeSlider: "Curseur",
+      modeSideBySide: "Côte à côte",
+      modeGif: "GIF",
+      modeGrid: "Grille",
+      modeSelect: "Sélectionner des photos",
     },
     achievements: {
       firstPhoto: "Premier Pas",

@@ -332,87 +332,83 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
       </View>
 
       {/* Comparison Mode Switcher */}
-  <View style={styles.modeSwitcher}>
-    <TouchableOpacity
-      style={[
-        styles.modeButton,
-        { backgroundColor: comparisonMode === 'slider' ? theme.primary : theme.text + '20' }
-      ]}
-      onPress={() => setComparisonMode('slider')}
-    >
-      <Ionicons
-        name="swap-horizontal-outline"
-        size={18}
-        color={comparisonMode === 'slider' ? theme.background : theme.text}
-      />
-    </TouchableOpacity>
-    <TouchableOpacity
-      style={[
-        styles.modeButton,
-        { backgroundColor: comparisonMode === 'sideBySide' ? theme.primary : theme.text + '20', opacity: hasSideBySideAccess ? 1 : 0.5 }
-      ]}
-      onPress={() => hasSideBySideAccess && setComparisonMode('sideBySide')}
-      disabled={!hasSideBySideAccess}
-    >
-      <View style={styles.modeButtonContent}>
-        <Ionicons
-          name="copy-outline"
-          size={18}
-          color={comparisonMode === 'sideBySide' ? theme.background : theme.text}
-        />
-        {!hasSideBySideAccess && (
-          <Ionicons name="lock-closed" size={10} color={theme.text} style={styles.lockIcon} />
-        )}
-      </View>
-    </TouchableOpacity>
-    {/* GIF mode as third tab */}
-    <TouchableOpacity
-      style={[
-        styles.modeButton,
-        { backgroundColor: comparisonMode === 'gif' ? theme.primary : theme.text + '20', opacity: hasGifAccess ? 1 : 0.5 }
-      ]}
-      onPress={() => hasGifAccess && setComparisonMode('gif')}
-      disabled={!hasGifAccess}
-    >
-      <View style={styles.modeButtonContent}>
-        <Ionicons name="film-outline" size={18} color={comparisonMode === 'gif' ? theme.background : theme.text} />
-        {!hasGifAccess && (
-          <Ionicons name="lock-closed" size={10} color={theme.text} style={styles.lockIcon} />
-        )}
-      </View>
-    </TouchableOpacity>
-    <TouchableOpacity
-      style={[
-        styles.modeButton,
-        { backgroundColor: comparisonMode === 'grid' ? theme.primary : theme.text + '20', opacity: hasGridViewAccess ? 1 : 0.5 }
-      ]}
-      onPress={() => hasGridViewAccess && setComparisonMode('grid')}
-      disabled={!hasGridViewAccess}
-    >
-      <View style={styles.modeButtonContent}>
-        <Ionicons
-          name="grid-outline"
-          size={18}
-          color={comparisonMode === 'grid' ? theme.background : theme.text}
-        />
-        {!hasGridViewAccess && (
-          <Ionicons name="lock-closed" size={10} color={theme.text} style={styles.lockIcon} />
-        )}
-      </View>
-    </TouchableOpacity>
-    <TouchableOpacity
-      style={[styles.modeButton, { backgroundColor: theme.cardBackground, opacity: hasCustomSelectionAccess ? 1 : 0.5 }]}
-      onPress={() => hasCustomSelectionAccess && setIsSelectingPhotos(true)}
-      disabled={!hasCustomSelectionAccess}
-    >
-      <View style={styles.modeButtonContent}>
-        <Ionicons name="images-outline" size={18} color={theme.text} />
-        {!hasCustomSelectionAccess && (
-          <Ionicons name="lock-closed" size={10} color={theme.text} style={styles.lockIcon} />
-        )}
-      </View>
-    </TouchableOpacity>
-  </View>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.modeSwitcher}
+        contentContainerStyle={styles.modeSwitcherContent}
+      >
+        {[
+          {
+            key: 'slider' as const,
+            icon: 'swap-horizontal-outline' as const,
+            label: t('progress.modeSlider'),
+            locked: false,
+            onPress: () => setComparisonMode('slider'),
+          },
+          {
+            key: 'sideBySide' as const,
+            icon: 'copy-outline' as const,
+            label: t('progress.modeSideBySide'),
+            locked: !hasSideBySideAccess,
+            onPress: () => hasSideBySideAccess && setComparisonMode('sideBySide'),
+          },
+          {
+            key: 'gif' as const,
+            icon: 'film-outline' as const,
+            label: t('progress.modeGif'),
+            locked: !hasGifAccess,
+            onPress: () => hasGifAccess && setComparisonMode('gif'),
+          },
+          {
+            key: 'grid' as const,
+            icon: 'grid-outline' as const,
+            label: t('progress.modeGrid'),
+            locked: !hasGridViewAccess,
+            onPress: () => hasGridViewAccess && setComparisonMode('grid'),
+          },
+          {
+            key: 'select' as const,
+            icon: 'images-outline' as const,
+            label: t('progress.modeSelect'),
+            locked: !hasCustomSelectionAccess,
+            onPress: () => hasCustomSelectionAccess && setIsSelectingPhotos(true),
+          },
+        ].map((mode) => {
+          const isActive = mode.key !== 'select' && comparisonMode === mode.key;
+          return (
+            <TouchableOpacity
+              key={mode.key}
+              style={[
+                styles.modePill,
+                { backgroundColor: isActive ? theme.primary : theme.text + '20' },
+              ]}
+              onPress={mode.onPress}
+              disabled={mode.locked}
+              activeOpacity={0.8}
+            >
+              <View style={styles.modeButtonContent}>
+                <Ionicons
+                  name={mode.icon}
+                  size={16}
+                  color={isActive ? theme.background : theme.text}
+                />
+                <Text
+                  style={[
+                    styles.modePillText,
+                    { color: isActive ? theme.background : theme.text },
+                  ]}
+                >
+                  {mode.label}
+                </Text>
+                {mode.locked && (
+                  <Ionicons name="lock-closed" size={10} color={theme.text} style={styles.lockIcon} />
+                )}
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
 
   {/* GIF Mode */}
   {comparisonMode === 'gif' && (
@@ -737,16 +733,27 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   modeSwitcher: {
+    marginBottom: 12,
+  },
+  modeSwitcherContent: {
     flexDirection: "row",
     justifyContent: "center",
     gap: 8,
-    marginBottom: 12,
+    paddingHorizontal: 4,
   },
-  modeButton: {
-    padding: 10,
-    borderRadius: 8,
+  modePill: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+  },
+  modePillText: {
+    fontSize: 12,
+    fontWeight: "600",
   },
   modeButtonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
     position: 'relative',
   },
   lockIcon: {
