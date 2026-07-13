@@ -56,6 +56,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   const [isGeneratingGif, setIsGeneratingGif] = useState(false);
   const [gifUrl, setGifUrl] = useState<string | null>(null);
   const [gifError, setGifError] = useState<string | null>(null);
+  const [gifSaved, setGifSaved] = useState(false);
   const [isSelectingPhotos, setIsSelectingPhotos] = useState(false);
   const [selectedPhoto1, setSelectedPhoto1] = useState<Photo | null>(null);
   const [selectedPhoto2, setSelectedPhoto2] = useState<Photo | null>(null);
@@ -440,6 +441,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
                 setIsGeneratingGif(true);
                 setGifError(null);
                 setGifUrl(null);
+                setGifSaved(false);
                 try {
                   const token = await getToken();
                   if (!token) {
@@ -452,6 +454,16 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
                     setGifError(result.error);
                   } else {
                     setGifUrl(result.gifUri);
+
+                    try {
+                      const { status } = await MediaLibrary.requestPermissionsAsync();
+                      if (status === 'granted') {
+                        await MediaLibrary.saveToLibraryAsync(result.gifUri);
+                        setGifSaved(true);
+                      }
+                    } catch (saveError) {
+                      console.error('Error auto-saving GIF:', saveError);
+                    }
                   }
                 } catch (e) {
                   setGifError('Failed to generate GIF. Please try again.');
@@ -521,6 +533,14 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
         {gifUrl && (
           <View style={styles.gifResultContainer}>
             <Image source={{ uri: gifUrl }} style={styles.gifImage} />
+            {gifSaved && (
+              <View style={[styles.gifSavedBadge, { backgroundColor: theme.success + '20' }]}>
+                <Ionicons name="checkmark-circle" size={16} color={theme.success} />
+                <Text style={[styles.gifSavedBadgeText, { color: theme.success }]}>
+                  Saved to your gallery
+                </Text>
+              </View>
+            )}
             <View style={styles.gifActionsRow}>
               <TouchableOpacity
                 style={[styles.gifDownloadButton, { backgroundColor: theme.primary }]}
@@ -533,6 +553,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
                     }
 
                     await MediaLibrary.saveToLibraryAsync(gifUrl);
+                    setGifSaved(true);
                     Alert.alert(t("common.success"), 'GIF saved to gallery');
                   } catch (error) {
                     Alert.alert(t("common.error"), 'Failed to save GIF');
@@ -542,7 +563,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
               >
                 <Ionicons name="download-outline" size={20} color={theme.background} />
                 <Text style={[styles.gifDownloadButtonText, { color: theme.background }]}>
-                  Download
+                  {gifSaved ? 'Save Again' : 'Download'}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -550,6 +571,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
                 onPress={() => {
                   setGifUrl(null);
                   setGifError(null);
+                  setGifSaved(false);
                 }}
                 activeOpacity={0.8}
               >
@@ -692,7 +714,6 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
   },
   headerRow: {
     flexDirection: "row",
@@ -1134,6 +1155,19 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     marginTop: 16,
+  },
+  gifSavedBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    marginBottom: 12,
+  },
+  gifSavedBadgeText: {
+    fontSize: 13,
+    fontWeight: "600",
   },
   gifImage: {
     width: 280,

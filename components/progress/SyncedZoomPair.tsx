@@ -136,22 +136,20 @@ export const SyncedZoomPair: React.FC<SyncedZoomPairProps> = ({ photoA, photoB }
         <View style={styles.pairRow}>
           <View style={[styles.photoWrapper, { borderColor: theme.primary }]}>
             <Animated.Image source={{ uri: left.uri }} style={[styles.photo, animatedStyle]} />
-            <View style={[styles.label, { backgroundColor: theme.text + "B3" }]}>
-              <Text style={styles.labelText} numberOfLines={1}>
-                {left.label}
-              </Text>
-            </View>
           </View>
           <View style={[styles.photoWrapper, { borderColor: theme.primary }]}>
             <Animated.Image source={{ uri: right.uri }} style={[styles.photo, animatedStyle]} />
-            <View style={[styles.label, { backgroundColor: theme.text + "B3" }]}>
-              <Text style={styles.labelText} numberOfLines={1}>
-                {right.label}
-              </Text>
-            </View>
           </View>
         </View>
       </GestureDetector>
+      <View style={styles.captionsRow}>
+        <Text style={[styles.captionText, { color: theme.text }]} numberOfLines={1}>
+          {left.label}
+        </Text>
+        <Text style={[styles.captionText, { color: theme.text }]} numberOfLines={1}>
+          {right.label}
+        </Text>
+      </View>
     </View>
   );
 };
@@ -194,17 +192,17 @@ const styles = StyleSheet.create({
     height: "100%",
     resizeMode: "cover",
   },
-  label: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 10,
+  captionsRow: {
+    flexDirection: "row",
+    gap: PAIR_GAP,
+    marginTop: 8,
   },
-  labelText: {
-    color: "white",
+  captionText: {
+    flex: 1,
+    textAlign: "center",
     fontSize: 12,
     fontWeight: "600",
+    opacity: 0.8,
   },
 });
 

@@ -31,6 +31,8 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { runOnJS, useSharedValue } from "react-native-reanimated";
 import TorsoSilhouette from "../../images/TorsoSilhouette";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
@@ -159,6 +161,26 @@ export default function CameraScreen() {
   const zoomOut = () => {
     setZoom((current) => Math.max(current - 0.1, 0));
   };
+
+  const zoomShared = useSharedValue(zoom);
+  const savedZoomShared = useSharedValue(zoom);
+
+  useEffect(() => {
+    zoomShared.value = zoom;
+  }, [zoom]);
+
+  const pinchGesture = Gesture.Pinch()
+    .onStart(() => {
+      savedZoomShared.value = zoomShared.value;
+    })
+    .onUpdate((event) => {
+      const newZoom = Math.min(
+        1,
+        Math.max(0, savedZoomShared.value + (event.scale - 1) * 0.5)
+      );
+      zoomShared.value = newZoom;
+      runOnJS(setZoom)(newZoom);
+    });
 
   const takePicture = async () => {
     if (!cameraRef.current) {
@@ -449,120 +471,124 @@ export default function CameraScreen() {
       style={[styles.container, { backgroundColor: theme.background }]}
     >
       <StatusBar style="light" />
-      {permission.granted && isFocused && showCamera && (
-        <>
-          <CameraView
-            key={`camera-${facing}-${cameraKey}`}
-            ref={cameraRef}
-            style={StyleSheet.absoluteFill}
-            facing={facing}
-            flash={flash}
-            zoom={zoom}
-            onCameraReady={() => {
-              console.log('Camera ready');
-              setIsCameraReady(true);
-            }}
-            onMountError={(error) => {
-              console.error('Camera mount error:', error);
-              setIsCameraReady(false);
-              setTimeout(() => {
-                setCameraKey(prev => prev + 1);
-              }, 1000);
-            }}
-          >
-            {renderSilhouette()}
-          </CameraView>
-          {!isCameraReady && (
-            <View
-              style={[
-                styles.loadingContainer,
-                { backgroundColor: theme.background },
-              ]}
-            >
-              <ActivityIndicator size="large" color={theme.primary} />
-            </View>
-          )}
-        </>
-      )}
-      <View style={styles.overlayContainer}>
-        {renderOverlaySelector()}
-        <View style={styles.controlsContainer}>
-          <TouchableOpacity style={styles.controlButton} onPress={toggleFlash}>
-            <Ionicons
-              name={flash === "on" ? "flash" : "flash-off"}
-              size={24}
-              color="white"
-            />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.controlButton} onPress={zoomIn}>
-            <Ionicons name="add-circle-outline" size={24} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.controlButton} onPress={zoomOut}>
-            <Ionicons name="remove-circle-outline" size={24} color="white" />
-          </TouchableOpacity>
-        </View>
-        {renderTimerControls()}
-        <View style={styles.bottomControlsContainer}>
-          <TouchableOpacity
-            style={styles.flipButton}
-            onPress={toggleCameraFacing}
-          >
-            <Ionicons name="camera-reverse-outline" size={32} color="white" />
-          </TouchableOpacity>
-          {isTimerRunning ? (
-            <View style={styles.timerRunningContainer}>
-              <Text style={styles.timerText}>{remainingTime}</Text>
-              <TouchableOpacity
-                style={[
-                  styles.cancelTimerButton,
-                  { backgroundColor: theme.error },
-                ]}
-                onPress={cancelTimer}
+      <GestureDetector gesture={pinchGesture}>
+        <View style={styles.container}>
+          {permission.granted && isFocused && showCamera && (
+            <>
+              <CameraView
+                key={`camera-${facing}-${cameraKey}`}
+                ref={cameraRef}
+                style={StyleSheet.absoluteFill}
+                facing={facing}
+                flash={flash}
+                zoom={zoom}
+                onCameraReady={() => {
+                  console.log('Camera ready');
+                  setIsCameraReady(true);
+                }}
+                onMountError={(error) => {
+                  console.error('Camera mount error:', error);
+                  setIsCameraReady(false);
+                  setTimeout(() => {
+                    setCameraKey(prev => prev + 1);
+                  }, 1000);
+                }}
               >
-                <Ionicons name="close" size={24} color="white" />
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <TouchableOpacity
-              style={[
-                styles.captureButton,
-                {
-                  backgroundColor: isPhotoLimitReached ? theme.error : theme.primary,
-                  opacity: (isCameraReady && !isPhotoLimitReached) ? 1 : 0.5
-                }
-              ]}
-              onPress={isTimerEnabled ? startTimer : takePicture}
-              disabled={!isCameraReady || isPhotoLimitReached}
-            >
-              <View
-                style={[
-                  styles.captureButtonInner,
-                  { backgroundColor: isPhotoLimitReached ? theme.error : "white" },
-                ]}
-              />
-              {isPhotoLimitReached && (
-                <View style={styles.limitBadge}>
-                  <Ionicons name="lock-closed" size={24} color="white" />
+                {renderSilhouette()}
+              </CameraView>
+              {!isCameraReady && (
+                <View
+                  style={[
+                    styles.loadingContainer,
+                    { backgroundColor: theme.background },
+                  ]}
+                >
+                  <ActivityIndicator size="large" color={theme.primary} />
                 </View>
               )}
-            </TouchableOpacity>
+            </>
           )}
-          <TouchableOpacity
-            style={[
-              styles.importButton,
-              isPhotoLimitReached && styles.disabledButton
-            ]}
-            onPress={pickImage}
-            disabled={isPhotoLimitReached}
-          >
-            <Ionicons
-              name="image-outline"
-              size={32}
-              color={isPhotoLimitReached ? "rgba(255, 255, 255, 0.3)" : "white"}
-            />
-          </TouchableOpacity>
+          <View style={styles.overlayContainer}>
+            {renderOverlaySelector()}
+            <View style={styles.controlsContainer}>
+              <TouchableOpacity style={styles.controlButton} onPress={toggleFlash}>
+                <Ionicons
+                  name={flash === "on" ? "flash" : "flash-off"}
+                  size={24}
+                  color="white"
+                />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.controlButton} onPress={zoomIn}>
+                <Ionicons name="add-circle-outline" size={24} color="white" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.controlButton} onPress={zoomOut}>
+                <Ionicons name="remove-circle-outline" size={24} color="white" />
+              </TouchableOpacity>
+            </View>
+            {renderTimerControls()}
+            <View style={styles.bottomControlsContainer}>
+              <TouchableOpacity
+                style={styles.flipButton}
+                onPress={toggleCameraFacing}
+              >
+                <Ionicons name="camera-reverse-outline" size={32} color="white" />
+              </TouchableOpacity>
+              {isTimerRunning ? (
+                <View style={styles.timerRunningContainer}>
+                  <Text style={styles.timerText}>{remainingTime}</Text>
+                  <TouchableOpacity
+                    style={[
+                      styles.cancelTimerButton,
+                      { backgroundColor: theme.error },
+                    ]}
+                    onPress={cancelTimer}
+                  >
+                    <Ionicons name="close" size={24} color="white" />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={[
+                    styles.captureButton,
+                    {
+                      backgroundColor: isPhotoLimitReached ? theme.error : theme.primary,
+                      opacity: (isCameraReady && !isPhotoLimitReached) ? 1 : 0.5
+                    }
+                  ]}
+                  onPress={isTimerEnabled ? startTimer : takePicture}
+                  disabled={!isCameraReady || isPhotoLimitReached}
+                >
+                  <View
+                    style={[
+                      styles.captureButtonInner,
+                      { backgroundColor: isPhotoLimitReached ? theme.error : "white" },
+                    ]}
+                  />
+                  {isPhotoLimitReached && (
+                    <View style={styles.limitBadge}>
+                      <Ionicons name="lock-closed" size={24} color="white" />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                style={[
+                  styles.importButton,
+                  isPhotoLimitReached && styles.disabledButton
+                ]}
+                onPress={pickImage}
+                disabled={isPhotoLimitReached}
+              >
+                <Ionicons
+                  name="image-outline"
+                  size={32}
+                  color={isPhotoLimitReached ? "rgba(255, 255, 255, 0.3)" : "white"}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
-      </View>
+      </GestureDetector>
 
       {/* Photo Limit Warning Banner */}
       {isPhotoLimitReached && (

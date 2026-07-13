@@ -11,7 +11,7 @@ function TabBarIcon(props: {
   name: React.ComponentProps<typeof Ionicons>["name"];
   color: ColorValue;
 }) {
-  return <Ionicons size={24} style={{ marginBottom: -3 }} {...props} />;
+  return <Ionicons size={24} {...props} />;
 }
 
 function TabNavigator() {
