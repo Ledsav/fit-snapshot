@@ -5,13 +5,68 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Tabs } from "expo-router";
 import React, { useLayoutEffect, useState } from "react";
-import { ActivityIndicator, ColorValue, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  ColorValue,
+  GestureResponderEvent,
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  View,
+  ViewStyle,
+} from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof Ionicons>["name"];
   color: ColorValue;
 }) {
   return <Ionicons size={24} {...props} />;
+}
+
+function TabBarButton({
+  children,
+  style,
+  onPress,
+  onLongPress,
+  accessibilityLabel,
+  testID,
+}: {
+  children: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+  onPress?: ((e: GestureResponderEvent) => void) | null;
+  onLongPress?: ((e: GestureResponderEvent) => void) | null;
+  accessibilityLabel?: string;
+  testID?: string;
+}) {
+  const scale = useSharedValue(1);
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <AnimatedPressable
+      style={[style, animatedStyle]}
+      onPress={onPress}
+      onLongPress={onLongPress}
+      accessibilityLabel={accessibilityLabel}
+      testID={testID}
+      onPressIn={() => {
+        scale.value = withSpring(0.85, { damping: 15, stiffness: 300 });
+      }}
+      onPressOut={() => {
+        scale.value = withSpring(1, { damping: 12, stiffness: 200 });
+      }}
+    >
+      {children}
+    </AnimatedPressable>
+  );
 }
 
 function TabNavigator() {
@@ -33,6 +88,7 @@ function TabNavigator() {
         },
         tabBarItemStyle: styles.tabBarItem,
         tabBarShowLabel: false,
+        tabBarButton: TabBarButton,
         headerShown: false,
       }}
     >
