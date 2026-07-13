@@ -38,6 +38,7 @@ type ComparisonMode = 'slider' | 'sideBySide' | 'grid' | 'gif';
 
 import { createBeforeAfterGif } from '@/services/gifService';
 import { useRouter } from 'expo-router';
+import SyncedZoomPair from '@/components/progress/SyncedZoomPair';
 
 
 const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
@@ -103,9 +104,6 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   if (photos.length === 0) {
     return (
       <View style={[styles.container, { backgroundColor: theme.transparent }]}>
-        <Text style={[styles.title, { color: theme.text }]}>
-          {t(`progress.${type}`)}
-        </Text>
         <View
           style={[
             styles.noPhotosContainer,
@@ -117,7 +115,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
             {t("progress.noPhotosAvailable") + " " + t(`progress.${type}`)}
           </Text>
         </View>
-  </View>
+      </View>
     );
   }
 
@@ -145,10 +143,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   if (photos.length === 1) {
     return (
       <View style={[styles.container, { backgroundColor: theme.transparent }]}>
-        <View style={styles.headerRow}>
-          <Text style={[styles.title, { color: theme.text }]}>
-            {t(`progress.${type}`)}
-          </Text>
+        <View style={[styles.headerRow, styles.headerRowSingle]}>
           <View style={[styles.singlePhotoChip, { backgroundColor: theme.cardBackground }]}>
             <Ionicons name="image-outline" size={16} color={theme.text} />
             <Text style={[styles.singlePhotoChipText, { color: theme.text }]}>1 photo</Text>
@@ -304,10 +299,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.transparent }]}>
-      <View style={styles.headerRow}>
-        <Text style={[styles.title, { color: theme.text }]}>
-          {t(`progress.${type}`)}
-        </Text>
+      <View style={[styles.headerRow, styles.headerRowSingle]}>
         <View style={styles.headerActions}>
           {(selectedPhoto1 || selectedPhoto2) && (
             <TouchableOpacity
@@ -658,26 +650,16 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
           compact={false}
           customMessage="Upgrade to Premium to compare photos side-by-side"
         >
-          <View style={styles.sideBySideContainer}>
-            <View style={[styles.sideBySidePhoto, { borderColor: theme.primary }]}>
-              <Image source={{ uri: photo1.uri }} style={styles.image} />
-              <View style={[styles.sideBySideLabel, { backgroundColor: theme.text + 'B3' }]}>
-                <Text style={styles.sideBySideLabelText}>{t("common.before")}</Text>
-                <Text style={styles.sideBySideDateText}>
-                  {new Date(photo1.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                </Text>
-              </View>
-            </View>
-            <View style={[styles.sideBySidePhoto, { borderColor: theme.primary }]}>
-              <Image source={{ uri: photo2.uri }} style={styles.image} />
-              <View style={[styles.sideBySideLabel, { backgroundColor: theme.text + 'B3' }]}>
-                <Text style={styles.sideBySideLabelText}>{t("common.after")}</Text>
-                <Text style={styles.sideBySideDateText}>
-                  {new Date(photo2.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                </Text>
-              </View>
-            </View>
-          </View>
+          <SyncedZoomPair
+            photoA={{
+              uri: photo1.uri,
+              label: `${t("common.before")} · ${new Date(photo1.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`,
+            }}
+            photoB={{
+              uri: photo2.uri,
+              label: `${t("common.after")} · ${new Date(photo2.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`,
+            }}
+          />
         </FeatureGate>
       )}
 
@@ -727,10 +709,8 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 8,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    letterSpacing: 0.5,
+  headerRowSingle: {
+    justifyContent: "flex-end",
   },
   modeSwitcher: {
     marginBottom: 12,
@@ -882,36 +862,6 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "bold",
-  },
-  sideBySideContainer: {
-    flexDirection: "row",
-    gap: 10,
-    marginBottom: 20,
-  },
-  sideBySidePhoto: {
-    flex: 1,
-    aspectRatio: 3 / 4,
-    borderRadius: 15,
-    overflow: "hidden",
-    borderWidth: 2,
-  },
-  sideBySideLabel: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 10,
-  },
-  sideBySideLabelText: {
-    color: "white",
-    fontSize: 14,
-    fontWeight: "bold",
-  },
-  sideBySideDateText: {
-    color: "white",
-    fontSize: 11,
-    opacity: 0.8,
-    marginTop: 2,
   },
   gridContainer: {
     flexDirection: "row",
