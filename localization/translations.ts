@@ -85,6 +85,8 @@ interface TranslationKeys {
     modeGif: string;
     modeGrid: string;
     modeSelect: string;
+    syncedZoomSwap: string;
+    syncedZoomReset: string;
   };
   achievements: {
     firstPhoto: string;
@@ -359,6 +361,8 @@ export const translations: Translations = {
       modeGif: "GIF",
       modeGrid: "Grid",
       modeSelect: "Select photos",
+      syncedZoomSwap: "Swap",
+      syncedZoomReset: "Reset zoom",
     },
     achievements: {
       firstPhoto: "First Step",
@@ -661,6 +665,8 @@ export const translations: Translations = {
       modeGif: "GIF",
       modeGrid: "Cuadrícula",
       modeSelect: "Seleccionar fotos",
+      syncedZoomSwap: "Intercambiar",
+      syncedZoomReset: "Restablecer zoom",
     },
     achievements: {
       firstPhoto: "Primer Paso",
@@ -963,6 +969,8 @@ export const translations: Translations = {
       modeGif: "GIF",
       modeGrid: "Griglia",
       modeSelect: "Seleziona foto",
+      syncedZoomSwap: "Scambia",
+      syncedZoomReset: "Reimposta zoom",
     },
     achievements: {
       firstPhoto: "Primo Passo",
@@ -1265,6 +1273,8 @@ export const translations: Translations = {
       modeGif: "GIF",
       modeGrid: "Raster",
       modeSelect: "Fotos auswählen",
+      syncedZoomSwap: "Tauschen",
+      syncedZoomReset: "Zoom zurücksetzen",
     },
     achievements: {
       firstPhoto: "Erster Schritt",
@@ -1568,6 +1578,8 @@ export const translations: Translations = {
       modeGif: "GIF",
       modeGrid: "Grille",
       modeSelect: "Sélectionner des photos",
+      syncedZoomSwap: "Inverser",
+      syncedZoomReset: "Réinitialiser le zoom",
     },
     achievements: {
       firstPhoto: "Premier Pas",

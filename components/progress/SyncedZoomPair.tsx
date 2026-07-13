@@ -1,5 +1,6 @@
 import Colors from "@/constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
+import { useLocalization } from "@/context/LocalizationContext";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
@@ -43,6 +44,7 @@ function clamp(value: number, min: number, max: number) {
 export const SyncedZoomPair: React.FC<SyncedZoomPairProps> = ({ photoA, photoB }) => {
   const { effectiveColorScheme } = useTheme();
   const theme = Colors[effectiveColorScheme];
+  const { t } = useLocalization();
   const [swapped, setSwapped] = useState(false);
 
   const scale = useSharedValue(1);
@@ -61,7 +63,11 @@ export const SyncedZoomPair: React.FC<SyncedZoomPairProps> = ({ photoA, photoB }
     });
 
   const panGesture = Gesture.Pan()
+    .minDistance(10)
     .onUpdate((event) => {
+      if (scale.value <= 1) {
+        return;
+      }
       const maxTranslateX = ((scale.value - 1) * PHOTO_WIDTH) / 2;
       const maxTranslateY = ((scale.value - 1) * PHOTO_HEIGHT) / 2;
       translateX.value = clamp(
@@ -111,7 +117,9 @@ export const SyncedZoomPair: React.FC<SyncedZoomPairProps> = ({ photoA, photoB }
           activeOpacity={0.8}
         >
           <Ionicons name="swap-horizontal" size={16} color={theme.text} />
-          <Text style={[styles.actionButtonText, { color: theme.text }]}>Swap</Text>
+          <Text style={[styles.actionButtonText, { color: theme.text }]}>
+            {t("progress.syncedZoomSwap")}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: theme.cardBackground }]}
@@ -119,7 +127,9 @@ export const SyncedZoomPair: React.FC<SyncedZoomPairProps> = ({ photoA, photoB }
           activeOpacity={0.8}
         >
           <Ionicons name="scan-outline" size={16} color={theme.text} />
-          <Text style={[styles.actionButtonText, { color: theme.text }]}>Reset zoom</Text>
+          <Text style={[styles.actionButtonText, { color: theme.text }]}>
+            {t("progress.syncedZoomReset")}
+          </Text>
         </TouchableOpacity>
       </View>
       <GestureDetector gesture={composedGesture}>
