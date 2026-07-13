@@ -15,13 +15,13 @@ import {
 type ProgressSummaryProps = {
   totalDays: number;
   totalPhotos: number;
-  improvement: number;
+  consistency: number;
 };
 
 export const ProgressSummary: React.FC<ProgressSummaryProps> = ({
   totalDays,
   totalPhotos,
-  improvement,
+  consistency,
 }) => {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "light"];
@@ -50,7 +50,7 @@ export const ProgressSummary: React.FC<ProgressSummaryProps> = ({
       <View style={styles.summaryItem}>
         <Ionicons name="trending-up-outline" size={iconSize.md} color={theme.text} />
         <Text style={[styles.summaryText, { color: theme.text }]}>
-          {improvement.toFixed(0)}% {t("progressSummary.active")}
+          {consistency.toFixed(0)}% {t("progressSummary.consistency")}
         </Text>
       </View>
     </View>

@@ -60,7 +60,7 @@ export default function HomeScreen() {
       : 0;
   const totalPhotos = photos.length;
   const totalExpectedPhotos = totalDays * 3;
-  const improvement = Math.min(
+  const consistency = Math.min(
     100,
     Math.round((totalPhotos / totalExpectedPhotos) * 100)
   );
@@ -152,7 +152,7 @@ export default function HomeScreen() {
             <ProgressSummary
               totalDays={totalDays}
               totalPhotos={totalPhotos}
-              improvement={improvement}
+              consistency={consistency}
             />
           </View>
 

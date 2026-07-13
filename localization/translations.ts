@@ -162,7 +162,7 @@ interface TranslationKeys {
   progressSummary: {
     days: string;
     photos: string;
-    active: string;
+    consistency: string;
   };
   onboardingCarousel: {
     takePhoto: {
@@ -435,7 +435,7 @@ export const translations: Translations = {
     progressSummary: {
       days: "days",
       photos: "photos",
-      active: "active",
+      consistency: "consistency",
     },
     onboardingCarousel: {
       takePhoto: {
@@ -732,7 +732,7 @@ export const translations: Translations = {
     progressSummary: {
       days: "días",
       photos: "fotos",
-      active: "activo",
+      consistency: "consistencia",
     },
     onboardingCarousel: {
       takePhoto: {
@@ -1029,7 +1029,7 @@ export const translations: Translations = {
     progressSummary: {
       days: "giorni",
       photos: "foto",
-      active: "attivo",
+      consistency: "costanza",
     },
     onboardingCarousel: {
       takePhoto: {
@@ -1326,7 +1326,7 @@ export const translations: Translations = {
     progressSummary: {
       days: "Tage",
       photos: "Fotos",
-      active: "aktiv",
+      consistency: "Konsistenz",
     },
     onboardingCarousel: {
       takePhoto: {
@@ -1624,7 +1624,7 @@ export const translations: Translations = {
     progressSummary: {
       days: "jours",
       photos: "photos",
-      active: "actif",
+      consistency: "constance",
     },
     onboardingCarousel: {
       takePhoto: {
