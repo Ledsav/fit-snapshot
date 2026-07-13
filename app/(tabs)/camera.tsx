@@ -114,7 +114,26 @@ export default function CameraScreen() {
     return () => clearInterval(interval);
   }, [isTimerRunning, remainingTime]);
 
-  
+  const zoomShared = useSharedValue(zoom);
+  const savedZoomShared = useSharedValue(zoom);
+
+  useEffect(() => {
+    zoomShared.value = zoom;
+  }, [zoom]);
+
+  const pinchGesture = Gesture.Pinch()
+    .onStart(() => {
+      savedZoomShared.value = zoomShared.value;
+    })
+    .onUpdate((event) => {
+      const newZoom = Math.min(
+        1,
+        Math.max(0, savedZoomShared.value + (event.scale - 1) * 0.5)
+      );
+      zoomShared.value = newZoom;
+      runOnJS(setZoom)(newZoom);
+    });
+
   // Removed unnecessary useEffect on [facing] that set isCameraReady to false.
 
   if (!permission) {
@@ -141,7 +160,7 @@ export default function CameraScreen() {
     setFacing((current) => (current === "back" ? "front" : "back"));
   }
 
-  
+
   const forceRefreshCamera = () => {
     setIsCameraReady(false);
     setCameraKey(prev => prev + 1);
@@ -161,26 +180,6 @@ export default function CameraScreen() {
   const zoomOut = () => {
     setZoom((current) => Math.max(current - 0.1, 0));
   };
-
-  const zoomShared = useSharedValue(zoom);
-  const savedZoomShared = useSharedValue(zoom);
-
-  useEffect(() => {
-    zoomShared.value = zoom;
-  }, [zoom]);
-
-  const pinchGesture = Gesture.Pinch()
-    .onStart(() => {
-      savedZoomShared.value = zoomShared.value;
-    })
-    .onUpdate((event) => {
-      const newZoom = Math.min(
-        1,
-        Math.max(0, savedZoomShared.value + (event.scale - 1) * 0.5)
-      );
-      zoomShared.value = newZoom;
-      runOnJS(setZoom)(newZoom);
-    });
 
   const takePicture = async () => {
     if (!cameraRef.current) {
