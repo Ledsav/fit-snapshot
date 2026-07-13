@@ -49,7 +49,7 @@ export const overlayOpacity = {
 
 export default {
   light: {
-    text: colors.graphite,
+    text: colors.slate,
     background: colors.mist,
     tint: tintColorLight,
     tabIconDefault: colors.slate,

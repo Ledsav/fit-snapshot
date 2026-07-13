@@ -54,9 +54,14 @@ export const MiniComparisonPreview: React.FC<MiniComparisonPreviewProps> = ({ ph
       activeOpacity={0.95}
     >
       <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.text }]}>
-          {t("home.transformation") || "Your Transformation"}
-        </Text>
+        <View style={styles.titleGroup}>
+          <View style={[styles.iconChip, { backgroundColor: withOpacity(theme.primary, overlayOpacity.subtle) }]}>
+            <Ionicons name="swap-horizontal" size={iconSize.sm} color={theme.primary} />
+          </View>
+          <Text style={[styles.title, { color: theme.text }]}>
+            {t("home.transformation") || "Your Transformation"}
+          </Text>
+        </View>
         <Ionicons name="chevron-forward" size={iconSize.sm} color={theme.text} />
       </View>
 
@@ -124,6 +129,18 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: spacing.md,
+  },
+  titleGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+  },
+  iconChip: {
+    width: iconSize.lg,
+    height: iconSize.lg,
+    borderRadius: borderRadius.round,
+    alignItems: "center",
+    justifyContent: "center",
   },
   title: {
     ...typography.body,

@@ -87,7 +87,14 @@ export const StreakCard: React.FC<StreakCardProps> = ({ streak }) => {
         <Animated.View
           style={[styles.iconContainer, { transform: [{ scale: pulseAnim }] }]}
         >
-          <Ionicons name="flame" size={iconSize.xxxl} color={theme.primary} />
+          <View
+            style={[
+              styles.iconChip,
+              { backgroundColor: withOpacity(theme.primary, overlayOpacity.subtle) },
+            ]}
+          >
+            <Ionicons name="flame" size={iconSize.xxl} color={theme.primary} />
+          </View>
           <View
             style={[
               styles.streakNumberContainer,
@@ -135,6 +142,13 @@ const styles = StyleSheet.create({
   iconContainer: {
     position: "relative",
     marginRight: spacing.xl,
+  },
+  iconChip: {
+    width: iconSize.xxl + spacing.lg,
+    height: iconSize.xxl + spacing.lg,
+    borderRadius: borderRadius.round,
+    alignItems: "center",
+    justifyContent: "center",
   },
   streakNumberContainer: {
     position: "absolute",

@@ -1,13 +1,15 @@
-import Colors from "@/constants/Colors";
+import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useTheme } from "@/context/ThemeContext";
 import { Photo } from "@/services/photoStorage";
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import {
   spacing,
   borderRadius,
   typography,
+  iconSize,
   elevation,
 } from "@/constants/DesignSystem";
 
@@ -16,8 +18,8 @@ type WeeklyProgressChartProps = {
 };
 
 export const WeeklyProgressChart: React.FC<WeeklyProgressChartProps> = ({ photos }) => {
-  const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme ?? "light"];
+  const { effectiveColorScheme } = useTheme();
+  const theme = Colors[effectiveColorScheme];
   const { t } = useLocalization();
 
   
@@ -51,9 +53,14 @@ export const WeeklyProgressChart: React.FC<WeeklyProgressChartProps> = ({ photos
         elevation.md,
       ]}
     >
-      <Text style={[styles.title, { color: theme.text }]}>
-        {t("home.weeklyActivity") || "Weekly Activity"}
-      </Text>
+      <View style={styles.header}>
+        <View style={[styles.iconChip, { backgroundColor: withOpacity(theme.primary, overlayOpacity.subtle) }]}>
+          <Ionicons name="bar-chart-outline" size={iconSize.sm} color={theme.primary} />
+        </View>
+        <Text style={[styles.title, { color: theme.text }]}>
+          {t("home.weeklyActivity") || "Weekly Activity"}
+        </Text>
+      </View>
       <View style={styles.chartContainer}>
         {weeks.map((week, index) => (
           <View key={index} style={styles.barContainer}>
@@ -83,10 +90,22 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md,
     borderWidth: 2,
   },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  iconChip: {
+    width: iconSize.lg,
+    height: iconSize.lg,
+    borderRadius: borderRadius.round,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   title: {
     ...typography.body,
     fontWeight: "bold",
-    marginBottom: spacing.lg,
   },
   chartContainer: {
     flexDirection: "row",

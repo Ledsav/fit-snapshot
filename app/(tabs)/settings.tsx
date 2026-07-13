@@ -1,41 +1,38 @@
+import PaywallModal from "@/components/monetization/PaywallModal";
+import { PremiumBadge } from "@/components/monetization/PremiumBadge";
+import { OnboardingCarousel } from "@/components/onBoarding/OnboardingCarousel";
 import ContactsModal from "@/components/settings/ContactsModal";
 import { DailyReminder } from "@/components/settings/DailyReminder";
 import { LanguageSelector } from "@/components/settings/LanguageSelector";
-import { ThemeSelector } from "@/components/settings/ThemeSelector";
 import { StorageManager } from "@/components/settings/StorageManager";
-import { OnboardingCarousel } from "@/components/onBoarding/OnboardingCarousel";
-import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
-import { FREE_TIER_LIMITS } from "@/constants/Features";
+import { ThemeSelector } from "@/components/settings/ThemeSelector";
+import Colors, { overlayOpacity, withOpacity } from "@/constants/Colors";
 import {
-  spacing,
   borderRadius,
-  elevation,
-  typography,
-  iconSize,
   opacity as designOpacity,
-  touchTarget,
+  iconSize,
+  spacing,
+  typography
 } from "@/constants/DesignSystem";
-import { Button, Card } from "@/components/ui";
+import { FREE_TIER_LIMITS } from "@/constants/Features";
+import { useAuth } from "@/context/AuthContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useUser } from "@/context/UserContext";
-import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  Alert,
+  Modal,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Modal,
-  Alert,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import PaywallModal from "@/components/monetization/PaywallModal";
-import { PremiumBadge } from "@/components/monetization/PremiumBadge";
 
 const SettingItem: React.FC<{
   title: string;
@@ -425,7 +422,7 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: spacing.xl,
+    paddingHorizontal: spacing.xl,
   },
   title: {
     ...typography.h1,
