@@ -1,22 +1,24 @@
-// Color definitions
+// Color definitions — "Measured Confidence" palette (Graphite & Brass)
 const colors = {
-  emerald: "#00C676",        // vibrant green highlight
-  forest: "#003B2B",         // deep forest green (background depth)
-  midnight: "#0A0F0D",       // near-black base tone
-  graphite: "#1E2422",       // subtle dark gray for panels
-  slate: "#2D3432",          // secondary surfaces
-  mist: "#E0F2E9",           // soft light text or accent
+  ink: "#14161A",         // app background (dark)
+  surface: "#1D2025",     // card/panel background (dark)
+  surfaceLight: "#F7F4EE",// card/panel background (light)
+  paper: "#EDEAE2",       // primary text (dark) / app background (light) / photo mats
+  steel: "#4A5A63",       // dividers, secondary surfaces, hairline borders
+  mist: "#8B9198",        // secondary/caption text, inactive icons
+  brass: "#C9A227",       // precision accent — active states, primary actions, data highlights
+  ember: "#D1603D",       // reserved exclusively for streaks/achievements/milestones
+  sage: "#7A9E7E",        // success
+  gold: "#D1943D",        // warning
+  brick: "#B23B3B",       // error
+  haze: "#5C7A8A",        // info
   white: "#FFFFFF",
   black: "#000000",
-  teal: "#00A896",           // cool accent
-  coral: "#FF6B6B",          // alert or contrast color
-  amber: "#FFBF00",          // warning / highlight
-  sky: "#89DCEB",            // info / secondary accent
   transparent: "transparent",
 };
 
-const tintColorLight = colors.emerald;
-const tintColorDark = colors.emerald;
+const tintColorLight = colors.brass;
+const tintColorDark = colors.brass;
 
 /**
  * Helper function to add opacity to hex colors
@@ -49,35 +51,37 @@ export const overlayOpacity = {
 
 export default {
   light: {
-    text: colors.slate,
-    background: colors.mist,
+    text: colors.ink,
+    background: colors.paper,
     tint: tintColorLight,
-    tabIconDefault: colors.slate,
+    tabIconDefault: colors.mist,
     tabIconSelected: tintColorLight,
-    primary: colors.emerald,
-    secondary: colors.teal,
-    accent: colors.forest,
-    cardBackground: colors.white,
-    success: colors.emerald,
-    warning: colors.amber,
-    error: colors.coral,
-    info: colors.sky,
+    primary: colors.brass,
+    secondary: colors.steel,
+    accent: colors.steel,
+    cardBackground: colors.surfaceLight,
+    milestone: colors.ember,
+    success: colors.sage,
+    warning: colors.gold,
+    error: colors.brick,
+    info: colors.haze,
     transparent: colors.transparent,
   },
   dark: {
-    text: colors.mist,
-    background: colors.midnight,
+    text: colors.paper,
+    background: colors.ink,
     tint: tintColorDark,
-    tabIconDefault: colors.slate,
+    tabIconDefault: colors.mist,
     tabIconSelected: tintColorDark,
-    primary: colors.emerald,
-    secondary: colors.forest,
-    accent: colors.teal,
-    cardBackground: colors.graphite,
-    success: colors.emerald,
-    warning: colors.amber,
-    error: colors.coral,
-    info: colors.sky,
+    primary: colors.brass,
+    secondary: colors.steel,
+    accent: colors.steel,
+    cardBackground: colors.surface,
+    milestone: colors.ember,
+    success: colors.sage,
+    warning: colors.gold,
+    error: colors.brick,
+    info: colors.haze,
     transparent: colors.transparent,
   },
 };
