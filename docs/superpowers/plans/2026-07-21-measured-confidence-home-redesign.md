@@ -13,6 +13,7 @@
 - Do not modify Camera, Gallery, Settings, onboarding, or paywall screen files in this plan — they keep their current JSX/structure and only inherit new token *values* automatically through the shared `Colors`/`DesignSystem` objects.
 - Do not change the existing values of `borderRadius`, `elevation`, or `typography` exported from `constants/DesignSystem.ts` — those are consumed by out-of-scope screens today. New/restyled Home components must reach for already-small existing scale values (`borderRadius.sm` = 8, `borderRadius.md` = 12) and local hairline-border styles instead of `elevation.*`, rather than changing the shared scale.
 - All new or restyled component files must consume color via the `Colors`/`DesignSystem` token objects — no new hardcoded hex values.
+- All new or restyled component files must also consume `fontSize`/`letterSpacing` via the centralized `preciseType` export (added in the addendum after Task 1) rather than inlining raw numbers per component — one named token per role, reused across components, not scattered literals.
 - `AchievementBadges.tsx`, `WeeklyProgressChart.tsx`, and `ConsistencyHeatmap.tsx` are confirmed (via grep — no hardcoded hex/`"white"`/`"black"` literals) to consume only shared tokens. They need no code changes in this plan; verify this holds in the final manual QA task.
 - Every new pure helper function gets a failing jest test written before the implementation (TDD).
 - Every new presentational component (`ContactSheetFrame`, `InstrumentStrip`, `StreakBadge`) gets a `react-test-renderer` smoke test. Confirmed working pattern in this repo/toolchain (RN 0.86 + React 19 + react-test-renderer 19.2.3): wrap `create()` in `act()` from `react-test-renderer`, e.g.:
@@ -148,6 +149,62 @@ Expected: no errors.
 ```bash
 git add package.json package-lock.json app/_layout.tsx constants/DesignSystem.ts
 git commit -m "feat: bundle Fraunces/IBM Plex Mono/Inter and add fontFamily tokens"
+```
+
+---
+
+### Addendum (post Task 6 review): centralize the type scale as `preciseType`
+
+Task 6's reviewer flagged that `InstrumentStrip` hardcodes raw `fontSize`/`letterSpacing` numbers instead of pulling from a token. That pattern was present by design across Tasks 5–13 (deliberately not reusing the shared `typography` export, since its values are frozen for other screens per Global Constraints) — but scattering raw numbers per-component instead of centralizing them was a real gap. This addendum adds one centralized, additive export — `preciseType` — that Tasks 5–13 reference instead of inlining numbers. It does not modify `typography`, `borderRadius`, or `elevation`.
+
+**Files:**
+- Modify: `constants/DesignSystem.ts`
+
+**Interfaces:**
+- Produces: `preciseType` export from `@/constants/DesignSystem` — a set of named `{ fontSize: number; letterSpacing?: number }` objects, spread into a `Text` style alongside `fontFamily.*`. Every later task (5 onward) reads one of these keys instead of a raw `fontSize`/`letterSpacing` number.
+
+- [ ] **Step 1: Add the `preciseType` export**
+
+In `constants/DesignSystem.ts`, add this new export directly below the `fontFamily` export added in Task 1:
+
+```ts
+// Type-scale tokens for Measured Confidence components (additive — does not
+// touch `typography`, which other screens still rely on unchanged).
+export const preciseType = {
+  wordmark: { fontSize: 12, letterSpacing: 2 },        // Header top bar
+  caption: { fontSize: 11, letterSpacing: 0.5 },       // ContactSheetFrame caption, before/after labels
+  statValue: { fontSize: 20 },                          // InstrumentStrip big numbers
+  statLabel: { fontSize: 9, letterSpacing: 1 },        // InstrumentStrip small labels
+  badgeValue: { fontSize: 14 },                         // StreakBadge count
+  badgeLabel: { fontSize: 10, letterSpacing: 1 },      // StreakBadge label, NextPhotoReminder action
+  sectionLabel: { fontSize: 11, letterSpacing: 1.5 },  // Home screen section labels (Latest Photo, Tips)
+  message: { fontSize: 16 },                            // NextPhotoReminder title
+  subtitle: { fontSize: 13 },                           // NextPhotoReminder subtitle
+  tipHeadline: { fontSize: 17 },                        // ShreddedTipsCarousel main tip
+  tipBody: { fontSize: 14 },                            // ShreddedTipsCarousel clarification
+} as const;
+```
+
+Add `preciseType` to the default export object at the bottom of the file, alongside `fontFamily` and the other keys.
+
+Usage pattern in consuming components (already reflected in Tasks 7–13's code below, and used to retrofit Tasks 5–6): spread the token object into the style array alongside the color/fontFamily overrides, e.g.:
+
+```tsx
+<Text style={[styles.caption, preciseType.caption, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
+```
+
+rather than putting `fontSize`/`letterSpacing` in the local `StyleSheet.create` block at all.
+
+- [ ] **Step 2: Verify compilation**
+
+Run: `npx tsc --noEmit`
+Expected: no errors.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add constants/DesignSystem.ts
+git commit -m "feat: add preciseType centralized type-scale tokens"
 ```
 
 ---
@@ -484,7 +541,7 @@ import React from "react";
 import { View, Text, StyleSheet, ViewStyle } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
 import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
-import { spacing, borderRadius, fontFamily } from "@/constants/DesignSystem";
+import { spacing, borderRadius, fontFamily, preciseType } from "@/constants/DesignSystem";
 
 interface ContactSheetFrameProps {
   caption: string;
@@ -518,7 +575,7 @@ export const ContactSheetFrame: React.FC<ContactSheetFrameProps> = ({
         ))}
       </View>
       <View style={styles.content}>{children}</View>
-      <Text style={[styles.caption, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
+      <Text style={[styles.caption, preciseType.caption, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
         {caption}
       </Text>
     </View>
@@ -546,8 +603,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   caption: {
-    fontSize: 11,
-    letterSpacing: 0.5,
     marginTop: spacing.sm,
   },
 });
@@ -637,7 +692,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
 import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
-import { spacing, fontFamily } from "@/constants/DesignSystem";
+import { spacing, fontFamily, preciseType } from "@/constants/DesignSystem";
 
 type InstrumentStripProps = {
   totalDays: number;
@@ -675,10 +730,10 @@ export const InstrumentStrip: React.FC<InstrumentStripProps> = ({
             },
           ]}
         >
-          <Text style={[styles.value, { color: column.color, fontFamily: fontFamily.mono }]}>
+          <Text style={[styles.value, preciseType.statValue, { color: column.color, fontFamily: fontFamily.mono }]}>
             {column.value}
           </Text>
-          <Text style={[styles.label, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
+          <Text style={[styles.label, preciseType.statLabel, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
             {column.label}
           </Text>
         </View>
@@ -696,12 +751,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: spacing.md,
   },
-  value: {
-    fontSize: 20,
-  },
+  value: {},
   label: {
-    fontSize: 9,
-    letterSpacing: 1,
     marginTop: spacing.xs,
   },
 });
@@ -781,7 +832,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/context/ThemeContext";
 import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
-import { spacing, borderRadius, iconSize, fontFamily } from "@/constants/DesignSystem";
+import { spacing, borderRadius, iconSize, fontFamily, preciseType } from "@/constants/DesignSystem";
 
 type StreakBadgeProps = {
   streak: number;
@@ -802,10 +853,10 @@ export const StreakBadge: React.FC<StreakBadgeProps> = ({ streak }) => {
       ]}
     >
       <Ionicons name="flame" size={iconSize.sm} color={theme.milestone} />
-      <Text style={[styles.count, { color: theme.milestone, fontFamily: fontFamily.mono }]}>
+      <Text style={[styles.count, preciseType.badgeValue, { color: theme.milestone, fontFamily: fontFamily.mono }]}>
         {streak}
       </Text>
-      <Text style={[styles.label, { color: theme.milestone, fontFamily: fontFamily.mono }]}>
+      <Text style={[styles.label, preciseType.badgeLabel, { color: theme.milestone, fontFamily: fontFamily.mono }]}>
         {t("home.streak").toUpperCase()}
       </Text>
     </View>
@@ -822,13 +873,8 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.round,
     gap: spacing.xs,
   },
-  count: {
-    fontSize: 14,
-  },
-  label: {
-    fontSize: 10,
-    letterSpacing: 1,
-  },
+  count: {},
+  label: {},
 });
 ```
 
@@ -863,7 +909,7 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
 import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
-import { spacing, fontFamily } from "@/constants/DesignSystem";
+import { spacing, fontFamily, preciseType } from "@/constants/DesignSystem";
 
 interface HeaderProps {
   title: string;
@@ -886,7 +932,7 @@ export const Header: React.FC<HeaderProps> = ({ title }) => {
         },
       ]}
     >
-      <Text style={[styles.wordmark, { color: theme.text, fontFamily: fontFamily.mono }]}>
+      <Text style={[styles.wordmark, preciseType.wordmark, { color: theme.text, fontFamily: fontFamily.mono }]}>
         {title.toUpperCase()}
       </Text>
     </View>
@@ -900,10 +946,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.md,
     borderBottomWidth: 1,
   },
-  wordmark: {
-    fontSize: 12,
-    letterSpacing: 2,
-  },
+  wordmark: {},
 });
 ```
 
@@ -940,7 +983,7 @@ import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
 import { Photo } from "@/services/photoStorage";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useRouter } from "expo-router";
-import { spacing, borderRadius, iconSize, fontFamily } from "@/constants/DesignSystem";
+import { spacing, borderRadius, iconSize, fontFamily, preciseType } from "@/constants/DesignSystem";
 
 type NextPhotoReminderProps = {
   latestPhoto: Photo | null;
@@ -1011,14 +1054,14 @@ export const NextPhotoReminder: React.FC<NextPhotoReminderProps> = ({ latestPhot
     >
       <Ionicons name={message.icon} size={iconSize.lg} color={message.color} />
       <View style={styles.textContainer}>
-        <Text style={[styles.title, { color: theme.text, fontFamily: fontFamily.display }]}>
+        <Text style={[styles.title, preciseType.message, { color: theme.text, fontFamily: fontFamily.display }]}>
           {message.title}
         </Text>
-        <Text style={[styles.subtitle, { color: theme.secondary, fontFamily: fontFamily.body }]}>
+        <Text style={[styles.subtitle, preciseType.subtitle, { color: theme.secondary, fontFamily: fontFamily.body }]}>
           {message.subtitle}
         </Text>
       </View>
-      <Text style={[styles.action, { color: message.color, fontFamily: fontFamily.mono }]}>
+      <Text style={[styles.action, preciseType.badgeLabel, { color: message.color, fontFamily: fontFamily.mono }]}>
         {(t("home.takePhoto") || "capture").toUpperCase()}
       </Text>
     </TouchableOpacity>
@@ -1038,17 +1081,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontSize: 16,
     fontStyle: "italic",
   },
   subtitle: {
-    fontSize: 13,
     marginTop: spacing.xs,
   },
-  action: {
-    fontSize: 10,
-    letterSpacing: 1,
-  },
+  action: {},
 });
 ```
 
@@ -1089,7 +1127,7 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Animated, Dimensions, Image, PanResponder, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { ContactSheetFrame } from "./ContactSheetFrame";
-import { spacing, fontFamily } from "@/constants/DesignSystem";
+import { spacing, fontFamily, preciseType } from "@/constants/DesignSystem";
 
 const { width } = Dimensions.get("window");
 const MINI_SLIDER_WIDTH = width - (spacing.huge * 2);
@@ -1145,12 +1183,12 @@ export const MiniComparisonPreview: React.FC<MiniComparisonPreviewProps> = ({ ph
 
           <View style={styles.labels}>
             <View style={[styles.label, { backgroundColor: withOpacity(theme.text, overlayOpacity.heavy), opacity: (100 - sliderValue) / 100 }]}>
-              <Text style={[styles.labelText, { fontFamily: fontFamily.mono }]}>
+              <Text style={[styles.labelText, preciseType.caption, { fontFamily: fontFamily.mono }]}>
                 {t("common.before").toUpperCase()}
               </Text>
             </View>
             <View style={[styles.label, { backgroundColor: withOpacity(theme.text, overlayOpacity.heavy), opacity: sliderValue / 100 }]}>
-              <Text style={[styles.labelText, { fontFamily: fontFamily.mono }]}>
+              <Text style={[styles.labelText, preciseType.caption, { fontFamily: fontFamily.mono }]}>
                 {t("common.after").toUpperCase()}
               </Text>
             </View>
@@ -1218,8 +1256,6 @@ const styles = StyleSheet.create({
   },
   labelText: {
     color: "white",
-    fontSize: 11,
-    letterSpacing: 0.5,
   },
   sliderWrapper: {
     marginBottom: spacing.sm,
@@ -1358,7 +1394,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/context/ThemeContext";
 import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
-import { spacing, borderRadius, iconSize, fontFamily } from "@/constants/DesignSystem";
+import { spacing, borderRadius, iconSize, fontFamily, preciseType } from "@/constants/DesignSystem";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const CARD_MARGIN = spacing.sm;
@@ -1412,10 +1448,10 @@ export const ShreddedTipsCarousel: React.FC = () => {
                 <Ionicons name={tip.icon as any} size={iconSize.xl} color={theme.primary} />
               </View>
               <View style={styles.textContainer}>
-                <Text style={[styles.mainText, { color: theme.text, fontFamily: fontFamily.display }]}>
+                <Text style={[styles.mainText, preciseType.tipHeadline, { color: theme.text, fontFamily: fontFamily.display }]}>
                   {tip.main}
                 </Text>
-                <Text style={[styles.clarificationText, { color: theme.secondary, fontFamily: fontFamily.body }]}>
+                <Text style={[styles.clarificationText, preciseType.tipBody, { color: theme.secondary, fontFamily: fontFamily.body }]}>
                   {tip.clarification}
                 </Text>
               </View>
@@ -1472,12 +1508,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   mainText: {
-    fontSize: 17,
     fontStyle: "italic",
     marginBottom: spacing.xs,
   },
   clarificationText: {
-    fontSize: 14,
     flexWrap: "wrap",
   },
   pagination: {
@@ -1533,7 +1567,7 @@ import { StreakBadge } from "@/components/home/StreakBadge";
 
 Change the `DesignSystem` import to only pull what's still used:
 ```tsx
-import { spacing, fontFamily } from "@/constants/DesignSystem";
+import { spacing, fontFamily, preciseType } from "@/constants/DesignSystem";
 ```
 
 Add the new helper to the existing `photoUtils` import:
@@ -1582,7 +1616,7 @@ Replace everything from the `{/* Next Photo Reminder - Most important action */}
 
           {/* Latest Photo - Quick gallery preview */}
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.secondary }]}>
+            <Text style={[styles.sectionTitle, preciseType.sectionLabel, { color: theme.secondary }]}>
               {t("home.latestPhoto")}
             </Text>
             <LatestPhotoCard
@@ -1623,7 +1657,7 @@ Replace everything from the `{/* Next Photo Reminder - Most important action */}
 
           {/* Tips Section - Educational content at bottom */}
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.secondary }]}>
+            <Text style={[styles.sectionTitle, preciseType.sectionLabel, { color: theme.secondary }]}>
               {t("home.tips")}
             </Text>
             <ShreddedTipsCarousel />
@@ -1651,8 +1685,6 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontFamily: fontFamily.mono,
-    fontSize: 11,
-    letterSpacing: 1.5,
     textTransform: "uppercase",
     marginBottom: spacing.sm,
   },
