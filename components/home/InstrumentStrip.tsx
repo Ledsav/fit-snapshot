@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
 import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
-import { spacing, fontFamily } from "@/constants/DesignSystem";
+import { spacing, fontFamily, preciseType } from "@/constants/DesignSystem";
 
 type InstrumentStripProps = {
   totalDays: number;
@@ -41,10 +41,10 @@ export const InstrumentStrip: React.FC<InstrumentStripProps> = ({
             },
           ]}
         >
-          <Text style={[styles.value, { color: column.color, fontFamily: fontFamily.mono }]}>
+          <Text style={[styles.value, preciseType.statValue, { color: column.color, fontFamily: fontFamily.mono }]}>
             {column.value}
           </Text>
-          <Text style={[styles.label, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
+          <Text style={[styles.label, preciseType.statLabel, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
             {column.label}
           </Text>
         </View>
@@ -62,12 +62,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: spacing.md,
   },
-  value: {
-    fontSize: 20,
-  },
+  value: {},
   label: {
-    fontSize: 9,
-    letterSpacing: 1,
     marginTop: spacing.xs,
   },
 });
