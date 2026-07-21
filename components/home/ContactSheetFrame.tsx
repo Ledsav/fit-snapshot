@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, ViewStyle } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
 import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
-import { spacing, borderRadius, fontFamily } from "@/constants/DesignSystem";
+import { spacing, borderRadius, fontFamily, preciseType } from "@/constants/DesignSystem";
 
 interface ContactSheetFrameProps {
   caption: string;
@@ -36,7 +36,7 @@ export const ContactSheetFrame: React.FC<ContactSheetFrameProps> = ({
         ))}
       </View>
       <View style={styles.content}>{children}</View>
-      <Text style={[styles.caption, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
+      <Text style={[styles.caption, preciseType.caption, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
         {caption}
       </Text>
     </View>
@@ -64,8 +64,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   caption: {
-    fontSize: 11,
-    letterSpacing: 0.5,
     marginTop: spacing.sm,
   },
 });
