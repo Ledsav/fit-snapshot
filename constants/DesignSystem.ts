@@ -28,6 +28,22 @@ export const fontFamily = {
   bodyMedium: "Inter_500Medium",
 } as const;
 
+// Type-scale tokens for Measured Confidence components (additive — does not
+// touch `typography`, which other screens still rely on unchanged).
+export const preciseType = {
+  wordmark: { fontSize: 12, letterSpacing: 2 },        // Header top bar
+  caption: { fontSize: 11, letterSpacing: 0.5 },       // ContactSheetFrame caption, before/after labels
+  statValue: { fontSize: 20 },                          // InstrumentStrip big numbers
+  statLabel: { fontSize: 9, letterSpacing: 1 },        // InstrumentStrip small labels
+  badgeValue: { fontSize: 14 },                         // StreakBadge count
+  badgeLabel: { fontSize: 10, letterSpacing: 1 },      // StreakBadge label, NextPhotoReminder action
+  sectionLabel: { fontSize: 11, letterSpacing: 1.5 },  // Home screen section labels (Latest Photo, Tips)
+  message: { fontSize: 16 },                            // NextPhotoReminder title
+  subtitle: { fontSize: 13 },                           // NextPhotoReminder subtitle
+  tipHeadline: { fontSize: 17 },                        // ShreddedTipsCarousel main tip
+  tipBody: { fontSize: 14 },                            // ShreddedTipsCarousel clarification
+} as const;
+
 // Typography Scale
 export const typography = {
   h1: {
@@ -249,6 +265,7 @@ export const getResponsiveSpacing = (width: number) => {
 export default {
   spacing,
   fontFamily,
+  preciseType,
   typography,
   borderRadius,
   iconSize,
