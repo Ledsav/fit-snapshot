@@ -32,3 +32,9 @@ export const getBestComparisonPair = (photos: Photo[]): ComparisonPair | null =>
 
   return null;
 };
+
+// Counts photos taken within the last `days` days (inclusive of today).
+export const getPhotosInLastNDays = (photos: Photo[], days: number): number => {
+  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+  return photos.filter((photo) => new Date(photo.date).getTime() >= cutoff).length;
+};
