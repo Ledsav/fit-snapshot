@@ -2,6 +2,7 @@ import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useTheme } from "@/context/ThemeContext";
 import { Photo } from "@/services/photoStorage";
+import { getBestComparisonPair } from "@/utils/photoUtils";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -30,12 +31,13 @@ export const MiniComparisonPreview: React.FC<MiniComparisonPreviewProps> = ({ ph
   const [sliderValue, setSliderValue] = useState(50);
   const pan = React.useRef(new Animated.ValueXY({ x: MINI_SLIDER_WIDTH / 2, y: 0 })).current;
 
-  if (photos.length < 2) {
+  const comparisonPair = getBestComparisonPair(photos);
+
+  if (!comparisonPair) {
     return null;
   }
 
-  const oldestPhoto = photos[0];
-  const newestPhoto = photos[photos.length - 1];
+  const { oldest: oldestPhoto, newest: newestPhoto } = comparisonPair;
 
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,

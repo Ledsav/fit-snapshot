@@ -13,6 +13,7 @@ import "react-native-reanimated";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { AuthProvider } from "@/context/AuthContext";
+import { GifProvider } from "@/context/GifContext";
 import { LocalizationProvider } from "@/context/LocalizationContext";
 import { PhotoProvider } from "@/context/PhotoContext";
 import { ThemeProvider as AppThemeProvider } from "@/context/ThemeContext";
@@ -63,10 +64,12 @@ function RootLayoutNav() {
             <AppThemeProvider>
               <UserProvider>
                 <PhotoProvider>
-                  <Stack>
-                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                    <Stack.Screen name="modal" options={{ presentation: "modal" }} />
-                  </Stack>
+                  <GifProvider>
+                    <Stack>
+                      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                      <Stack.Screen name="modal" options={{ presentation: "modal" }} />
+                    </Stack>
+                  </GifProvider>
                 </PhotoProvider>
               </UserProvider>
             </AppThemeProvider>

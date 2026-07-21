@@ -14,11 +14,13 @@ import {
   touchTarget,
 } from "@/constants/DesignSystem";
 import { IconButton, Button } from "@/components/ui";
+import { useGifs } from "@/context/GifContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { usePhotos } from "@/context/PhotoContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useUser } from "@/context/UserContext";
 import { PhotoType } from "@/enums/Photos";
+import { GeneratedGif } from "@/services/gifStorage";
 import { Photo } from "@/services/photoStorage";
 import { Ionicons } from "@expo/vector-icons";
 import * as FileSystem from 'expo-file-system/legacy';
@@ -61,6 +63,7 @@ export default function GalleryScreen() {
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedPhotoIds, setSelectedPhotoIds] = useState<Set<string>>(new Set());
   const [isPaywallVisible, setIsPaywallVisible] = useState(false);
+  const [isGifsExpanded, setIsGifsExpanded] = useState(true);
   const pathname = usePathname();
   const { effectiveColorScheme } = useTheme();
   const theme = Colors[effectiveColorScheme];
@@ -73,6 +76,7 @@ export default function GalleryScreen() {
     isLoading: contextLoading,
     error,
   } = usePhotos();
+  const { gifs, removeGif, refreshGifs } = useGifs();
   const { storageUsagePercentage, featureUsage } = useUser();
   const { t } = useLocalization();
 
@@ -81,6 +85,7 @@ export default function GalleryScreen() {
       setIsLoading(true);
       try {
         await refreshPhotos();
+        await refreshGifs();
         loadPhotos();
       } catch (error) {
         console.error("Error refreshing photos:", error);
@@ -164,6 +169,27 @@ export default function GalleryScreen() {
           style: "destructive",
           onPress: async () => {
             await removePhoto(id);
+          },
+        },
+      ]
+    );
+  };
+
+  const sortedGifs = [...gifs].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  const handleDeleteGif = (id: string) => {
+    Alert.alert(
+      t("gallery.deleteGif"),
+      t("gallery.deleteGifConfirmMessage"),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("gallery.delete"),
+          style: "destructive",
+          onPress: async () => {
+            await removeGif(id);
           },
         },
       ]
@@ -489,6 +515,84 @@ export default function GalleryScreen() {
     return <View>{rows}</View>;
   };
 
+  const renderGifItem = (gif: GeneratedGif) => (
+    <View key={gif.id} style={styles.item}>
+      <TouchableOpacity
+        style={styles.imageWrapper}
+        onPress={() => openFullScreenPhoto(gif.uri)}
+        activeOpacity={0.95}
+      >
+        <Image source={{ uri: gif.uri }} style={styles.image} />
+        <View style={styles.imageDateOverlay}>
+          <Text style={styles.dateText}>
+            {new Date(gif.date).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: '2-digit'
+            })}
+          </Text>
+        </View>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.deleteButton, { backgroundColor: theme.error }]}
+        onPress={(e) => {
+          e.stopPropagation();
+          handleDeleteGif(gif.id);
+        }}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="close" size={16} color="white" />
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderGifSection = () => {
+    if (sortedGifs.length === 0) return null;
+
+    const rows = [];
+    for (let i = 0; i < sortedGifs.length; i += 3) {
+      const rowItems = sortedGifs.slice(i, i + 3);
+      rows.push(
+        <View key={`gif-row-${i}`} style={styles.row}>
+          {rowItems.map((gif) => renderGifItem(gif))}
+          {rowItems.length < 3 &&
+            Array(3 - rowItems.length)
+              .fill(null)
+              .map((_, index) => (
+                <View key={`gif-empty-${i}-${index}`} style={styles.emptyItem} />
+              ))}
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.gifSectionContainer}>
+        <TouchableOpacity
+          style={styles.sectionHeaderContainer}
+          onPress={() => setIsGifsExpanded(!isGifsExpanded)}
+          activeOpacity={0.8}
+        >
+          <View style={styles.sectionHeaderLeft}>
+            <View style={[styles.sectionIndicator, { backgroundColor: theme.primary }]} />
+            <Text style={[styles.sectionHeader, { color: theme.text }]}>
+              {t("gallery.gifsTitle")}
+            </Text>
+            <Text style={[styles.photoCount, { color: theme.text }]}>
+              {sortedGifs.length}
+            </Text>
+          </View>
+          <Ionicons
+            name={isGifsExpanded ? "chevron-up-outline" : "chevron-down-outline"}
+            size={22}
+            color={theme.text}
+            style={{ opacity: 0.5 }}
+          />
+        </TouchableOpacity>
+        {isGifsExpanded && <View>{rows}</View>}
+      </View>
+    );
+  };
+
   return (
     <BackgroundImage blurIntensity={0} overlayOpacity={1}>
       <SafeAreaView
@@ -640,6 +744,7 @@ export default function GalleryScreen() {
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.list}
             stickySectionHeadersEnabled={false}
+            ListHeaderComponent={renderGifSection}
           />
         )}
         <FullScreenPhotoModal
@@ -859,6 +964,9 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     paddingTop: spacing.sm,
     paddingBottom: 100,
+  },
+  gifSectionContainer: {
+    marginBottom: spacing.md,
   },
   sectionHeaderContainer: {
     flexDirection: "row",

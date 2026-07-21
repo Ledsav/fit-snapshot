@@ -53,6 +53,9 @@ interface TranslationKeys {
     deselectAll: string;
     deleteConfirmMessage: string;
     deleteBulkConfirmMessage: string;
+    gifsTitle: string;
+    deleteGif: string;
+    deleteGifConfirmMessage: string;
   };
   progress: {
     title: string;
@@ -258,14 +261,10 @@ interface TranslationKeys {
     unlimitedStorageDesc: string;
     advancedAnalyticsTitle: string;
     advancedAnalyticsDesc: string;
-    advancedComparisonsTitle: string;
-    advancedComparisonsDesc: string;
-    exportShareTitle: string;
-    exportShareDesc: string;
-    premiumThemesTitle: string;
-    premiumThemesDesc: string;
-    adFreeTitle: string;
-    adFreeDesc: string;
+    customComparisonsTitle: string;
+    customComparisonsDesc: string;
+    gifExportTitle: string;
+    gifExportDesc: string;
   };
 }
 
@@ -329,6 +328,9 @@ export const translations: Translations = {
       deselectAll: "Deselect All",
       deleteConfirmMessage: "This photo will be permanently deleted. This can't be undone.",
       deleteBulkConfirmMessage: "selected photos will be permanently deleted. This can't be undone.",
+      gifsTitle: "GIFs",
+      deleteGif: "Delete GIF",
+      deleteGifConfirmMessage: "This GIF will be permanently deleted. This can't be undone.",
     },
     progress: {
       title: "Your Progress",
@@ -563,17 +565,13 @@ export const translations: Translations = {
     },
     premiumBenefits: {
       unlimitedStorageTitle: "Unlimited Photo Storage",
-      unlimitedStorageDesc: "Store unlimited progress photos with cloud backup",
-      advancedAnalyticsTitle: "Advanced Analytics",
-      advancedAnalyticsDesc: "Track your progress with detailed charts and insights",
-      advancedComparisonsTitle: "Advanced Comparisons",
-      advancedComparisonsDesc: "Side-by-side, grid view, and photo morphing",
-      exportShareTitle: "Export & Share",
-      exportShareDesc: "Create videos, PDFs, and share your transformation",
-      premiumThemesTitle: "Premium Themes",
-      premiumThemesDesc: "Customize your experience with exclusive themes",
-      adFreeTitle: "Ad-Free Experience",
-      adFreeDesc: "Enjoy the app without any advertisements",
+      unlimitedStorageDesc: "Free is capped at 20 photos — Premium removes the limit",
+      advancedAnalyticsTitle: "Full Progress Analytics",
+      advancedAnalyticsDesc: "Unlock your weekly activity chart, consistency heatmap, and achievement badges",
+      customComparisonsTitle: "Custom Photo Comparisons",
+      customComparisonsDesc: "Pick any two photos to compare, not just your oldest and newest",
+      gifExportTitle: "Before/After GIF Export",
+      gifExportDesc: "Create and save one before/after transformation GIF every month",
     },
   },
 
@@ -632,6 +630,9 @@ export const translations: Translations = {
       deselectAll: "Deseleccionar Todo",
       deleteConfirmMessage: "Esta foto se eliminará permanentemente. Esta acción no se puede deshacer.",
       deleteBulkConfirmMessage: "fotos seleccionadas se eliminarán permanentemente. Esta acción no se puede deshacer.",
+      gifsTitle: "GIFs",
+      deleteGif: "Eliminar GIF",
+      deleteGifConfirmMessage: "Este GIF se eliminará permanentemente. Esta acción no se puede deshacer.",
     },
     progress: {
       title: "Tu Progreso",
@@ -867,17 +868,13 @@ export const translations: Translations = {
     },
     premiumBenefits: {
       unlimitedStorageTitle: "Almacenamiento Ilimitado de Fotos",
-      unlimitedStorageDesc: "Almacena fotos de progreso ilimitadas con respaldo en la nube",
-      advancedAnalyticsTitle: "Análisis Avanzados",
-      advancedAnalyticsDesc: "Rastrea tu progreso con gráficos detallados e información",
-      advancedComparisonsTitle: "Comparaciones Avanzadas",
-      advancedComparisonsDesc: "Lado a lado, vista en cuadrícula y transformación de fotos",
-      exportShareTitle: "Exportar y Compartir",
-      exportShareDesc: "Crea videos, PDFs y comparte tu transformación",
-      premiumThemesTitle: "Temas Premium",
-      premiumThemesDesc: "Personaliza tu experiencia con temas exclusivos",
-      adFreeTitle: "Experiencia Sin Anuncios",
-      adFreeDesc: "Disfruta la aplicación sin ningún anuncio",
+      unlimitedStorageDesc: "El plan gratuito tiene un límite de 20 fotos — Premium elimina el límite",
+      advancedAnalyticsTitle: "Análisis Completo de Progreso",
+      advancedAnalyticsDesc: "Desbloquea tu gráfico de actividad semanal, mapa de calor de constancia e insignias de logros",
+      customComparisonsTitle: "Comparaciones de Fotos Personalizadas",
+      customComparisonsDesc: "Elige dos fotos cualquiera para comparar, no solo la más antigua y la más reciente",
+      gifExportTitle: "Exportación de GIF Antes/Después",
+      gifExportDesc: "Crea y guarda un GIF de transformación antes/después cada mes",
     },
   },
 
@@ -937,6 +934,9 @@ export const translations: Translations = {
       deselectAll: "Deseleziona Tutto",
       deleteConfirmMessage: "Questa foto verrà eliminata definitivamente. Questa azione non può essere annullata.",
       deleteBulkConfirmMessage: "foto selezionate verranno eliminate definitivamente. Questa azione non può essere annullata.",
+      gifsTitle: "GIF",
+      deleteGif: "Elimina GIF",
+      deleteGifConfirmMessage: "Questa GIF verrà eliminata definitivamente. Questa azione non può essere annullata.",
     },
     progress: {
       title: "I Tuoi Progressi",
@@ -1171,17 +1171,13 @@ export const translations: Translations = {
     },
     premiumBenefits: {
       unlimitedStorageTitle: "Archiviazione Foto Illimitata",
-      unlimitedStorageDesc: "Archivia foto di progresso illimitate con backup nel cloud",
-      advancedAnalyticsTitle: "Analisi Avanzate",
-      advancedAnalyticsDesc: "Traccia i tuoi progressi con grafici dettagliati e approfondimenti",
-      advancedComparisonsTitle: "Confronti Avanzati",
-      advancedComparisonsDesc: "Affiancamento, vista a griglia e morphing fotografico",
-      exportShareTitle: "Esporta e Condividi",
-      exportShareDesc: "Crea video, PDF e condividi la tua trasformazione",
-      premiumThemesTitle: "Temi Premium",
-      premiumThemesDesc: "Personalizza la tua esperienza con temi esclusivi",
-      adFreeTitle: "Esperienza Senza Pubblicità",
-      adFreeDesc: "Goditi l'app senza alcuna pubblicità",
+      unlimitedStorageDesc: "Il piano gratuito è limitato a 20 foto — Premium rimuove il limite",
+      advancedAnalyticsTitle: "Analisi Complete dei Progressi",
+      advancedAnalyticsDesc: "Sblocca il grafico dell'attività settimanale, la heatmap di costanza e i badge dei traguardi",
+      customComparisonsTitle: "Confronti Foto Personalizzati",
+      customComparisonsDesc: "Scegli due foto qualsiasi da confrontare, non solo la più vecchia e la più recente",
+      gifExportTitle: "Esportazione GIF Prima/Dopo",
+      gifExportDesc: "Crea e salva una GIF di trasformazione prima/dopo ogni mese",
     },
   },
   de: {
@@ -1240,6 +1236,9 @@ export const translations: Translations = {
       deselectAll: "Alle Abwählen",
       deleteConfirmMessage: "Dieses Foto wird dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.",
       deleteBulkConfirmMessage: "ausgewählte Fotos werden dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.",
+      gifsTitle: "GIFs",
+      deleteGif: "GIF löschen",
+      deleteGifConfirmMessage: "Dieses GIF wird dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.",
     },
     progress: {
       title: "Ihr Fortschritt",
@@ -1476,17 +1475,13 @@ export const translations: Translations = {
     },
     premiumBenefits: {
       unlimitedStorageTitle: "Unbegrenzter Fotospeicher",
-      unlimitedStorageDesc: "Speichern Sie unbegrenzt Fortschrittsfotos mit Cloud-Backup",
-      advancedAnalyticsTitle: "Erweiterte Analysen",
-      advancedAnalyticsDesc: "Verfolgen Sie Ihren Fortschritt mit detaillierten Diagrammen und Einblicken",
-      advancedComparisonsTitle: "Erweiterte Vergleiche",
-      advancedComparisonsDesc: "Seite an Seite, Rasteransicht und Foto-Morphing",
-      exportShareTitle: "Exportieren & Teilen",
-      exportShareDesc: "Erstellen Sie Videos, PDFs und teilen Sie Ihre Transformation",
-      premiumThemesTitle: "Premium-Themes",
-      premiumThemesDesc: "Passen Sie Ihr Erlebnis mit exklusiven Themes an",
-      adFreeTitle: "Werbefreies Erlebnis",
-      adFreeDesc: "Genießen Sie die App ohne jegliche Werbung",
+      unlimitedStorageDesc: "Die kostenlose Version ist auf 20 Fotos begrenzt — Premium hebt das Limit auf",
+      advancedAnalyticsTitle: "Vollständige Fortschrittsanalyse",
+      advancedAnalyticsDesc: "Schalten Sie Ihr wöchentliches Aktivitätsdiagramm, die Konsistenz-Heatmap und Erfolgs-Abzeichen frei",
+      customComparisonsTitle: "Individuelle Fotovergleiche",
+      customComparisonsDesc: "Wählen Sie zwei beliebige Fotos zum Vergleich aus, nicht nur das älteste und neueste",
+      gifExportTitle: "Vorher/Nachher-GIF-Export",
+      gifExportDesc: "Erstellen und speichern Sie jeden Monat ein Vorher/Nachher-Transformations-GIF",
     },
   },
   fr: {
@@ -1545,6 +1540,9 @@ export const translations: Translations = {
       deselectAll: "Tout Désélectionner",
       deleteConfirmMessage: "Cette photo sera définitivement supprimée. Cette action est irréversible.",
       deleteBulkConfirmMessage: "photos sélectionnées seront définitivement supprimées. Cette action est irréversible.",
+      gifsTitle: "GIFs",
+      deleteGif: "Supprimer le GIF",
+      deleteGifConfirmMessage: "Ce GIF sera définitivement supprimé. Cette action est irréversible.",
     },
     progress: {
       title: "Votre Progrès",
@@ -1780,17 +1778,13 @@ export const translations: Translations = {
     },
     premiumBenefits: {
       unlimitedStorageTitle: "Stockage de Photos Illimité",
-      unlimitedStorageDesc: "Stockez des photos de progression illimitées avec sauvegarde cloud",
-      advancedAnalyticsTitle: "Analyses Avancées",
-      advancedAnalyticsDesc: "Suivez vos progrès avec des graphiques détaillés et des informations",
-      advancedComparisonsTitle: "Comparaisons Avancées",
-      advancedComparisonsDesc: "Côte à côte, vue en grille et morphing de photos",
-      exportShareTitle: "Exporter et Partager",
-      exportShareDesc: "Créez des vidéos, des PDFs et partagez votre transformation",
-      premiumThemesTitle: "Thèmes Premium",
-      premiumThemesDesc: "Personnalisez votre expérience avec des thèmes exclusifs",
-      adFreeTitle: "Expérience Sans Publicité",
-      adFreeDesc: "Profitez de l'application sans aucune publicité",
+      unlimitedStorageDesc: "La version gratuite est limitée à 20 photos — Premium supprime la limite",
+      advancedAnalyticsTitle: "Analyses Complètes de Progression",
+      advancedAnalyticsDesc: "Débloquez votre graphique d'activité hebdomadaire, votre carte de chaleur de régularité et vos badges de réussite",
+      customComparisonsTitle: "Comparaisons de Photos Personnalisées",
+      customComparisonsDesc: "Choisissez deux photos quelconques à comparer, pas seulement la plus ancienne et la plus récente",
+      gifExportTitle: "Export GIF Avant/Après",
+      gifExportDesc: "Créez et enregistrez un GIF de transformation avant/après chaque mois",
     },
   },
 };

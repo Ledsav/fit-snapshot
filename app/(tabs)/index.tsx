@@ -24,9 +24,10 @@ import { useLocalization } from "@/context/LocalizationContext";
 import { usePhotos } from "@/context/PhotoContext";
 import { useTheme } from "@/context/ThemeContext";
 import { StreakData, StreakService } from "@/services/streakService";
+import { getBestComparisonPair } from "@/utils/photoUtils";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Href, useRouter } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   RefreshControl,
   SafeAreaView,
@@ -50,6 +51,7 @@ export default function HomeScreen() {
 
   const { photos, refreshPhotos } = usePhotos();
   const latestPhoto = photos.length > 0 ? photos[photos.length - 1] : null;
+  const hasComparisonPhotos = useMemo(() => getBestComparisonPair(photos) !== null, [photos]);
 
   const totalDays =
     photos.length > 0
@@ -131,7 +133,7 @@ export default function HomeScreen() {
           </View>
 
           {/* Mini Comparison Preview - Visual progress hook */}
-          {photos.length >= 2 && (
+          {hasComparisonPhotos && (
             <View style={styles.section}>
               <MiniComparisonPreview photos={photos} />
             </View>

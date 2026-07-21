@@ -67,32 +67,99 @@ export default function CameraScreen() {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [remainingTime, setRemainingTime] = useState(0);
 
+  // TEMP DIAGNOSTICS - remove once the cold-start camera hang is root-caused.
+  const mountTsRef = useRef<number>(Date.now());
+  const logCam = useCallback((msg: string) => {
+    console.log(`[Camera +${Date.now() - mountTsRef.current}ms] ${msg}`);
+  }, []);
+  const isCameraReadyRef = useRef(false);
+  useEffect(() => {
+    isCameraReadyRef.current = isCameraReady;
+  }, [isCameraReady]);
+  const permissionGrantedRef = useRef(permission?.granted);
+  const facingRef = useRef(facing);
+  useEffect(() => {
+    permissionGrantedRef.current = permission?.granted;
+    facingRef.current = facing;
+  }, [permission?.granted, facing]);
+
   // Check photo limit
   const photoLimitStatus = canAddPhoto();
   const isPhotoLimitReached = !photoLimitStatus.allowed;
 
-  // Handle navigation focus/blur to properly manage camera resources
+  // Handle navigation focus/blur to properly manage camera resources.
+  // React Navigation can fire a spurious focus -> blur -> focus sequence on
+  // cold start (before the initial route settles). Reacting to that blur by
+  // tearing down the CameraView mid-initialization races the native camera
+  // hardware and can leave it hung, so `onCameraReady` never fires. Debounce
+  // the teardown: a blur that's immediately followed by a refocus is treated
+  // as a no-op instead of a real release/reacquire cycle.
+  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (blurTimeoutRef.current) {
+        clearTimeout(blurTimeoutRef.current);
+      }
+    };
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
-      console.log('Camera screen focused - reinitializing camera');
-      setIsFocused(true);
-      setIsCameraReady(false);
-      setShowCamera(true);
-      setCameraKey(prev => prev + 1);
+      if (blurTimeoutRef.current) {
+        // Refocused before the pending teardown ran - cancel it and keep
+        // the current camera instance instead of remounting it.
+        clearTimeout(blurTimeoutRef.current);
+        blurTimeoutRef.current = null;
+        logCam('focus: cancelled pending teardown, keeping existing camera instance');
+        setIsFocused(true);
+      } else {
+        logCam(`focus: reinitializing camera (permission=${permissionGrantedRef.current}, facing=${facingRef.current})`);
+        setIsFocused(true);
+        setIsCameraReady(false);
+        setShowCamera(true);
+        setCameraKey(prev => prev + 1);
+      }
 
       return () => {
-        console.log('Camera screen blurred - releasing camera resources');
-        setIsFocused(false);
-        setIsCameraReady(false);
-        setShowCamera(false);
-        // Cancel any running timer when leaving the screen
-        setIsTimerRunning(false);
-        setRemainingTime(0);
+        logCam('blur: scheduling teardown in 300ms');
+        blurTimeoutRef.current = setTimeout(() => {
+          blurTimeoutRef.current = null;
+          logCam('blur: releasing camera resources');
+          setIsFocused(false);
+          setIsCameraReady(false);
+          setShowCamera(false);
+          // Cancel any running timer when leaving the screen
+          setIsTimerRunning(false);
+          setRemainingTime(0);
+        }, 300);
       };
-    }, [])
+    }, [logCam])
   );
-  // Unmount and remount CameraView on facing change to release resource
+
+  // TEMP DIAGNOSTICS - watchdog to see if onCameraReady simply never fires.
   useEffect(() => {
+    if (!(isFocused && showCamera)) return;
+    const keyAtArm = cameraKey;
+    logCam(`watchdog armed for key=${keyAtArm} (cameraRef=${!!cameraRef.current})`);
+    const watchdog = setTimeout(() => {
+      logCam(
+        `WATCHDOG: still not ready 4s after mount (key=${keyAtArm}, isCameraReady=${isCameraReadyRef.current}, cameraRef=${!!cameraRef.current}, permission=${permissionGrantedRef.current})`
+      );
+    }, 4000);
+    return () => clearTimeout(watchdog);
+  }, [isFocused, showCamera, cameraKey, logCam]);
+  // Unmount and remount CameraView on facing change to release resource.
+  // Effects fire on the initial mount too (there's no prior `facing` to
+  // diff against), so without this guard this ran on every screen mount -
+  // forcing an extra teardown/rebuild ~200ms into the focus effect's own
+  // mount, racing the native camera while it was still acquiring hardware.
+  const isInitialFacingRenderRef = useRef(true);
+  useEffect(() => {
+    if (isInitialFacingRenderRef.current) {
+      isInitialFacingRenderRef.current = false;
+      return;
+    }
     setShowCamera(false);
     const timeout = setTimeout(() => {
       setCameraKey(prev => prev + 1);
@@ -482,11 +549,11 @@ export default function CameraScreen() {
                 flash={flash}
                 zoom={zoom}
                 onCameraReady={() => {
-                  console.log('Camera ready');
+                  logCam(`onCameraReady fired for key=${cameraKey}`);
                   setIsCameraReady(true);
                 }}
                 onMountError={(error) => {
-                  console.error('Camera mount error:', error);
+                  logCam(`onMountError fired for key=${cameraKey}: ${JSON.stringify(error)}`);
                   setIsCameraReady(false);
                   setTimeout(() => {
                     setCameraKey(prev => prev + 1);

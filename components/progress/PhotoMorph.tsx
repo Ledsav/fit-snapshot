@@ -39,6 +39,7 @@ type ComparisonMode = 'slider' | 'sideBySide' | 'grid' | 'gif';
 import { createBeforeAfterGif } from '@/services/gifService';
 import { useRouter } from 'expo-router';
 import SyncedZoomPair from '@/components/progress/SyncedZoomPair';
+import { useGifs } from '@/context/GifContext';
 
 
 const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
@@ -51,6 +52,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   const { t } = useLocalization();
   const { hasFeatureAccess } = useUser();
   const { user, getToken } = useAuth();
+  const { addGif } = useGifs();
   const router = useRouter();
   const [comparisonMode, setComparisonMode] = useState<ComparisonMode>('slider');
   const [isGeneratingGif, setIsGeneratingGif] = useState(false);
@@ -463,6 +465,16 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
                       }
                     } catch (saveError) {
                       console.error('Error auto-saving GIF:', saveError);
+                    }
+
+                    try {
+                      await addGif({
+                        id: Date.now().toString(),
+                        uri: result.gifUri,
+                        date: new Date().toISOString(),
+                      });
+                    } catch (galleryError) {
+                      console.error('Error adding GIF to gallery:', galleryError);
                     }
                   }
                 } catch (e) {
