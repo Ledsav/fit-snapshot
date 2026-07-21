@@ -1,6 +1,15 @@
 import "react-native-gesture-handler";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import {
+  Fraunces_500Medium,
+  Fraunces_500Medium_Italic,
+} from "@expo-google-fonts/fraunces";
+import {
+  IBMPlexMono_500Medium,
+  IBMPlexMono_600SemiBold,
+} from "@expo-google-fonts/ibm-plex-mono";
+import { Inter_400Regular, Inter_500Medium } from "@expo-google-fonts/inter";
+import {
     DarkTheme,
     DefaultTheme,
     ThemeProvider,
@@ -32,7 +41,12 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    Fraunces_500Medium,
+    Fraunces_500Medium_Italic,
+    IBMPlexMono_500Medium,
+    IBMPlexMono_600SemiBold,
+    Inter_400Regular,
+    Inter_500Medium,
     ...FontAwesome.font,
   });
 

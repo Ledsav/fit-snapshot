@@ -18,6 +18,16 @@ export const spacing = {
   huge: 40,
 } as const;
 
+// Font family tokens (Measured Confidence type system)
+export const fontFamily = {
+  display: "Fraunces_500Medium_Italic", // editorial voice — photos, motivational copy
+  displayRegular: "Fraunces_500Medium",
+  mono: "IBMPlexMono_500Medium", // precision voice — stats, dates, labels
+  monoSemiBold: "IBMPlexMono_600SemiBold",
+  body: "Inter_400Regular",
+  bodyMedium: "Inter_500Medium",
+} as const;
+
 // Typography Scale
 export const typography = {
   h1: {
@@ -238,6 +248,7 @@ export const getResponsiveSpacing = (width: number) => {
 // Export all design tokens
 export default {
   spacing,
+  fontFamily,
   typography,
   borderRadius,
   iconSize,
