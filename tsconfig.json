@@ -4,6 +4,7 @@
     "strict": true,
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
+    "types": ["jest"],
     "paths": {
       "@/*": ["./*"]
     }
@@ -13,11 +14,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ],
-  "exclude": [
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "**/*.spec.ts",
-    "**/*.spec.tsx"
   ]
 }
