@@ -1,64 +1,43 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "@/context/ThemeContext";
-import Colors from "@/constants/Colors";
-import { useLocalization } from "@/context/LocalizationContext";
-import {
-  spacing,
-  borderRadius,
-  typography,
-} from "@/constants/DesignSystem";
+import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
+import { spacing, fontFamily, preciseType } from "@/constants/DesignSystem";
 
 interface HeaderProps {
   title: string;
 }
 
+// Slim instrument-panel top bar. Replaces the gradient hero + italic
+// motivational quote, which was the single strongest "generic wellness app"
+// tell in the original design.
 export const Header: React.FC<HeaderProps> = ({ title }) => {
   const { effectiveColorScheme } = useTheme();
   const theme = Colors[effectiveColorScheme];
-  const { t } = useLocalization();
-
-  const motivationalQuotes = t("header.motivationalQuotes");
-
-  const randomQuote = useMemo(() => {
-    const randomIndex = Math.floor(Math.random() * motivationalQuotes.length);
-    return motivationalQuotes[randomIndex];
-  }, [motivationalQuotes]);
 
   return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={[theme.background, theme.transparent]}
-        style={styles.headerGradient}
-      >
-        <Text style={[styles.title, { color: theme.text }]}>{title}</Text>
-        <Text style={[styles.subtitle, { color: theme.text }]}>
-          {randomQuote}
-        </Text>
-      </LinearGradient>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: theme.background,
+          borderBottomColor: withOpacity(theme.secondary, overlayOpacity.light),
+        },
+      ]}
+    >
+      <Text style={[styles.wordmark, preciseType.wordmark, { color: theme.text, fontFamily: fontFamily.mono }]}>
+        {title.toUpperCase()}
+      </Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    overflow: "hidden",
-    borderBottomLeftRadius: borderRadius.xxxl,
-    borderBottomRightRadius: borderRadius.xxxl,
-  },
-  headerGradient: {
-    padding: spacing.xl,
     paddingTop: 60,
-    borderBottomLeftRadius: borderRadius.xxxl,
-    borderBottomRightRadius: borderRadius.xxxl,
+    paddingHorizontal: spacing.xl,
+    paddingBottom: spacing.md,
+    borderBottomWidth: 1,
   },
-  title: {
-    ...typography.h1,
-    marginBottom: spacing.md,
-  },
-  subtitle: {
-    ...typography.body,
-    fontStyle: "italic",
-  },
+  wordmark: {},
 });
