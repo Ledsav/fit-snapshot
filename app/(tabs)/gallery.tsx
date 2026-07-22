@@ -8,6 +8,7 @@ import {
   spacing,
   borderRadius,
   elevation,
+  fontFamily,
   typography,
   iconSize,
   opacity as designOpacity,
@@ -418,50 +419,45 @@ export default function GalleryScreen() {
 
   const renderItem = ({ item }: { item: Photo }) => {
     const isSelected = selectedPhotoIds.has(item.id);
+    const caption =
+      viewMode === 'timeline'
+        ? `${new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · ${item.type.toUpperCase()}`
+        : new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
     return (
       <View key={item.id} style={styles.item}>
         <TouchableOpacity
           style={[
             styles.imageWrapper,
-            isSelected && { borderWidth: 3, borderColor: theme.primary }
+            { borderColor: withOpacity(theme.secondary, overlayOpacity.light) },
+            isSelected && { borderWidth: 2, borderColor: theme.primary },
           ]}
           onPress={() => selectionMode ? togglePhotoSelection(item.id) : openFullScreenPhoto(item.uri)}
           activeOpacity={0.95}
         >
           <Image source={{ uri: item.uri }} style={styles.image} />
-          <View style={styles.imageDateOverlay}>
-            <Text style={styles.dateText}>
-              {new Date(item.date).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: '2-digit'
-              })}
-            </Text>
-          </View>
-          {viewMode === 'timeline' && (
-            <View style={[styles.typeIndicator, { backgroundColor: theme.primary }]}>
-              <Text style={styles.typeIndicatorText}>
-                {item.type.charAt(0).toUpperCase()}
-              </Text>
-            </View>
-          )}
           {selectionMode && isSelected && (
-            <View style={[styles.selectedOverlay, { backgroundColor: theme.primary + '40' }]}>
-              <Ionicons name="checkmark-circle" size={32} color={theme.primary} />
+            <View style={[styles.selectedOverlay, { backgroundColor: withOpacity(theme.primary, overlayOpacity.medium) }]}>
+              <Ionicons name="checkmark-circle" size={28} color={theme.primary} />
             </View>
           )}
         </TouchableOpacity>
+        <Text
+          style={[styles.itemCaption, { color: theme.secondary, fontFamily: fontFamily.mono }]}
+          numberOfLines={1}
+        >
+          {caption}
+        </Text>
         {!selectionMode && (
           <TouchableOpacity
-            style={[styles.deleteButton, { backgroundColor: theme.error }]}
+            style={[styles.deleteButton, { backgroundColor: withOpacity('#000000', overlayOpacity.veryHeavy) }]}
             onPress={(e) => {
               e.stopPropagation();
               handleDeletePhoto(item.id);
             }}
             activeOpacity={0.7}
           >
-            <Ionicons name="close" size={16} color="white" />
+            <Ionicons name="close" size={14} color="white" />
           </TouchableOpacity>
         )}
       </View>
@@ -518,30 +514,27 @@ export default function GalleryScreen() {
   const renderGifItem = (gif: GeneratedGif) => (
     <View key={gif.id} style={styles.item}>
       <TouchableOpacity
-        style={styles.imageWrapper}
+        style={[styles.imageWrapper, { borderColor: withOpacity(theme.secondary, overlayOpacity.light) }]}
         onPress={() => openFullScreenPhoto(gif.uri)}
         activeOpacity={0.95}
       >
         <Image source={{ uri: gif.uri }} style={styles.image} />
-        <View style={styles.imageDateOverlay}>
-          <Text style={styles.dateText}>
-            {new Date(gif.date).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              year: '2-digit'
-            })}
-          </Text>
-        </View>
       </TouchableOpacity>
+      <Text
+        style={[styles.itemCaption, { color: theme.secondary, fontFamily: fontFamily.mono }]}
+        numberOfLines={1}
+      >
+        {new Date(gif.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+      </Text>
       <TouchableOpacity
-        style={[styles.deleteButton, { backgroundColor: theme.error }]}
+        style={[styles.deleteButton, { backgroundColor: withOpacity('#000000', overlayOpacity.veryHeavy) }]}
         onPress={(e) => {
           e.stopPropagation();
           handleDeleteGif(gif.id);
         }}
         activeOpacity={0.7}
       >
-        <Ionicons name="close" size={16} color="white" />
+        <Ionicons name="close" size={14} color="white" />
       </TouchableOpacity>
     </View>
   );
@@ -940,21 +933,6 @@ const styles = StyleSheet.create({
     ...typography.caption,
     fontWeight: '600',
   },
-  typeIndicator: {
-    position: 'absolute',
-    top: spacing.sm,
-    left: spacing.sm,
-    width: iconSize.md,
-    height: iconSize.md,
-    borderRadius: borderRadius.round,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  typeIndicatorText: {
-    color: 'white',
-    ...typography.small,
-    fontWeight: 'bold',
-  },
   selectedOverlay: {
     ...StyleSheet.absoluteFill,
     justifyContent: 'center',
@@ -1003,7 +981,6 @@ const styles = StyleSheet.create({
   },
   item: {
     width: itemSize,
-    height: itemSize,
     position: "relative",
   },
   emptyItem: {
@@ -1011,10 +988,11 @@ const styles = StyleSheet.create({
     height: itemSize,
   },
   imageWrapper: {
-    width: "100%",
-    height: "100%",
+    width: itemSize,
+    height: itemSize,
     borderRadius: borderRadius.sm,
     overflow: "hidden",
+    borderWidth: 1,
     backgroundColor: "#000",
   },
   image: {
@@ -1022,20 +1000,11 @@ const styles = StyleSheet.create({
     height: "100%",
     resizeMode: "cover",
   },
-  imageDateOverlay: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: withOpacity('#000000', overlayOpacity.heavy),
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-  },
-  dateText: {
-    color: "white",
-    ...typography.tiny,
-    fontWeight: "500",
-    opacity: designOpacity.high,
+  itemCaption: {
+    fontSize: 9,
+    letterSpacing: 0.3,
+    marginTop: spacing.xs,
+    textAlign: "center",
   },
   deleteButton: {
     position: "absolute",
