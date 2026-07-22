@@ -10,6 +10,7 @@ import {
   elevation,
   fontFamily,
   typography,
+  preciseType,
   iconSize,
   opacity as designOpacity,
   touchTarget,
@@ -157,23 +158,6 @@ export default function GalleryScreen() {
     } catch (error) {
       console.error("Error loading gallery:", error);
     }
-  };
-
-  const handleDeletePhoto = (id: string) => {
-    Alert.alert(
-      t("gallery.deletePhoto"),
-      t("gallery.deleteConfirmMessage"),
-      [
-        { text: t("common.cancel"), style: "cancel" },
-        {
-          text: t("gallery.delete"),
-          style: "destructive",
-          onPress: async () => {
-            await removePhoto(id);
-          },
-        },
-      ]
-    );
   };
 
   const sortedGifs = [...gifs].sort(
@@ -448,18 +432,6 @@ export default function GalleryScreen() {
         >
           {caption}
         </Text>
-        {!selectionMode && (
-          <TouchableOpacity
-            style={[styles.deleteButton, { backgroundColor: withOpacity('#000000', overlayOpacity.veryHeavy) }]}
-            onPress={(e) => {
-              e.stopPropagation();
-              handleDeletePhoto(item.id);
-            }}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="close" size={14} color="white" />
-          </TouchableOpacity>
-        )}
       </View>
     );
   };
@@ -526,16 +498,18 @@ export default function GalleryScreen() {
       >
         {new Date(gif.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
       </Text>
-      <TouchableOpacity
-        style={[styles.deleteButton, { backgroundColor: withOpacity('#000000', overlayOpacity.veryHeavy) }]}
-        onPress={(e) => {
-          e.stopPropagation();
-          handleDeleteGif(gif.id);
-        }}
-        activeOpacity={0.7}
-      >
-        <Ionicons name="close" size={14} color="white" />
-      </TouchableOpacity>
+      {selectionMode && (
+        <TouchableOpacity
+          style={[styles.deleteButton, { backgroundColor: withOpacity('#000000', overlayOpacity.veryHeavy) }]}
+          onPress={(e) => {
+            e.stopPropagation();
+            handleDeleteGif(gif.id);
+          }}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="close" size={14} color="white" />
+        </TouchableOpacity>
+      )}
     </View>
   );
 
@@ -595,7 +569,7 @@ export default function GalleryScreen() {
 
         {/* Storage Warning Banner */}
         {storageUsagePercentage >= 80 && storageUsagePercentage < 100 && (
-          <View style={[styles.warningBanner, { backgroundColor: theme.warning + '20' }]}>
+          <View style={[styles.warningBanner, { backgroundColor: withOpacity(theme.warning, overlayOpacity.light) }]}>
             <Ionicons name="warning-outline" size={20} color={theme.warning} />
             <Text style={[styles.warningText, { color: theme.warning }]}>
               {featureUsage.photoCount} / {FREE_TIER_LIMITS.MAX_PHOTOS} photos used ({storageUsagePercentage}%)
@@ -609,7 +583,7 @@ export default function GalleryScreen() {
         )}
 
         {storageUsagePercentage >= 100 && (
-          <View style={[styles.errorBanner, { backgroundColor: theme.error + '20' }]}>
+          <View style={[styles.errorBanner, { backgroundColor: withOpacity(theme.error, overlayOpacity.light) }]}>
             <Ionicons name="alert-circle-outline" size={20} color={theme.error} />
             <Text style={[styles.errorText, { color: theme.error }]}>
               Storage full! Delete photos or upgrade to Premium
@@ -623,7 +597,9 @@ export default function GalleryScreen() {
             <TouchableOpacity
               style={[
                 styles.viewModeButton,
-                viewMode === 'grouped' && { backgroundColor: theme.primary }
+                viewMode === 'grouped'
+                  ? { backgroundColor: theme.primary, borderColor: theme.primary }
+                  : { backgroundColor: theme.transparent, borderColor: withOpacity(theme.secondary, overlayOpacity.light) },
               ]}
               onPress={() => setViewMode('grouped')}
             >
@@ -634,6 +610,7 @@ export default function GalleryScreen() {
               />
               <Text style={[
                 styles.viewModeText,
+                preciseType.badgeLabel,
                 { color: viewMode === 'grouped' ? theme.background : theme.text }
               ]}>
                 {t("gallery.grouped") || "Grouped"}
@@ -642,7 +619,9 @@ export default function GalleryScreen() {
             <TouchableOpacity
               style={[
                 styles.viewModeButton,
-                viewMode === 'timeline' && { backgroundColor: theme.primary }
+                viewMode === 'timeline'
+                  ? { backgroundColor: theme.primary, borderColor: theme.primary }
+                  : { backgroundColor: theme.transparent, borderColor: withOpacity(theme.secondary, overlayOpacity.light) },
               ]}
               onPress={() => setViewMode('timeline')}
             >
@@ -653,6 +632,7 @@ export default function GalleryScreen() {
               />
               <Text style={[
                 styles.viewModeText,
+                preciseType.badgeLabel,
                 { color: viewMode === 'timeline' ? theme.background : theme.text }
               ]}>
                 {t("gallery.timeline") || "Timeline"}
@@ -663,7 +643,9 @@ export default function GalleryScreen() {
           <TouchableOpacity
             style={[
               styles.selectionButton,
-              selectionMode && { backgroundColor: theme.primary }
+              selectionMode
+                ? { backgroundColor: theme.primary, borderColor: theme.primary }
+                : { backgroundColor: theme.transparent, borderColor: withOpacity(theme.secondary, overlayOpacity.light) },
             ]}
             onPress={toggleSelectionMode}
           >
@@ -866,9 +848,7 @@ const styles = StyleSheet.create({
   },
   viewModeToggle: {
     flexDirection: 'row',
-    backgroundColor: withOpacity('#808080', overlayOpacity.subtle),
-    borderRadius: borderRadius.sm,
-    padding: 2,
+    gap: spacing.xs,
   },
   viewModeButton: {
     flexDirection: 'row',
@@ -876,16 +856,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: borderRadius.sm,
+    borderWidth: 1,
     gap: spacing.xs,
   },
   viewModeText: {
-    ...typography.caption,
-    fontWeight: '600',
+    fontFamily: fontFamily.mono,
   },
   selectionButton: {
     padding: spacing.md,
     borderRadius: borderRadius.sm,
-    backgroundColor: withOpacity('#808080', overlayOpacity.subtle),
+    borderWidth: 1,
   },
   bulkActionsBar: {
     flexDirection: 'row',
