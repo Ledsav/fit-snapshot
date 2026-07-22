@@ -701,6 +701,8 @@ git commit -m "chore: add react-native-vision-camera V5 and config plugin"
 
 **Context:** The frame processor runs on the worklet thread at ~5 Hz (`runAtTargetFps(5, ...)`). It reads the Y plane via `frame.toArrayBuffer()`, computes the mean over `DEFAULT_BG_REGIONS`, normalizes, and pushes the value to JS via a `Worklets.createRunOnJS` callback that calls `setState`. Baseline resolution and classification happen on the JS side (cheap, and keeps the worklet minimal). This hook cannot be unit-tested without a device (worklet + native frame); it is verified in Task 8. Keep ALL non-trivial math in the Task 2–4 pure functions — this hook only wires them.
 
+> **⚠️ WORKLET-SAFETY (flagged by the foundation review — do this or the app throws at runtime on-device).** `meanLumaFromYPlane` and `normalizeLuma` are called *inside* the frame-processor worklet. Under `react-native-worklets`, a plain module function invoked from a worklet must itself be a worklet, or it throws at runtime. Before wiring, add `'worklet';` as the FIRST statement inside the bodies of `meanLumaFromYPlane` and `normalizeLuma` in `services/lightingService.ts` (their bodies are already worklet-friendly — no closures, no unsupported APIs, so only the directive is needed). The directive is a no-op string literal under `jest-expo`, so re-run `npx jest services/lightingService.test.ts --watchAll=false` afterward and confirm all tests still pass (should be unchanged). `classifyLighting` and `resolveBaseline` run on the JS side and do NOT need the directive. Commit this directive change together with the hook.
+
 - [ ] **Step 1: Implement the hook**
 
 Create `hooks/useLightingIndicator.ts`:
