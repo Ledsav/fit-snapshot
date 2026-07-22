@@ -198,15 +198,15 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
           </View>
 
           <View style={styles.selectionProgress}>
-            <View style={[styles.selectionStep, { backgroundColor: selectedPhoto1 ? theme.primary : theme.text + '20' }]}>
-              <Text style={[styles.selectionStepText, { color: selectedPhoto1 ? 'white' : theme.text }]}>
-                {t("progress.firstPhoto")} {selectedPhoto1 ? '✓' : ''}
+            <View style={[styles.selectionStep, { backgroundColor: selectedPhoto1 ? theme.primary : withOpacity(theme.text, overlayOpacity.subtle) }]}>
+              <Text style={[preciseType.badgeLabel, styles.selectionStepText, { color: selectedPhoto1 ? 'white' : theme.text, fontFamily: fontFamily.mono }]}>
+                {t("progress.firstPhoto").toUpperCase()} {selectedPhoto1 ? '✓' : ''}
               </Text>
             </View>
-            <View style={[styles.selectionConnector, { backgroundColor: theme.text + '30' }]} />
-            <View style={[styles.selectionStep, { backgroundColor: selectedPhoto2 ? theme.success : theme.text + '20' }]}>
-              <Text style={[styles.selectionStepText, { color: selectedPhoto2 ? 'white' : theme.text }]}>
-                {t("progress.secondPhoto")} {selectedPhoto2 ? '✓' : ''}
+            <View style={[styles.selectionConnector, { backgroundColor: withOpacity(theme.text, overlayOpacity.light) }]} />
+            <View style={[styles.selectionStep, { backgroundColor: selectedPhoto2 ? theme.success : withOpacity(theme.text, overlayOpacity.subtle) }]}>
+              <Text style={[preciseType.badgeLabel, styles.selectionStepText, { color: selectedPhoto2 ? 'white' : theme.text, fontFamily: fontFamily.mono }]}>
+                {t("progress.secondPhoto").toUpperCase()} {selectedPhoto2 ? '✓' : ''}
               </Text>
             </View>
           </View>
@@ -235,8 +235,8 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
                   activeOpacity={0.7}
                 >
                   <Image source={{ uri: photo.uri }} style={styles.selectionPhoto} />
-                  <View style={[styles.selectionPhotoOverlay, { backgroundColor: theme.text + '99' }]}>
-                    <Text style={styles.selectionPhotoDate}>
+                  <View style={[styles.selectionPhotoOverlay, { backgroundColor: withOpacity(theme.text, overlayOpacity.heavy) }]}>
+                    <Text style={[preciseType.caption, styles.selectionPhotoDate, { fontFamily: fontFamily.mono }]}>
                       {new Date(photo.date).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
@@ -265,13 +265,14 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
           </ScrollView>
 
           {selectedPhoto1 && selectedPhoto2 && (
-            <TouchableOpacity
-              style={[styles.confirmSelectionButton, { backgroundColor: theme.primary }]}
+            <Button
+              title={t("progress.compareSelectedPhotos")}
               onPress={() => setIsSelectingPhotos(false)}
-            >
-              <Ionicons name="checkmark" size={24} color="white" />
-              <Text style={styles.confirmSelectionText}>{t("progress.compareSelectedPhotos")}</Text>
-            </TouchableOpacity>
+              variant="primary"
+              fullWidth
+              icon={<Ionicons name="checkmark" size={20} color={theme.onAccent} />}
+              style={styles.confirmSelectionButton}
+            />
           )}
         </View>
       </FeatureGate>
@@ -680,10 +681,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
   },
-  selectionStepText: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
+  selectionStepText: {},
   selectionConnector: {
     width: 20,
     height: 2,
@@ -720,8 +718,6 @@ const styles = StyleSheet.create({
   },
   selectionPhotoDate: {
     color: "white",
-    fontSize: 11,
-    fontWeight: "600",
   },
   selectionBadge: {
     position: "absolute",
@@ -732,11 +728,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
   },
   selectionBadgeText: {
     color: "white",
@@ -753,18 +744,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   confirmSelectionButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 16,
-    gap: 8,
-  },
-  confirmSelectionText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
+    marginTop: spacing.lg,
   },
   gridContainer: {
     flexDirection: "row",
