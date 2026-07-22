@@ -247,6 +247,7 @@ interface TranslationKeys {
     processing: string;
     continueToPayment: string;
     cancelAnytime: string;
+    trustLine: string;
     termsAgreement: string;
     perMonth: string;
     currency: string;
@@ -555,6 +556,7 @@ export const translations: Translations = {
       processing: "Processing...",
       continueToPayment: "Continue to Payment",
       cancelAnytime: "Cancel anytime. No commitment.",
+      trustLine: "Your photos stay yours either way.",
       termsAgreement: "By continuing, you agree to our Terms & Privacy Policy",
       perMonth: "/month",
       currency: "$",
@@ -859,6 +861,7 @@ export const translations: Translations = {
       processing: "Procesando...",
       continueToPayment: "Continuar al Pago",
       cancelAnytime: "Cancela en cualquier momento. Sin compromiso.",
+      trustLine: "Tus fotos siguen siendo tuyas en cualquier caso.",
       termsAgreement: "Al continuar, aceptas nuestros Términos y Política de Privacidad",
       perMonth: "/mes",
       currency: "€",
@@ -1163,6 +1166,7 @@ export const translations: Translations = {
       processing: "Elaborazione...",
       continueToPayment: "Continua al Pagamento",
       cancelAnytime: "Annulla in qualsiasi momento. Nessun impegno.",
+      trustLine: "Le tue foto restano tue in ogni caso.",
       termsAgreement: "Continuando, accetti i nostri Termini e la Politica sulla Privacy",
       perMonth: "/mese",
       currency: "€",
@@ -1468,6 +1472,7 @@ export const translations: Translations = {
       processing: "Verarbeitung...",
       continueToPayment: "Weiter zur Zahlung",
       cancelAnytime: "Jederzeit kündbar. Keine Verpflichtung.",
+      trustLine: "Deine Fotos bleiben so oder so deine.",
       termsAgreement: "Indem Sie fortfahren, stimmen Sie unseren Bedingungen und Datenschutzrichtlinien zu",
       perMonth: "/Monat",
       currency: "€",
@@ -1772,6 +1777,7 @@ export const translations: Translations = {
       processing: "Traitement...",
       continueToPayment: "Continuer vers le Paiement",
       cancelAnytime: "Annulez à tout moment. Aucun engagement.",
+      trustLine: "Vos photos restent les vôtres, quoi qu'il arrive.",
       termsAgreement: "En continuant, vous acceptez nos Conditions et notre Politique de Confidentialité",
       perMonth: "/mois",
       currency: "€",
