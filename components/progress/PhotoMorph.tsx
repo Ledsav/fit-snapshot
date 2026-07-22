@@ -39,6 +39,7 @@ import SyncedZoomPair from '@/components/progress/SyncedZoomPair';
 import { useGifs } from '@/context/GifContext';
 import { BeforeAfterSlider } from "@/components/progress/BeforeAfterSlider";
 import { ContactSheetFrame } from "@/components/home/ContactSheetFrame";
+import { Button } from "@/components/ui";
 
 
 const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
@@ -131,37 +132,30 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   };
 
   if (photos.length === 1) {
+    const singlePhotoCaption = `${new Date(photos[0].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} · ${t(`camera.${type}`).toUpperCase()}`;
     return (
       <View style={[styles.container, { backgroundColor: theme.transparent }]}>
         <View style={[styles.headerRow, styles.headerRowSingle]}>
-          <View style={[styles.singlePhotoChip, { backgroundColor: theme.cardBackground }]}>
-            <Ionicons name="image-outline" size={16} color={theme.text} />
-            <Text style={[styles.singlePhotoChipText, { color: theme.text }]}>1 photo</Text>
+          <View style={styles.singlePhotoChip}>
+            <Ionicons name="image-outline" size={16} color={theme.secondary} />
+            <Text style={[preciseType.badgeLabel, styles.singlePhotoChipText, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
+              1 PHOTO
+            </Text>
           </View>
         </View>
-        <View
-          style={[
-            styles.imageContainer,
-            { backgroundColor: theme.cardBackground, borderColor: theme.primary },
-          ]}
-        >
-          <Image source={{ uri: photos[0].uri }} style={styles.image} />
-          <View style={styles.photoLabels}>
-            <View style={[styles.photoLabel, { backgroundColor: theme.text + 'B3' }]}>
-              <Text style={styles.photoLabelText}>
-                {new Date(photos[0].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-              </Text>
-            </View>
+        <ContactSheetFrame caption={singlePhotoCaption}>
+          <View style={styles.sliderStage}>
+            <Image source={{ uri: photos[0].uri }} style={styles.image} />
+            <TouchableOpacity
+              style={[styles.extractButton, { backgroundColor: theme.primary }]}
+              onPress={extractPhoto}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="download-outline" size={20} color={theme.background} />
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            style={[styles.extractButton, { backgroundColor: theme.primary }]}
-            onPress={extractPhoto}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="download-outline" size={20} color={theme.background} />
-          </TouchableOpacity>
-        </View>
-        <Text style={[styles.singlePhotoHint, { color: theme.text }]}>
+        </ContactSheetFrame>
+        <Text style={[preciseType.caption, styles.singlePhotoHint, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
           {t("progress.takeMorePhotosHint")}
         </Text>
       </View>
@@ -299,15 +293,10 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
               <Ionicons name="refresh-outline" size={16} color={theme.text} />
             </TouchableOpacity>
           )}
-          <View
-            style={[
-              styles.timeDifferenceChip,
-              { backgroundColor: theme.primary },
-            ]}
-          >
-            <Ionicons name="time-outline" size={16} color={theme.background} />
-            <Text style={[styles.timeDifferenceChipText, { color: theme.background }]}>
-              {getTimeDifference(photo1.date, photo2.date, t)}
+          <View style={styles.timeDifferenceChip}>
+            <Ionicons name="time-outline" size={14} color={theme.secondary} />
+            <Text style={[preciseType.badgeLabel, styles.timeDifferenceChipText, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
+              {getTimeDifference(photo1.date, photo2.date, t).toUpperCase()}
             </Text>
           </View>
         </View>
@@ -374,30 +363,28 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
     >
       <View style={styles.gifContainer}>
         {!user ? (
-          <View style={[styles.gifMessageCard, { backgroundColor: theme.cardBackground, borderColor: theme.primary }]}>
-            <View style={[styles.gifMessageIconContainer, { backgroundColor: theme.primary + '20' }]}>
+          <View style={[styles.gifMessageCard, { backgroundColor: theme.cardBackground, borderColor: withOpacity(theme.secondary, overlayOpacity.light) }]}>
+            <View style={[styles.gifMessageIconContainer, { backgroundColor: withOpacity(theme.primary, overlayOpacity.subtle) }]}>
               <Ionicons name="log-in-outline" size={32} color={theme.primary} />
             </View>
             <Text style={[styles.gifMessageTitle, { color: theme.text }]}>
               {t("progress.gifAuthRequired")}
             </Text>
-            <Text style={[styles.gifMessageSubtitle, { color: theme.text }]}>
+            <Text style={[styles.gifMessageSubtitle, { color: theme.secondary }]}>
               Sign in to start creating amazing before/after transformation GIFs
             </Text>
-            <TouchableOpacity
-              style={[styles.gifActionButton, { backgroundColor: theme.primary }]}
+            <Button
+              title={t("progress.gifGoToSettings")}
               onPress={() => router.push('/(tabs)/settings')}
-            >
-              <Ionicons name="settings-outline" size={20} color={theme.background} />
-              <Text style={[styles.gifActionButtonText, { color: theme.background }]}>
-                {t("progress.gifGoToSettings")}
-              </Text>
-            </TouchableOpacity>
+              variant="primary"
+              icon={<Ionicons name="settings-outline" size={20} color={theme.onAccent} />}
+              style={styles.gifActionButton}
+            />
           </View>
         ) : (
           <>
-            <TouchableOpacity
-              style={[styles.gifGenerateButton, { backgroundColor: theme.primary }]}
+            <Button
+              title={t("progress.gifGenerateButton")}
               onPress={async () => {
                 setIsGeneratingGif(true);
                 setGifError(null);
@@ -443,78 +430,61 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
                 }
               }}
               disabled={isGeneratingGif}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="film-outline" size={22} color={theme.background} />
-              <Text style={[styles.gifGenerateButtonText, { color: theme.background }]}>
-                {t("progress.gifGenerateButton")}
-              </Text>
-            </TouchableOpacity>
+              variant="primary"
+              fullWidth
+              icon={<Ionicons name="film-outline" size={22} color={theme.onAccent} />}
+              style={styles.gifGenerateButton}
+            />
 
             {isGeneratingGif && (
-              <View style={[styles.gifLoadingCard, { backgroundColor: theme.cardBackground }]}>
+              <View style={[styles.gifLoadingCard, { backgroundColor: theme.cardBackground, borderColor: withOpacity(theme.secondary, overlayOpacity.light) }]}>
                 <Ionicons name="hourglass-outline" size={24} color={theme.primary} />
-                <Text style={[styles.gifLoadingText, { color: theme.text }]}>
+                <Text style={[preciseType.subtitle, styles.gifLoadingText, { color: theme.text, fontFamily: fontFamily.mono }]}>
                   {t("progress.gifGenerating")}
                 </Text>
               </View>
             )}
 
-            {gifError && (
-              <View style={[styles.gifMessageCard, {
-                backgroundColor: theme.cardBackground,
-                borderColor: gifError.toLowerCase().includes('rate limit') || gifError.toLowerCase().includes('limit exceeded')
-                  ? '#FFA500'
-                  : theme.error || '#FF3B30'
-              }]}>
-                <View style={[styles.gifMessageIconContainer, {
-                  backgroundColor: (gifError.toLowerCase().includes('rate limit') || gifError.toLowerCase().includes('limit exceeded')
-                    ? '#FFA500'
-                    : theme.error || '#FF3B30') + '20'
-                }]}>
-                  <Ionicons
-                    name={gifError.toLowerCase().includes('rate limit') || gifError.toLowerCase().includes('limit exceeded')
-                      ? "time-outline"
-                      : "alert-circle-outline"
-                    }
-                    size={32}
-                    color={gifError.toLowerCase().includes('rate limit') || gifError.toLowerCase().includes('limit exceeded')
-                      ? '#FFA500'
-                      : theme.error || '#FF3B30'
-                    }
-                  />
+            {gifError && (() => {
+              const isRateLimit = gifError.toLowerCase().includes('rate limit') || gifError.toLowerCase().includes('limit exceeded');
+              const errorColor = isRateLimit ? theme.warning : theme.error;
+              return (
+                <View style={[styles.gifMessageCard, { backgroundColor: theme.cardBackground, borderColor: withOpacity(errorColor, overlayOpacity.heavy) }]}>
+                  <View style={[styles.gifMessageIconContainer, { backgroundColor: withOpacity(errorColor, overlayOpacity.subtle) }]}>
+                    <Ionicons
+                      name={isRateLimit ? "time-outline" : "alert-circle-outline"}
+                      size={32}
+                      color={errorColor}
+                    />
+                  </View>
+                  <Text style={[styles.gifMessageTitle, { color: theme.text }]}>
+                    {isRateLimit ? t("progress.gifRateLimitTitle") : t("progress.gifErrorTitle")}
+                  </Text>
+                  <Text style={[styles.gifMessageSubtitle, { color: theme.secondary }]}>
+                    {isRateLimit ? t("progress.gifRateLimitMessage") : gifError}
+                  </Text>
                 </View>
-                <Text style={[styles.gifMessageTitle, { color: theme.text }]}>
-                  {gifError.toLowerCase().includes('rate limit') || gifError.toLowerCase().includes('limit exceeded')
-                    ? t("progress.gifRateLimitTitle")
-                    : t("progress.gifErrorTitle")
-                  }
-                </Text>
-                <Text style={[styles.gifMessageSubtitle, { color: theme.text }]}>
-                  {gifError.toLowerCase().includes('rate limit') || gifError.toLowerCase().includes('limit exceeded')
-                    ? t("progress.gifRateLimitMessage")
-                    : gifError
-                  }
-                </Text>
-              </View>
-            )}
+              );
+            })()}
           </>
         )}
 
         {gifUrl && (
           <View style={styles.gifResultContainer}>
-            <Image source={{ uri: gifUrl }} style={styles.gifImage} />
+            <View style={[styles.gifImageFrame, { backgroundColor: theme.cardBackground, borderColor: withOpacity(theme.secondary, overlayOpacity.light) }]}>
+              <Image source={{ uri: gifUrl }} style={styles.gifImage} />
+            </View>
             {gifSaved && (
-              <View style={[styles.gifSavedBadge, { backgroundColor: theme.success + '20' }]}>
+              <View style={styles.gifSavedBadge}>
                 <Ionicons name="checkmark-circle" size={16} color={theme.success} />
-                <Text style={[styles.gifSavedBadgeText, { color: theme.success }]}>
+                <Text style={[preciseType.caption, styles.gifSavedBadgeText, { color: theme.success, fontFamily: fontFamily.mono }]}>
                   Saved to your gallery
                 </Text>
               </View>
             )}
             <View style={styles.gifActionsRow}>
-              <TouchableOpacity
-                style={[styles.gifDownloadButton, { backgroundColor: theme.primary }]}
+              <Button
+                title={gifSaved ? 'Save Again' : 'Download'}
                 onPress={async () => {
                   try {
                     const { status } = await MediaLibrary.requestPermissionsAsync();
@@ -530,27 +500,21 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
                     Alert.alert(t("common.error"), 'Failed to save GIF');
                   }
                 }}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="download-outline" size={20} color={theme.background} />
-                <Text style={[styles.gifDownloadButtonText, { color: theme.background }]}>
-                  {gifSaved ? 'Save Again' : 'Download'}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.gifClearButton, { backgroundColor: theme.text + '20' }]}
+                variant="primary"
+                icon={<Ionicons name="download-outline" size={20} color={theme.onAccent} />}
+                style={styles.gifDownloadButton}
+              />
+              <Button
+                title="Clear"
                 onPress={() => {
                   setGifUrl(null);
                   setGifError(null);
                   setGifSaved(false);
                 }}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="close-outline" size={20} color={theme.text} />
-                <Text style={[styles.gifClearButtonText, { color: theme.text }]}>
-                  Clear
-                </Text>
-              </TouchableOpacity>
+                variant="ghost"
+                icon={<Ionicons name="close-outline" size={20} color={theme.text} />}
+                style={styles.gifClearButton}
+              />
             </View>
           </View>
         )}
@@ -610,10 +574,16 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
         >
           <View style={styles.gridContainer}>
             {photos.slice(0, 6).map((photo, index) => (
-              <View key={photo.id} style={[styles.gridPhoto, { borderColor: theme.primary }]}>
+              <View
+                key={photo.id}
+                style={[
+                  styles.gridPhoto,
+                  { backgroundColor: theme.cardBackground, borderColor: withOpacity(theme.secondary, overlayOpacity.light) },
+                ]}
+              >
                 <Image source={{ uri: photo.uri }} style={styles.gridImage} />
-                <View style={[styles.gridLabel, { backgroundColor: theme.text + 'B3' }]}>
-                  <Text style={styles.gridDateText}>
+                <View style={[styles.gridLabel, { backgroundColor: withOpacity(theme.cardBackground, overlayOpacity.veryHeavy) }]}>
+                  <Text style={[preciseType.statLabel, styles.gridDateText, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
                     {new Date(photo.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </Text>
                 </View>
@@ -805,9 +775,9 @@ const styles = StyleSheet.create({
   gridPhoto: {
     width: (width - 60) / 3,
     aspectRatio: 3 / 4,
-    borderRadius: 10,
+    borderRadius: borderRadius.sm,
     overflow: "hidden",
-    borderWidth: 2,
+    borderWidth: 1,
   },
   gridImage: {
     width: "100%",
@@ -819,45 +789,28 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 4,
+    paddingVertical: spacing.xs,
   },
   gridDateText: {
-    color: "white",
-    fontSize: 9,
-    fontWeight: "600",
     textAlign: "center",
   },
   timeDifferenceChip: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    gap: 6,
+    gap: spacing.xs,
   },
-  timeDifferenceChipText: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
+  timeDifferenceChipText: {},
   singlePhotoChip: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    gap: 6,
+    gap: spacing.xs,
   },
   singlePhotoChipText: {
-    fontSize: 14,
-    fontWeight: "600",
-    opacity: 0.7,
+    textTransform: "uppercase",
   },
   singlePhotoHint: {
-    fontSize: 14,
     textAlign: "center",
-    opacity: 0.6,
-    fontStyle: "italic",
-    marginTop: 12,
+    marginTop: spacing.md,
   },
   noPhotosContainer: {
     flex: 1,
@@ -871,41 +824,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 20,
   },
-  imageContainer: {
-    width: "100%",
-    aspectRatio: 3 / 4,
-    borderRadius: 20,
-    overflow: "hidden",
-    marginBottom: 20,
-    borderWidth: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
-  },
   image: {
     width: "100%",
     height: "100%",
     resizeMode: "cover",
-  },
-  photoLabels: {
-    position: "absolute",
-    top: 16,
-    left: 16,
-    right: 16,
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  photoLabel: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  photoLabelText: {
-    color: "white",
-    fontSize: 12,
-    fontWeight: "600",
   },
   sliderStage: {
     position: "relative",
@@ -930,16 +852,11 @@ const styles = StyleSheet.create({
   },
   gifMessageCard: {
     width: "100%",
-    padding: 24,
-    borderRadius: 16,
-    borderWidth: 2,
+    padding: spacing.xxl,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
     alignItems: "center",
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    marginBottom: spacing.lg,
   },
   gifMessageIconContainer: {
     width: 64,
@@ -947,131 +864,68 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   gifMessageTitle: {
     fontSize: 18,
     fontWeight: "700",
-    marginBottom: 8,
+    marginBottom: spacing.sm,
     textAlign: "center",
   },
   gifMessageSubtitle: {
     fontSize: 14,
     lineHeight: 20,
     textAlign: "center",
-    opacity: 0.8,
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   gifActionButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    gap: 8,
-    marginTop: 8,
-  },
-  gifActionButtonText: {
-    fontSize: 15,
-    fontWeight: "700",
+    marginTop: spacing.sm,
   },
   gifGenerateButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    gap: 10,
-    marginBottom: 16,
-    width: "100%",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  gifGenerateButtonText: {
-    fontSize: 16,
-    fontWeight: "700",
+    marginBottom: spacing.lg,
   },
   gifLoadingCard: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
-    borderRadius: 12,
-    gap: 12,
-    marginBottom: 16,
+    padding: spacing.lg,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    gap: spacing.md,
+    marginBottom: spacing.lg,
     width: "100%",
   },
-  gifLoadingText: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
+  gifLoadingText: {},
   gifResultContainer: {
     width: "100%",
     alignItems: "center",
-    marginTop: 16,
+    marginTop: spacing.lg,
+  },
+  gifImageFrame: {
+    borderRadius: borderRadius.sm,
+    borderWidth: 1,
+    padding: spacing.sm,
+    marginBottom: spacing.lg,
   },
   gifSavedBadge: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    marginBottom: 12,
+    gap: spacing.xs,
+    marginBottom: spacing.md,
   },
-  gifSavedBadgeText: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
+  gifSavedBadgeText: {},
   gifImage: {
     width: 280,
     height: 373,
-    borderRadius: 16,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5,
+    borderRadius: borderRadius.sm,
   },
   gifActionsRow: {
     flexDirection: "row",
-    gap: 12,
+    gap: spacing.md,
     width: "100%",
     justifyContent: "center",
   },
-  gifDownloadButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    gap: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  gifDownloadButtonText: {
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  gifClearButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    gap: 8,
-  },
-  gifClearButtonText: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
+  gifDownloadButton: {},
+  gifClearButton: {},
 });
 
 export default PhotoMorph;
