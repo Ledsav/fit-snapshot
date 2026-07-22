@@ -1,3 +1,6 @@
+import type { Photo } from "./photoStorage";
+import type { PhotoType } from "@/enums/Photos";
+
 /** Δ tolerance (in normalized 0–1 luminance) around the baseline. */
 export const LIGHTING_TOLERANCE = { matched: 0.08, close: 0.18 } as const;
 
@@ -64,4 +67,17 @@ export function meanLumaFromYPlane(
     }
   }
   return count === 0 ? 0 : sum / count;
+}
+
+/** Baseline luminance for a pose: manual override, else earliest photo with luminance, else null. */
+export function resolveBaseline(
+  photos: Photo[],
+  type: PhotoType,
+  override: number | null
+): number | null {
+  if (override !== null && Number.isFinite(override)) return override;
+  const withLuma = photos
+    .filter((ph) => ph.type === type && typeof ph.luminance === "number")
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  return withLuma.length > 0 ? (withLuma[0].luminance as number) : null;
 }

@@ -4,8 +4,11 @@ import {
   classifyLighting,
   meanLumaFromYPlane,
   DEFAULT_BG_REGIONS,
+  resolveBaseline,
   type LumaSampleRegion,
 } from "./lightingService";
+import { PhotoType } from "@/enums/Photos";
+import type { Photo } from "./photoStorage";
 
 describe("normalizeLuma", () => {
   it("maps 0..255 onto 0..1", () => {
@@ -80,5 +83,34 @@ describe("meanLumaFromYPlane", () => {
 
   it("exposes two default background regions", () => {
     expect(DEFAULT_BG_REGIONS).toHaveLength(2);
+  });
+});
+
+const p = (date: string, type: PhotoType, luminance?: number): Photo => ({
+  id: date, uri: "x", date, type, luminance,
+});
+
+describe("resolveBaseline", () => {
+  it("returns the override when provided", () => {
+    expect(resolveBaseline([], PhotoType.front, 0.42)).toBe(0.42);
+  });
+
+  it("returns null when no override and no photo has luminance", () => {
+    const photos = [p("2026-01-01", PhotoType.front)];
+    expect(resolveBaseline(photos, PhotoType.front, null)).toBeNull();
+  });
+
+  it("returns the earliest luminance for the matching pose", () => {
+    const photos = [
+      p("2026-03-01", PhotoType.front, 0.6),
+      p("2026-01-01", PhotoType.front, 0.5), // earliest front with luminance
+      p("2026-02-01", PhotoType.side, 0.9),
+    ];
+    expect(resolveBaseline(photos, PhotoType.front, null)).toBe(0.5);
+  });
+
+  it("ignores photos of other poses", () => {
+    const photos = [p("2026-01-01", PhotoType.side, 0.9)];
+    expect(resolveBaseline(photos, PhotoType.front, null)).toBeNull();
   });
 });
