@@ -191,7 +191,7 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
             >
               {t("paywall.upgradeTitle")}
             </Text>
-            <Text style={[styles.heroSubtitle, { color: theme.secondary, fontFamily: fontFamily.body }]}>
+            <Text style={[styles.heroSubtitle, preciseType.tipBody, { color: theme.secondary, fontFamily: fontFamily.body }]}>
               {t("paywall.upgradeSubtitle")}
             </Text>
           </View>
@@ -324,7 +324,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   heroSubtitle: {
-    fontSize: 14,
     textAlign: 'center',
   },
   benefitsContainer: {
