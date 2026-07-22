@@ -46,6 +46,15 @@ import {
 
 const { width } = Dimensions.get("window");
 const itemSize = width / 3 - 10;
+
+// Compact caption date, e.g. "Jul 22, 2025". Year is always shown so photos
+// are unambiguous across a multi-year progress history.
+const formatCaptionDate = (dateStr: string) =>
+  new Date(dateStr).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 type Section = {
   title: string;
   data: Photo[];
@@ -66,6 +75,7 @@ export default function GalleryScreen() {
   const [selectedPhotoIds, setSelectedPhotoIds] = useState<Set<string>>(new Set());
   const [isPaywallVisible, setIsPaywallVisible] = useState(false);
   const [isGifsExpanded, setIsGifsExpanded] = useState(true);
+  const [isAddChooserVisible, setIsAddChooserVisible] = useState(false);
   const pathname = usePathname();
   const { effectiveColorScheme } = useTheme();
   const theme = Colors[effectiveColorScheme];
@@ -78,7 +88,7 @@ export default function GalleryScreen() {
     isLoading: contextLoading,
     error,
   } = usePhotos();
-  const { gifs, removeGif, refreshGifs } = useGifs();
+  const { gifs, addGif, removeGif, refreshGifs } = useGifs();
   const { storageUsagePercentage, featureUsage } = useUser();
   const { t } = useLocalization();
 
@@ -401,12 +411,55 @@ export default function GalleryScreen() {
     setIsTypeSelectionVisible(false);
   };
 
+  const pickGif = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (status !== 'granted') {
+        alert(t("camera.galleryPermissionDenied") || 'Sorry, we need media library permissions to import images!');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: false,
+        quality: 1,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        const selectedAsset = result.assets[0];
+        const isGif =
+          selectedAsset.mimeType === 'image/gif' ||
+          selectedAsset.fileName?.toLowerCase().endsWith('.gif') ||
+          selectedAsset.uri.toLowerCase().endsWith('.gif');
+
+        if (!isGif) {
+          Alert.alert(t("common.error"), t("gallery.invalidGifFile"));
+          return;
+        }
+
+        const addResult = await addGif({
+          id: Date.now().toString(),
+          uri: selectedAsset.uri,
+          date: new Date().toISOString(),
+        });
+
+        if (!addResult.success) {
+          Alert.alert(t("common.error"), addResult.error || t("gallery.invalidGifFile"));
+        }
+      }
+    } catch (error) {
+      console.error("Error picking GIF:", error);
+      alert(t("camera.imagePickerError") || 'Error selecting GIF. Please try again.');
+    }
+  };
+
   const renderItem = ({ item }: { item: Photo }) => {
     const isSelected = selectedPhotoIds.has(item.id);
     const caption =
       viewMode === 'timeline'
-        ? `${new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · ${item.type.toUpperCase()}`
-        : new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        ? `${formatCaptionDate(item.date)} · ${item.type.toUpperCase()}`
+        : formatCaptionDate(item.date);
 
     return (
       <View key={item.id} style={styles.item}>
@@ -496,7 +549,7 @@ export default function GalleryScreen() {
         style={[styles.itemCaption, { color: theme.secondary, fontFamily: fontFamily.mono }]}
         numberOfLines={1}
       >
-        {new Date(gif.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+        {formatCaptionDate(gif.date)}
       </Text>
       {selectionMode && (
         <TouchableOpacity
@@ -781,10 +834,60 @@ export default function GalleryScreen() {
           </View>
         </Modal>
 
+        {/* Add Content Chooser Modal */}
+        <Modal
+          visible={isAddChooserVisible}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setIsAddChooserVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, { backgroundColor: theme.cardBackground }]}>
+              <Text style={[styles.modalTitle, { color: theme.text }]}>
+                {t("gallery.addContent")}
+              </Text>
+              <View style={styles.typeButtonsContainer}>
+                <TouchableOpacity
+                  style={[styles.typeButton, styles.chooserButton, { backgroundColor: theme.primary }]}
+                  onPress={() => {
+                    setIsAddChooserVisible(false);
+                    pickImage();
+                  }}
+                >
+                  <Ionicons name="image-outline" size={20} color={theme.background} />
+                  <Text style={[styles.typeButtonText, { color: theme.background }]}>
+                    {t("gallery.addPhoto")}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.typeButton, styles.chooserButton, { backgroundColor: theme.primary }]}
+                  onPress={() => {
+                    setIsAddChooserVisible(false);
+                    pickGif();
+                  }}
+                >
+                  <Ionicons name="film-outline" size={20} color={theme.background} />
+                  <Text style={[styles.typeButtonText, { color: theme.background }]}>
+                    {t("gallery.importGif")}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity
+                style={[styles.cancelButton, { backgroundColor: theme.error }]}
+                onPress={() => setIsAddChooserVisible(false)}
+              >
+                <Text style={[styles.cancelButtonText, { color: theme.background }]}>
+                  {t("common.cancel") || "Cancel"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
         {/* Floating Action Button */}
         <TouchableOpacity
           style={[styles.fab, { backgroundColor: theme.primary }]}
-          onPress={pickImage}
+          onPress={() => setIsAddChooserVisible(true)}
           activeOpacity={0.9}
         >
           <Ionicons name="add" size={iconSize.lg} color={theme.background} />
@@ -1042,6 +1145,11 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md,
     marginBottom: spacing.md,
     alignItems: "center",
+  },
+  chooserButton: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: spacing.sm,
   },
   typeButtonText: {
     ...typography.body,

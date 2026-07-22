@@ -59,6 +59,10 @@ interface TranslationKeys {
     gifsTitle: string;
     deleteGif: string;
     deleteGifConfirmMessage: string;
+    addContent: string;
+    addPhoto: string;
+    importGif: string;
+    invalidGifFile: string;
   };
   progress: {
     title: string;
@@ -342,6 +346,10 @@ export const translations: Translations = {
       gifsTitle: "GIFs",
       deleteGif: "Delete GIF",
       deleteGifConfirmMessage: "This GIF will be permanently deleted. This can't be undone.",
+      addContent: "Add to Gallery",
+      addPhoto: "Add Photo",
+      importGif: "Import GIF",
+      invalidGifFile: "Please select a GIF file.",
     },
     progress: {
       title: "Your Progress",
@@ -652,6 +660,10 @@ export const translations: Translations = {
       gifsTitle: "GIFs",
       deleteGif: "Eliminar GIF",
       deleteGifConfirmMessage: "Este GIF se eliminará permanentemente. Esta acción no se puede deshacer.",
+      addContent: "Añadir a la Galería",
+      addPhoto: "Añadir Foto",
+      importGif: "Importar GIF",
+      invalidGifFile: "Por favor selecciona un archivo GIF.",
     },
     progress: {
       title: "Tu Progreso",
@@ -964,6 +976,10 @@ export const translations: Translations = {
       gifsTitle: "GIF",
       deleteGif: "Elimina GIF",
       deleteGifConfirmMessage: "Questa GIF verrà eliminata definitivamente. Questa azione non può essere annullata.",
+      addContent: "Aggiungi alla Galleria",
+      addPhoto: "Aggiungi Foto",
+      importGif: "Importa GIF",
+      invalidGifFile: "Seleziona un file GIF.",
     },
     progress: {
       title: "I Tuoi Progressi",
@@ -1274,6 +1290,10 @@ export const translations: Translations = {
       gifsTitle: "GIFs",
       deleteGif: "GIF löschen",
       deleteGifConfirmMessage: "Dieses GIF wird dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.",
+      addContent: "Zur Galerie hinzufügen",
+      addPhoto: "Foto hinzufügen",
+      importGif: "GIF importieren",
+      invalidGifFile: "Bitte wähle eine GIF-Datei aus.",
     },
     progress: {
       title: "Ihr Fortschritt",
@@ -1586,6 +1606,10 @@ export const translations: Translations = {
       gifsTitle: "GIFs",
       deleteGif: "Supprimer le GIF",
       deleteGifConfirmMessage: "Ce GIF sera définitivement supprimé. Cette action est irréversible.",
+      addContent: "Ajouter à la Galerie",
+      addPhoto: "Ajouter une Photo",
+      importGif: "Importer un GIF",
+      invalidGifFile: "Veuillez sélectionner un fichier GIF.",
     },
     progress: {
       title: "Votre Progrès",

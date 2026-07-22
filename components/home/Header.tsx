@@ -1,8 +1,10 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text, View } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
 import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
 import { spacing, fontFamily, preciseType } from "@/constants/DesignSystem";
+
+const logo = require("@/assets/images/logo-fs.png");
 
 interface HeaderProps {
   title: string;
@@ -25,9 +27,12 @@ export const Header: React.FC<HeaderProps> = ({ title }) => {
         },
       ]}
     >
-      <Text style={[styles.wordmark, preciseType.wordmark, { color: theme.text, fontFamily: fontFamily.mono }]}>
-        {title.toUpperCase()}
-      </Text>
+      <View style={styles.row}>
+        <Image source={logo} style={styles.logo} resizeMode="contain" />
+        <Text style={[styles.wordmark, preciseType.wordmark, { color: theme.text, fontFamily: fontFamily.mono }]}>
+          {title.toUpperCase()}
+        </Text>
+      </View>
     </View>
   );
 };
@@ -38,6 +43,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     paddingBottom: spacing.md,
     borderBottomWidth: 1,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+  },
+  logo: {
+    width: 28,
+    height: 28,
   },
   wordmark: {},
 });

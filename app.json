@@ -4,7 +4,7 @@
     "slug": "FitSnapshot",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo.png",
+    "icon": "./assets/images/logo-fs.png",
     "scheme": ["fitsnapshot"],
     "userInterfaceStyle": "automatic",
     "ios": {
@@ -12,7 +12,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo.png",
+        "foregroundImage": "./assets/images/logo-fs.png",
         "backgroundColor": "#000000"
       },
       "package": "com.ledsav.fitsnapshot",
@@ -41,7 +41,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/logo.png",
+          "image": "./assets/images/logo-fs.png",
           "resizeMode": "contain",
           "backgroundColor": "#000000"
         }
