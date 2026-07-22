@@ -9,6 +9,8 @@ export interface Photo {
   date: string;
   type: PhotoType;
   fileName?: string;
+  /** 0–1 background luminance captured at shoot time (live-lighting feature). Absent on legacy photos. */
+  luminance?: number;
 }
 
 const PHOTO_STORAGE_KEY = "FITNESS_TRACKER_PHOTOS";
