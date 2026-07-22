@@ -74,6 +74,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 10,
     paddingHorizontal: 20,
+    paddingTop: 16,
     paddingBottom: 12,
   },
   tabButton: {
