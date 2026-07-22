@@ -56,10 +56,10 @@ export default function HomeScreen() {
       : 0;
   const totalPhotos = photos.length;
   const totalExpectedPhotos = totalDays * 3;
-  const consistency = Math.min(
-    100,
-    Math.round((totalPhotos / totalExpectedPhotos) * 100)
-  );
+  const consistency =
+    totalExpectedPhotos > 0
+      ? Math.min(100, Math.round((totalPhotos / totalExpectedPhotos) * 100))
+      : 0;
   const weeklyPhotoCount = useMemo(() => getPhotosInLastNDays(photos, 7), [photos]);
 
   const loadStreakData = useCallback(async () => {
@@ -149,15 +149,17 @@ export default function HomeScreen() {
           </View>
 
           {/* Latest Photo - Quick gallery preview */}
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, preciseType.sectionLabel, { color: theme.secondary }]}>
-              {t("home.latestPhoto")}
-            </Text>
-            <LatestPhotoCard
-              latestPhoto={latestPhoto}
-              onPress={() => navigateTo("/(tabs)/gallery")}
-            />
-          </View>
+          {latestPhoto && (
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, preciseType.sectionLabel, { color: theme.secondary }]}>
+                {t("home.latestPhoto")}
+              </Text>
+              <LatestPhotoCard
+                latestPhoto={latestPhoto}
+                onPress={() => navigateTo("/(tabs)/gallery")}
+              />
+            </View>
+          )}
 
           {/* Achievements - Gamification for engagement - PREMIUM */}
           <FeatureGate
