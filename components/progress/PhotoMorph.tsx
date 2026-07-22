@@ -11,13 +11,11 @@ import { Photo } from "@/services/photoStorage";
 import { getTimeDifference } from "@/utils/dateUtils";
 import { Ionicons } from "@expo/vector-icons";
 import * as MediaLibrary from "expo-media-library/legacy";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   Alert,
-  Animated,
   Dimensions,
   Image,
-  PanResponder,
   ScrollView,
   StyleSheet,
   Text,
@@ -30,9 +28,6 @@ interface PhotoMorphProps {
 }
 
 const { width } = Dimensions.get("window");
-const SLIDER_WIDTH = width * 0.8;
-const THUMB_SIZE = 40;
-const THUMB_RADIUS = THUMB_SIZE / 2;
 
 type ComparisonMode = 'slider' | 'sideBySide' | 'grid' | 'gif';
 
@@ -40,11 +35,12 @@ import { createBeforeAfterGif } from '@/services/gifService';
 import { useRouter } from 'expo-router';
 import SyncedZoomPair from '@/components/progress/SyncedZoomPair';
 import { useGifs } from '@/context/GifContext';
+import { BeforeAfterSlider } from "@/components/progress/BeforeAfterSlider";
+import { ContactSheetFrame } from "@/components/home/ContactSheetFrame";
 
 
 const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   const [sliderValue, setSliderValue] = useState(0);
-  const pan = useRef(new Animated.ValueXY()).current;
   const { effectiveColorScheme } = useTheme();
   const theme = Colors[effectiveColorScheme];
   const { getPhotosByType } = usePhotos();
@@ -67,18 +63,6 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   const hasGridViewAccess = hasFeatureAccess(Feature.GRID_VIEW_COMPARISON);
   const hasCustomSelectionAccess = hasFeatureAccess(Feature.CUSTOM_PHOTO_SELECTION);
   const hasGifAccess = hasFeatureAccess(Feature.GIF_GENERATION);
-
-  const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onPanResponderMove: (_, gesture) => {
-      
-      let newX = gesture.moveX - width * 0.1;
-      
-      newX = Math.max(0, Math.min(newX, SLIDER_WIDTH));
-      pan.x.setValue(newX);
-      setSliderValue((newX / SLIDER_WIDTH) * 100);
-    },
-  });
 
   const extractPhoto = useCallback(async () => {
     try {
@@ -600,37 +584,15 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   )}
       {/* Slider Mode */}
       {comparisonMode === 'slider' && (
-        <>
-          <View
-            style={[
-              styles.imageContainer,
-              { backgroundColor: theme.cardBackground, borderColor: theme.primary },
-            ]}
-          >
-            <Image
-              source={{ uri: photo1.uri }}
-              style={[styles.image, { opacity: (100 - sliderValue) / 100 }]}
+        <ContactSheetFrame caption={`${new Date(oldestPhoto.date).toLocaleDateString()} → ${new Date(newestPhoto.date).toLocaleDateString()} · ${t(`camera.${type}`).toUpperCase()}`}>
+          <View style={styles.sliderStage}>
+            <BeforeAfterSlider
+              beforeUri={photo1.uri}
+              afterUri={photo2.uri}
+              beforeLabel={t("common.before")}
+              afterLabel={t("common.after")}
+              onValueChange={setSliderValue}
             />
-            <Image
-              source={{ uri: photo2.uri }}
-              style={[
-                styles.image,
-                styles.overlayImage,
-                { opacity: sliderValue / 100 },
-              ]}
-            />
-            <View style={styles.photoLabels}>
-              <View style={[styles.photoLabel, { backgroundColor: theme.text + 'B3', opacity: (100 - sliderValue) / 100 }]}>
-                <Text style={styles.photoLabelText}>
-                  {new Date(photo1.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                </Text>
-              </View>
-              <View style={[styles.photoLabel, { backgroundColor: theme.text + 'B3', opacity: sliderValue / 100 }]}>
-                <Text style={styles.photoLabelText}>
-                  {new Date(photo2.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                </Text>
-              </View>
-            </View>
             <TouchableOpacity
               style={[styles.extractButton, { backgroundColor: theme.primary }]}
               onPress={extractPhoto}
@@ -639,41 +601,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
               <Ionicons name="download-outline" size={20} color={theme.background} />
             </TouchableOpacity>
           </View>
-          <View style={styles.sliderWrapper}>
-            <View style={styles.sliderContainer} {...panResponder.panHandlers}>
-              <View
-                style={[styles.sliderTrack, { backgroundColor: theme.text + '20' }]}
-              />
-              <View
-                style={[
-                  styles.sliderProgress,
-                  {
-                    backgroundColor: theme.primary,
-                    width: `${sliderValue}%`
-                  }
-                ]}
-              />
-              <Animated.View
-                style={[
-                  styles.sliderThumb,
-                  {
-                    backgroundColor: theme.background,
-                    borderColor: theme.primary,
-                    transform: [
-                      { translateX: Animated.subtract(pan.x, THUMB_RADIUS) }
-                    ],
-                  },
-                ]}
-              >
-                <View style={[styles.sliderThumbInner, { backgroundColor: theme.primary }]} />
-              </Animated.View>
-            </View>
-            <View style={styles.sliderLabels}>
-              <Text style={[styles.sliderLabel, { color: theme.text }]}>{t("common.before")}</Text>
-              <Text style={[styles.sliderLabel, { color: theme.text }]}>{t("common.after")}</Text>
-            </View>
-          </View>
-        </>
+        </ContactSheetFrame>
       )}
 
       {/* Side by Side Mode */}
@@ -989,11 +917,6 @@ const styles = StyleSheet.create({
     height: "100%",
     resizeMode: "cover",
   },
-  overlayImage: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-  },
   photoLabels: {
     position: "absolute",
     top: 16,
@@ -1012,58 +935,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
   },
-  sliderWrapper: {
-    marginTop: 8,
-  },
-  sliderContainer: {
-    width: SLIDER_WIDTH,
-    height: 44,
-    justifyContent: "center",
-    alignSelf: "center",
-    marginBottom: 8,
+  sliderStage: {
     position: "relative",
-  },
-  sliderTrack: {
-    width: "100%",
-    height: 6,
-    borderRadius: 3,
-    position: "absolute",
-  },
-  sliderProgress: {
-    height: 6,
-    borderRadius: 3,
-    position: "absolute",
-    left: 0,
-  },
-  sliderThumb: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    position: "absolute",
-    top: 2,
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  sliderThumbInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  sliderLabels: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: (width - SLIDER_WIDTH) / 2,
-  },
-  sliderLabel: {
-    fontSize: 13,
-    fontWeight: "600",
-    opacity: 0.6,
   },
   extractButton: {
     position: "absolute",
