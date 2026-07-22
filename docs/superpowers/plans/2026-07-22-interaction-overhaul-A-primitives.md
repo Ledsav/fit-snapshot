@@ -507,6 +507,12 @@ import { Text } from "react-native";
 import { create, act } from "react-test-renderer";
 
 let mockHasAccess = false;
+// Stub the icon set — FeatureGate renders the real PremiumLock, which renders
+// an Ionicon; the async font loader otherwise fires a setState after teardown
+// and surfaces as a non-zero exit on isolated runs.
+jest.mock("@expo/vector-icons", () => ({
+  Ionicons: (props: any) => null,
+}));
 jest.mock("@/context/ThemeContext", () => ({
   useTheme: () => ({ effectiveColorScheme: "dark" }),
 }));
