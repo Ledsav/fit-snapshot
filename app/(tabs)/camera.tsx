@@ -6,6 +6,7 @@ import {
   elevation,
   fontFamily,
   iconSize,
+  preciseType,
   spacing,
   touchTarget,
   typography,
@@ -412,6 +413,7 @@ export default function CameraScreen() {
           <Text
             style={[
               styles.overlayButtonText,
+              preciseType.badgeLabel,
               { color: overlay === type ? theme.background : theme.text },
             ]}
           >
@@ -787,8 +789,6 @@ const styles = StyleSheet.create({
   overlayButtonText: {
     color: "white",
     fontFamily: fontFamily.mono,
-    fontSize: 10,
-    letterSpacing: 1,
   },
   overlayText: {
     position: "absolute",
