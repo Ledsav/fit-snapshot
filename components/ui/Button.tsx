@@ -100,7 +100,7 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   const textVariantStyles: Record<string, TextStyle> = {
-    primary: { color: theme.background },
+    primary: { color: theme.onAccent },
     secondary: { color: theme.text },
     outline: { color: theme.text },
     ghost: { color: theme.text },
@@ -108,7 +108,7 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   const spinnerColor =
-    variant === 'primary' ? theme.background : variant === 'danger' ? theme.error : theme.text;
+    variant === 'primary' ? theme.onAccent : variant === 'danger' ? theme.error : theme.text;
 
   const isDisabled = disabled || loading;
 
