@@ -284,7 +284,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.transparent }]}>
-      <View style={[styles.headerRow, styles.headerRowSingle]}>
+      <View style={styles.headerRow}>
         <View style={styles.headerActions}>
           {(selectedPhoto1 || selectedPhoto2) && (
             <TouchableOpacity
@@ -301,57 +301,13 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
             </Text>
           </View>
         </View>
-        <TouchableOpacity
+        <Button
+          title={t("progress.change") || "Change"}
           onPress={() => (hasCustomSelectionAccess ? setIsSelectingPhotos(true) : setPaywallVisible(true))}
-          activeOpacity={0.7}
-        >
-          <Text style={[preciseType.badgeLabel, { color: theme.primary, fontFamily: fontFamily.mono }]}>
-            {(t("progress.change") || "Change") + " ›"}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Comparison View Group */}
-      <Text style={[styles.groupLabel, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
-        {t("progress.view") || "VIEW"}
-      </Text>
-      <View style={styles.viewGroup}>
-        {([
-          { key: 'slider' as const, label: t('progress.modeSlider'), locked: false },
-          { key: 'sideBySide' as const, label: t('progress.modeSideBySide'), locked: !hasSideBySideAccess },
-          { key: 'grid' as const, label: t('progress.modeGrid'), locked: !hasGridViewAccess },
-          { key: 'gif' as const, label: t('progress.modeGif'), locked: !hasGifAccess },
-        ]).map((v) => {
-          const active = comparisonMode === v.key;
-          return (
-            <TouchableOpacity
-              key={v.key}
-              style={[
-                styles.viewChip,
-                active
-                  ? { backgroundColor: theme.primary, borderColor: theme.primary }
-                  : { backgroundColor: theme.transparent, borderColor: withOpacity(theme.secondary, overlayOpacity.light) },
-              ]}
-              onPress={() => (v.locked ? setPaywallVisible(true) : setComparisonMode(v.key))}
-              activeOpacity={0.8}
-            >
-              <Text
-                style={[
-                  preciseType.badgeLabel,
-                  styles.viewChipText,
-                  { color: active ? theme.background : theme.text, fontFamily: fontFamily.mono },
-                ]}
-              >
-                {v.label.toUpperCase()}
-              </Text>
-              {v.locked && (
-                <Text style={[preciseType.statLabel, { color: theme.primary, fontFamily: fontFamily.mono, marginLeft: spacing.xs }]}>
-                  PRO
-                </Text>
-              )}
-            </TouchableOpacity>
-          );
-        })}
+          variant="ghost"
+          size="small"
+          icon={<Ionicons name="images-outline" size={16} color={theme.text} />}
+        />
       </View>
 
   {/* GIF Mode */}
@@ -594,6 +550,52 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
         </FeatureGate>
       )}
 
+      {/* View toolbar — how to compare. Photo-editor style, below the stage. */}
+      <Text style={[styles.viewBarHead, preciseType.statLabel, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
+        {t("progress.view") || "VIEW"}
+      </Text>
+      <View style={styles.viewBar}>
+        {([
+          { key: 'slider' as const, label: t('progress.modeSlider'), icon: 'contrast-outline' as const, locked: false },
+          { key: 'sideBySide' as const, label: t('progress.modeSideBySide'), icon: 'copy-outline' as const, locked: !hasSideBySideAccess },
+          { key: 'grid' as const, label: t('progress.modeGrid'), icon: 'grid-outline' as const, locked: !hasGridViewAccess },
+          { key: 'gif' as const, label: t('progress.modeGif'), icon: 'film-outline' as const, locked: !hasGifAccess },
+        ]).map((v) => {
+          const active = comparisonMode === v.key;
+          return (
+            <TouchableOpacity
+              key={v.key}
+              style={[
+                styles.viewBarItem,
+                active
+                  ? { backgroundColor: withOpacity(theme.primary, overlayOpacity.subtle), borderColor: theme.primary }
+                  : { backgroundColor: theme.transparent, borderColor: withOpacity(theme.secondary, overlayOpacity.light) },
+              ]}
+              onPress={() => (v.locked ? setPaywallVisible(true) : setComparisonMode(v.key))}
+              activeOpacity={0.8}
+            >
+              {v.locked && (
+                <View style={styles.viewBarProBadge}>
+                  <Text style={[preciseType.statLabel, { color: theme.primary, fontFamily: fontFamily.mono }]}>
+                    PRO
+                  </Text>
+                </View>
+              )}
+              <Ionicons name={v.icon} size={22} color={active ? theme.primary : theme.secondary} />
+              <Text
+                style={[
+                  preciseType.statLabel,
+                  styles.viewBarLabel,
+                  { color: active ? theme.primary : theme.text, fontFamily: fontFamily.mono },
+                ]}
+              >
+                {v.label.toUpperCase()}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
       <PaywallModal
         visible={paywallVisible}
         onClose={() => setPaywallVisible(false)}
@@ -625,26 +627,33 @@ const styles = StyleSheet.create({
   headerRowSingle: {
     justifyContent: "flex-end",
   },
-  groupLabel: {
+  viewBarHead: {
     textTransform: "uppercase",
+    marginTop: spacing.xl,
     marginBottom: spacing.sm,
-    marginTop: spacing.sm,
   },
-  viewGroup: {
+  viewBar: {
     flexDirection: "row",
     gap: spacing.sm,
-    marginBottom: spacing.lg,
   },
-  viewChip: {
-    flexDirection: "row",
+  viewBarItem: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.round,
+    gap: spacing.xs,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.md,
     borderWidth: 1,
+    position: "relative",
   },
-  viewChipText: {},
+  viewBarLabel: {
+    textAlign: "center",
+  },
+  viewBarProBadge: {
+    position: "absolute",
+    top: spacing.xs,
+    right: spacing.xs,
+  },
   selectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
