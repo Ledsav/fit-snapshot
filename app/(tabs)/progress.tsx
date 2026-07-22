@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { StyleSheet, ScrollView, View, RefreshControl, TouchableOpacity, Text } from "react-native";
 import PhotoMorph from "@/components/progress/PhotoMorph";
-import Colors from "@/constants/Colors";
+import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
+import { fontFamily, preciseType } from "@/constants/DesignSystem";
 import { useTheme } from "@/context/ThemeContext";
 import BackgroundImage from "@/components/style/BackgroundImage";
 import { Header } from "@/components/home/Header";
@@ -26,7 +27,9 @@ const ProgressScreen: React.FC = () => {
             key={type}
             style={[
               styles.tabButton,
-              { backgroundColor: activeType === type ? theme.primary : theme.cardBackground },
+              activeType === type
+                ? { backgroundColor: theme.primary, borderColor: theme.primary }
+                : { backgroundColor: theme.transparent, borderColor: withOpacity(theme.secondary, overlayOpacity.light) },
             ]}
             onPress={() => setActiveType(type)}
             activeOpacity={0.8}
@@ -34,10 +37,11 @@ const ProgressScreen: React.FC = () => {
             <Text
               style={[
                 styles.tabButtonText,
+                preciseType.badgeLabel,
                 { color: activeType === type ? theme.background : theme.text },
               ]}
             >
-              {t(`camera.${type}`)}
+              {t(`camera.${type}`).toUpperCase()}
             </Text>
           </TouchableOpacity>
         ))}
@@ -75,12 +79,12 @@ const styles = StyleSheet.create({
   tabButton: {
     flex: 1,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: 999,
+    borderWidth: 1,
     alignItems: "center",
   },
   tabButtonText: {
-    fontSize: 14,
-    fontWeight: "700",
+    fontFamily: fontFamily.mono,
   },
   container: {
     flexGrow: 1,
