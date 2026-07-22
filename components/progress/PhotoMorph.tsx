@@ -1,5 +1,7 @@
 import { FeatureGate } from "@/components/monetization/FeatureGate";
-import Colors from "@/constants/Colors";
+import PaywallModal from "@/components/monetization/PaywallModal";
+import Colors, { overlayOpacity, withOpacity } from "@/constants/Colors";
+import { borderRadius, fontFamily, preciseType, spacing } from "@/constants/DesignSystem";
 import { Feature } from "@/constants/Features";
 import { useAuth } from "@/context/AuthContext";
 import { useLocalization } from "@/context/LocalizationContext";
@@ -58,6 +60,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   const [isSelectingPhotos, setIsSelectingPhotos] = useState(false);
   const [selectedPhoto1, setSelectedPhoto1] = useState<Photo | null>(null);
   const [selectedPhoto2, setSelectedPhoto2] = useState<Photo | null>(null);
+  const [paywallVisible, setPaywallVisible] = useState(false);
 
   const hasSideBySideAccess = hasFeatureAccess(Feature.SIDE_BY_SIDE_COMPARISON);
   const hasGridViewAccess = hasFeatureAccess(Feature.GRID_VIEW_COMPARISON);
@@ -308,86 +311,58 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
             </Text>
           </View>
         </View>
+        <TouchableOpacity
+          onPress={() => (hasCustomSelectionAccess ? setIsSelectingPhotos(true) : setPaywallVisible(true))}
+          activeOpacity={0.7}
+        >
+          <Text style={[preciseType.badgeLabel, { color: theme.primary, fontFamily: fontFamily.mono }]}>
+            {(t("progress.change") || "Change") + " ›"}
+          </Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Comparison Mode Switcher */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.modeSwitcher}
-        contentContainerStyle={styles.modeSwitcherContent}
-      >
-        {[
-          {
-            key: 'slider' as const,
-            icon: 'swap-horizontal-outline' as const,
-            label: t('progress.modeSlider'),
-            locked: false,
-            onPress: () => setComparisonMode('slider'),
-          },
-          {
-            key: 'sideBySide' as const,
-            icon: 'copy-outline' as const,
-            label: t('progress.modeSideBySide'),
-            locked: !hasSideBySideAccess,
-            onPress: () => hasSideBySideAccess && setComparisonMode('sideBySide'),
-          },
-          {
-            key: 'gif' as const,
-            icon: 'film-outline' as const,
-            label: t('progress.modeGif'),
-            locked: !hasGifAccess,
-            onPress: () => hasGifAccess && setComparisonMode('gif'),
-          },
-          {
-            key: 'grid' as const,
-            icon: 'grid-outline' as const,
-            label: t('progress.modeGrid'),
-            locked: !hasGridViewAccess,
-            onPress: () => hasGridViewAccess && setComparisonMode('grid'),
-          },
-          {
-            key: 'select' as const,
-            icon: 'images-outline' as const,
-            label: t('progress.modeSelect'),
-            locked: !hasCustomSelectionAccess,
-            onPress: () => hasCustomSelectionAccess && setIsSelectingPhotos(true),
-          },
-        ].map((mode) => {
-          const isActive = mode.key !== 'select' && comparisonMode === mode.key;
+      {/* Comparison View Group */}
+      <Text style={[styles.groupLabel, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
+        {t("progress.view") || "VIEW"}
+      </Text>
+      <View style={styles.viewGroup}>
+        {([
+          { key: 'slider' as const, label: t('progress.modeSlider'), locked: false },
+          { key: 'sideBySide' as const, label: t('progress.modeSideBySide'), locked: !hasSideBySideAccess },
+          { key: 'grid' as const, label: t('progress.modeGrid'), locked: !hasGridViewAccess },
+          { key: 'gif' as const, label: t('progress.modeGif'), locked: !hasGifAccess },
+        ]).map((v) => {
+          const active = comparisonMode === v.key;
           return (
             <TouchableOpacity
-              key={mode.key}
+              key={v.key}
               style={[
-                styles.modePill,
-                { backgroundColor: isActive ? theme.primary : theme.text + '20' },
+                styles.viewChip,
+                active
+                  ? { backgroundColor: theme.primary, borderColor: theme.primary }
+                  : { backgroundColor: theme.transparent, borderColor: withOpacity(theme.secondary, overlayOpacity.light) },
               ]}
-              onPress={mode.onPress}
-              disabled={mode.locked}
+              onPress={() => (v.locked ? setPaywallVisible(true) : setComparisonMode(v.key))}
               activeOpacity={0.8}
             >
-              <View style={styles.modeButtonContent}>
-                <Ionicons
-                  name={mode.icon}
-                  size={16}
-                  color={isActive ? theme.background : theme.text}
-                />
-                <Text
-                  style={[
-                    styles.modePillText,
-                    { color: isActive ? theme.background : theme.text },
-                  ]}
-                >
-                  {mode.label}
+              <Text
+                style={[
+                  preciseType.badgeLabel,
+                  styles.viewChipText,
+                  { color: active ? theme.background : theme.text, fontFamily: fontFamily.mono },
+                ]}
+              >
+                {v.label.toUpperCase()}
+              </Text>
+              {v.locked && (
+                <Text style={[preciseType.statLabel, { color: theme.primary, fontFamily: fontFamily.mono, marginLeft: spacing.xs }]}>
+                  PRO
                 </Text>
-                {mode.locked && (
-                  <Ionicons name="lock-closed" size={10} color={theme.text} style={styles.lockIcon} />
-                )}
-              </View>
+              )}
             </TouchableOpacity>
           );
         })}
-      </ScrollView>
+      </View>
 
   {/* GIF Mode */}
   {comparisonMode === 'gif' && (
@@ -647,6 +622,12 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
           </View>
         </FeatureGate>
       )}
+
+      <PaywallModal
+        visible={paywallVisible}
+        onClose={() => setPaywallVisible(false)}
+        source="progress_view"
+      />
     </View>
   );
 };
@@ -673,35 +654,26 @@ const styles = StyleSheet.create({
   headerRowSingle: {
     justifyContent: "flex-end",
   },
-  modeSwitcher: {
-    marginBottom: 12,
+  groupLabel: {
+    textTransform: "uppercase",
+    marginBottom: spacing.sm,
+    marginTop: spacing.sm,
   },
-  modeSwitcherContent: {
+  viewGroup: {
     flexDirection: "row",
-    justifyContent: "center",
-    gap: 8,
-    paddingHorizontal: 4,
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
   },
-  modePill: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-  },
-  modePillText: {
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  modeButtonContent: {
+  viewChip: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    position: 'relative',
+    justifyContent: "center",
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.round,
+    borderWidth: 1,
   },
-  lockIcon: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-  },
+  viewChipText: {},
   selectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",

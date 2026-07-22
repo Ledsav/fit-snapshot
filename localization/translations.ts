@@ -88,6 +88,8 @@ interface TranslationKeys {
     modeGif: string;
     modeGrid: string;
     modeSelect: string;
+    view: string;
+    change: string;
     syncedZoomSwap: string;
     syncedZoomReset: string;
   };
@@ -366,6 +368,8 @@ export const translations: Translations = {
       modeGif: "GIF",
       modeGrid: "Grid",
       modeSelect: "Select photos",
+      view: "View",
+      change: "Change",
       syncedZoomSwap: "Swap",
       syncedZoomReset: "Reset zoom",
     },
@@ -672,6 +676,8 @@ export const translations: Translations = {
       modeGif: "GIF",
       modeGrid: "Cuadrícula",
       modeSelect: "Seleccionar fotos",
+      view: "Vista",
+      change: "Cambiar",
       syncedZoomSwap: "Intercambiar",
       syncedZoomReset: "Restablecer zoom",
     },
@@ -978,6 +984,8 @@ export const translations: Translations = {
       modeGif: "GIF",
       modeGrid: "Griglia",
       modeSelect: "Seleziona foto",
+      view: "Vista",
+      change: "Cambia",
       syncedZoomSwap: "Scambia",
       syncedZoomReset: "Reimposta zoom",
     },
@@ -1284,6 +1292,8 @@ export const translations: Translations = {
       modeGif: "GIF",
       modeGrid: "Raster",
       modeSelect: "Fotos auswählen",
+      view: "Ansicht",
+      change: "Ändern",
       syncedZoomSwap: "Tauschen",
       syncedZoomReset: "Zoom zurücksetzen",
     },
@@ -1591,6 +1601,8 @@ export const translations: Translations = {
       modeGif: "GIF",
       modeGrid: "Grille",
       modeSelect: "Sélectionner des photos",
+      view: "Vue",
+      change: "Changer",
       syncedZoomSwap: "Inverser",
       syncedZoomReset: "Réinitialiser le zoom",
     },
