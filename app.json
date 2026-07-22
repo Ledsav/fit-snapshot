@@ -15,7 +15,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo-fs.png",
+        "foregroundImage": "./assets/images/adaptive-icon-fs.png",
         "backgroundColor": "#000000"
       },
       "package": "com.ledsav.fitsnapshot",
