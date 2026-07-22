@@ -687,7 +687,7 @@ import Colors from "@/constants/Colors";
 Replace with:
 ```tsx
 import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
-import { fontFamily } from "@/constants/DesignSystem";
+import { fontFamily, preciseType } from "@/constants/DesignSystem";
 ```
 
 - [ ] **Step 2: Restyle the tab buttons**
@@ -735,6 +735,7 @@ Replace with:
             <Text
               style={[
                 styles.tabButtonText,
+                preciseType.badgeLabel,
                 { color: activeType === type ? theme.background : theme.text },
               ]}
             >
@@ -770,8 +771,6 @@ Replace with:
     alignItems: "center",
   },
   tabButtonText: {
-    fontSize: 10,
-    letterSpacing: 1,
     fontFamily: fontFamily.mono,
   },
 ```
@@ -1150,6 +1149,7 @@ import {
   borderRadius,
   opacity as designOpacity,
   fontFamily,
+  preciseType,
   iconSize,
   spacing,
   typography
@@ -1348,13 +1348,13 @@ Replace with:
                   <Text style={[styles.statValue, { color: theme.text, fontFamily: fontFamily.mono }]}>
                     {featureUsage.photoCount}
                   </Text>
-                  <Text style={[styles.statLabel, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
+                  <Text style={[styles.statLabel, preciseType.statLabel, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
                     {t("settings.photos").toUpperCase()}
                   </Text>
                 </View>
                 <View style={styles.statItem}>
                   <Text style={[styles.statValue, { color: theme.primary, fontFamily: fontFamily.mono }]}>&#8734;</Text>
-                  <Text style={[styles.statLabel, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
+                  <Text style={[styles.statLabel, preciseType.statLabel, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
                     {t("settings.limit").toUpperCase()}
                   </Text>
                 </View>
@@ -1363,7 +1363,7 @@ Replace with:
                 style={[styles.manageButton, { borderColor: withOpacity(theme.secondary, overlayOpacity.light) }]}
                 onPress={handleManageSubscription}
               >
-                <Text style={[styles.manageButtonText, { color: theme.text, fontFamily: fontFamily.mono }]}>
+                <Text style={[styles.manageButtonText, preciseType.badgeLabel, { color: theme.text, fontFamily: fontFamily.mono }]}>
                   {t("settings.manageSubscription").toUpperCase()}
                 </Text>
               </TouchableOpacity>
@@ -1384,7 +1384,7 @@ Replace with:
                 {featureUsage.photoCount} / {FREE_TIER_LIMITS.MAX_PHOTOS} {t("settings.photosUsed").toUpperCase()}
               </Text>
               <View style={[styles.upgradeButton, { backgroundColor: theme.primary }]}>
-                <Text style={[styles.upgradeButtonText, { color: theme.background, fontFamily: fontFamily.mono }]}>
+                <Text style={[styles.upgradeButtonText, preciseType.badgeLabel, { color: theme.background, fontFamily: fontFamily.mono }]}>
                   {t("settings.seePlans").toUpperCase()}
                 </Text>
                 <Ionicons name="arrow-forward" size={18} color={theme.background} />
@@ -1529,8 +1529,6 @@ Replace with:
     fontSize: 22,
   },
   statLabel: {
-    fontSize: 9,
-    letterSpacing: 1,
     marginTop: spacing.xs,
   },
   manageButton: {
@@ -1539,10 +1537,7 @@ Replace with:
     paddingVertical: spacing.md,
     alignItems: "center",
   },
-  manageButtonText: {
-    fontSize: 10,
-    letterSpacing: 1,
-  },
+  manageButtonText: {},
   upgradeCard: {
     borderRadius: borderRadius.md,
     borderWidth: 1,
@@ -1574,10 +1569,7 @@ Replace with:
     borderRadius: borderRadius.round,
     gap: spacing.sm,
   },
-  upgradeButtonText: {
-    fontSize: 10,
-    letterSpacing: 1,
-  },
+  upgradeButtonText: {},
 ```
 
 - [ ] **Step 6: Verify compilation**
