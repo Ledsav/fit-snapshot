@@ -42,6 +42,11 @@ interface TranslationKeys {
     photoLimitReached: string;
     photosUsed: string;
     photoLimitMessage: string;
+    lightingMatched: string;
+    lightingClose: string;
+    lightingOff: string;
+    lightingNone: string;
+    recalibrateLighting: string;
   };
   gallery: {
     title: string;
@@ -329,6 +334,11 @@ export const translations: Translations = {
       photoLimitReached: "Photo Limit Reached",
       photosUsed: "photos",
       photoLimitMessage: "You've reached the free tier limit. Upgrade to Premium for unlimited photos.",
+      lightingMatched: "Lighting matched",
+      lightingClose: "Lighting close",
+      lightingOff: "Lighting off",
+      lightingNone: "This shot sets your baseline",
+      recalibrateLighting: "Set as baseline",
     },
     gallery: {
       title: "Gallery",
@@ -643,6 +653,11 @@ export const translations: Translations = {
       photoLimitReached: "Límite de Fotos Alcanzado",
       photosUsed: "fotos",
       photoLimitMessage: "Has alcanzado el límite del plan gratuito. Actualiza a Premium para fotos ilimitadas.",
+      lightingMatched: "Iluminación coincidente",
+      lightingClose: "Iluminación cercana",
+      lightingOff: "Iluminación desajustada",
+      lightingNone: "Esta foto establece tu referencia",
+      recalibrateLighting: "Establecer como referencia",
     },
     gallery: {
       title: "Galería",
@@ -959,6 +974,11 @@ export const translations: Translations = {
       photoLimitReached: "Limite Foto Raggiunto",
       photosUsed: "foto",
       photoLimitMessage: "Hai raggiunto il limite del piano gratuito. Passa a Premium per foto illimitate.",
+      lightingMatched: "Illuminazione corrispondente",
+      lightingClose: "Illuminazione simile",
+      lightingOff: "Illuminazione non corrispondente",
+      lightingNone: "Questo scatto imposta la tua base di riferimento",
+      recalibrateLighting: "Imposta come riferimento",
     },
     gallery: {
       title: "Galleria",
@@ -1273,6 +1293,11 @@ export const translations: Translations = {
       photoLimitReached: "Fotolimit Erreicht",
       photosUsed: "Fotos",
       photoLimitMessage: "Sie haben das Limit des kostenlosen Plans erreicht. Upgraden Sie auf Premium für unbegrenzte Fotos.",
+      lightingMatched: "Beleuchtung passt",
+      lightingClose: "Beleuchtung fast passend",
+      lightingOff: "Beleuchtung passt nicht",
+      lightingNone: "Diese Aufnahme legt deine Referenz fest",
+      recalibrateLighting: "Als Referenz festlegen",
     },
     gallery: {
       title: "Galerie",
@@ -1589,6 +1614,11 @@ export const translations: Translations = {
       photoLimitReached: "Limite de Photos Atteinte",
       photosUsed: "photos",
       photoLimitMessage: "Vous avez atteint la limite du plan gratuit. Passez à Premium pour des photos illimitées.",
+      lightingMatched: "Éclairage correspondant",
+      lightingClose: "Éclairage proche",
+      lightingOff: "Éclairage non correspondant",
+      lightingNone: "Cette photo définit votre référence",
+      recalibrateLighting: "Définir comme référence",
     },
     gallery: {
       title: "Galerie",
