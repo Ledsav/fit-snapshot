@@ -26,7 +26,6 @@ import {
   useCameraDevice,
   useCameraPermission,
   usePhotoOutput,
-  usePreviewOutput,
 } from "react-native-vision-camera";
 import { FlipType, manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import * as ImagePicker from 'expo-image-picker';
@@ -79,8 +78,10 @@ export default function CameraScreen() {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [remainingTime, setRemainingTime] = useState(0);
 
-  // Camera outputs (vision-camera V5). The frame output drives live lighting.
-  const previewOutput = usePreviewOutput();
+  // Camera outputs (vision-camera V5). The <Camera> view renders its own
+  // preview, so we only add the photo + frame (lighting) outputs — adding an
+  // explicit preview output too would bind a 2nd Preview use case and Android
+  // CameraX rejects the surface combination.
   const photoOutput = usePhotoOutput({ qualityPrioritization: "quality" });
   const { frameOutput, state: lightingState, currentLuma } = useLightingIndicator({
     photos,
@@ -386,7 +387,7 @@ export default function CameraScreen() {
               style={StyleSheet.absoluteFill}
               device={device}
               isActive={isFocused}
-              outputs={[previewOutput, photoOutput, frameOutput]}
+              outputs={[photoOutput, frameOutput]}
               enableNativeZoomGesture={true}
               onPreviewStarted={() => setIsCameraReady(true)}
               onPreviewStopped={() => setIsCameraReady(false)}
