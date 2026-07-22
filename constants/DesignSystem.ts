@@ -42,6 +42,7 @@ export const preciseType = {
   subtitle: { fontSize: 13 },                           // NextPhotoReminder subtitle
   tipHeadline: { fontSize: 17 },                        // ShreddedTipsCarousel main tip
   tipBody: { fontSize: 14 },                            // ShreddedTipsCarousel clarification
+  heroTitle: { fontSize: 28 },                          // Onboarding & Paywall headline
 } as const;
 
 // Typography Scale
