@@ -27,7 +27,6 @@ import {
   useCameraPermission,
   usePhotoOutput,
   usePreviewOutput,
-  type CameraRef,
 } from "react-native-vision-camera";
 import { FlipType, manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import * as ImagePicker from 'expo-image-picker';
@@ -57,11 +56,13 @@ export default function CameraScreen() {
   const [flash, setFlash] = useState<"off" | "on">("off");
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [capturedLuma, setCapturedLuma] = useState(0);
+  // True when the pending capturedImage came from the gallery (import), not the
+  // camera — imported photos have no live luminance reading to store.
+  const [isImported, setIsImported] = useState(false);
   const [overlay, setOverlay] = useState<PhotoType>(PhotoType.front);
   const [override, setOverride] = useState<number | null>(null);
   const { hasPermission, requestPermission } = useCameraPermission();
   const device = useCameraDevice(facing);
-  const cameraRef = useRef<CameraRef | null>(null);
   const [importedPhotoDate, setImportedPhotoDate] = useState<string | null>(null);
   const router = useRouter();
   const { effectiveColorScheme } = useTheme();
@@ -108,6 +109,9 @@ export default function CameraScreen() {
       setIsFocused(true);
       return () => {
         setIsFocused(false);
+        // Camera goes inactive on blur; force the ready gate closed so the
+        // capture button can't fire before the refocused preview restarts.
+        setIsCameraReady(false);
         setIsTimerRunning(false);
         setRemainingTime(0);
       };
@@ -183,6 +187,7 @@ export default function CameraScreen() {
       }
 
       setCapturedLuma(lumaAtCapture);
+      setIsImported(false);
       setCapturedImage(finalUri);
     } catch (error) {
       console.error("Error taking picture:", error);
@@ -224,8 +229,8 @@ export default function CameraScreen() {
         uri: capturedImage,
         date: photoDate,
         type: overlay,
-        // Imported photos have no live reading (0); camera captures carry it.
-        luminance: importedPhotoDate ? undefined : capturedLuma,
+        // Imported photos have no live reading; only camera captures carry one.
+        luminance: isImported ? undefined : capturedLuma,
       };
       await addPhoto(newPhoto);
       setCapturedImage(null);
@@ -263,6 +268,7 @@ export default function CameraScreen() {
 
       if (!result.canceled && result.assets[0]) {
         const selectedAsset = result.assets[0];
+        setIsImported(true);
         setCapturedImage(selectedAsset.uri);
 
         if (selectedAsset.exif?.DateTimeOriginal) {
@@ -374,10 +380,9 @@ export default function CameraScreen() {
     >
       <StatusBar style="light" />
       <View style={styles.container}>
-        {device != null && isFocused && (
+        {device != null && (
           <>
             <Camera
-              ref={cameraRef}
               style={StyleSheet.absoluteFill}
               device={device}
               isActive={isFocused}
