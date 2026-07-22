@@ -43,7 +43,7 @@ import { Button } from "@/components/ui";
 
 
 const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
-  const [sliderValue, setSliderValue] = useState(0);
+  const [sliderValue, setSliderValue] = useState(50);
   const { effectiveColorScheme } = useTheme();
   const theme = Colors[effectiveColorScheme];
   const { getPhotosByType } = usePhotos();
@@ -524,7 +524,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   )}
       {/* Slider Mode */}
       {comparisonMode === 'slider' && (
-        <ContactSheetFrame caption={`${new Date(oldestPhoto.date).toLocaleDateString()} → ${new Date(newestPhoto.date).toLocaleDateString()} · ${t(`camera.${type}`).toUpperCase()}`}>
+        <ContactSheetFrame caption={`${new Date(photo1.date).toLocaleDateString()} → ${new Date(photo2.date).toLocaleDateString()} · ${t(`camera.${type}`).toUpperCase()}`}>
           <View style={styles.sliderStage}>
             <BeforeAfterSlider
               beforeUri={photo1.uri}
