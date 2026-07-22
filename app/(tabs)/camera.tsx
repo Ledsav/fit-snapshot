@@ -474,27 +474,20 @@ export default function CameraScreen() {
 
         <View style={styles.confirmationButtonsContainer}>
           <View style={styles.confirmationButtons}>
-            <TouchableOpacity
-              style={[styles.confirmButton, { borderColor: theme.error }]}
+            <Button
+              title={t("camera.retake") || "Retake"}
               onPress={retakePicture}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="refresh-outline" size={18} color={theme.error} />
-              <Text style={[styles.confirmButtonText, preciseType.badgeLabel, { color: theme.error, fontFamily: fontFamily.mono }]}>
-                {(t("camera.retake") || "Retake").toUpperCase()}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.confirmButton, { backgroundColor: theme.primary, borderColor: theme.primary }]}
+              variant="danger"
+              icon={<Ionicons name="refresh-outline" size={18} color={theme.error} />}
+              style={styles.confirmBtn}
+            />
+            <Button
+              title={t("camera.confirm") || "Confirm"}
               onPress={confirmPicture}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="checkmark" size={18} color={theme.background} />
-              <Text style={[styles.confirmButtonText, preciseType.badgeLabel, { color: theme.background, fontFamily: fontFamily.mono }]}>
-                {(t("camera.confirm") || "Confirm").toUpperCase()}
-              </Text>
-            </TouchableOpacity>
+              variant="primary"
+              icon={<Ionicons name="checkmark" size={18} color={theme.background} />}
+              style={styles.confirmBtn}
+            />
           </View>
 
           <Text style={[styles.helperText, { color: theme.secondary }]}>
@@ -794,17 +787,9 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
     marginBottom: spacing.lg,
   },
-  confirmButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderRadius: borderRadius.sm,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xxl,
-    gap: spacing.sm,
+  confirmBtn: {
+    flex: 1,
   },
-  confirmButtonText: {},
   helperText: {
     fontSize: 12,
     textAlign: "center",
