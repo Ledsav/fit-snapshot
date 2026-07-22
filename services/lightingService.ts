@@ -6,8 +6,12 @@ export const LIGHTING_TOLERANCE = { matched: 0.08, close: 0.18 } as const;
 
 export type LightingState = "matched" | "close" | "off" | "none";
 
-/** Clamp a 0–255 mean luma onto 0–1. Non-finite input degrades to a clamped bound. */
+/**
+ * Clamp a 0–255 mean luma onto 0–1. Non-finite input degrades to a clamped bound.
+ * Carries a 'worklet' directive: called from the vision-camera frame worklet.
+ */
 export function normalizeLuma(mean0to255: number): number {
+  "worklet";
   if (Number.isNaN(mean0to255)) return 0;
   if (mean0to255 <= 0) return 0;
   if (mean0to255 >= 255) return 1;
@@ -43,7 +47,10 @@ export const DEFAULT_BG_REGIONS: LumaSampleRegion[] = [
   { x: 0.78, y: 0.0, width: 0.22, height: 0.25 }, // top-right
 ];
 
-/** Average Y-plane bytes across the given normalized regions → 0–255 mean. */
+/**
+ * Average Y-plane bytes across the given normalized regions → 0–255 mean.
+ * Carries a 'worklet' directive: called from the vision-camera frame worklet.
+ */
 export function meanLumaFromYPlane(
   y: Uint8Array,
   width: number,
@@ -51,6 +58,7 @@ export function meanLumaFromYPlane(
   bytesPerRow: number,
   regions: LumaSampleRegion[]
 ): number {
+  "worklet";
   let sum = 0;
   let count = 0;
   for (const r of regions) {

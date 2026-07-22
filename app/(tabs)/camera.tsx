@@ -1,4 +1,5 @@
 import { ContactSheetFrame } from "@/components/home/ContactSheetFrame";
+import { LightingIndicator } from "@/components/camera/LightingIndicator";
 import { Button } from "@/components/ui";
 import Colors, { overlayOpacity, withOpacity } from "@/constants/Colors";
 import {
@@ -17,8 +18,17 @@ import { usePhotos } from "@/context/PhotoContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useUser } from "@/context/UserContext";
 import { PhotoType } from "@/enums/Photos";
+import { LightingBaselineStore } from "@/services/lightingBaselineStore";
+import { useLightingIndicator } from "@/hooks/useLightingIndicator";
 import { Ionicons } from "@expo/vector-icons";
-import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
+import {
+  Camera,
+  useCameraDevice,
+  useCameraPermission,
+  usePhotoOutput,
+  usePreviewOutput,
+  type CameraRef,
+} from "react-native-vision-camera";
 import { FlipType, manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useRouter } from "expo-router";
@@ -34,142 +44,75 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import { runOnJS, useSharedValue } from "react-native-reanimated";
 import TorsoSilhouette from "../../images/TorsoSilhouette";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const aspectRatio = 4 / 3;
 const cameraHeight = screenWidth * aspectRatio;
 
+type Facing = "back" | "front";
+
 export default function CameraScreen() {
-  const [facing, setFacing] = useState<CameraType>("back");
+  const [facing, setFacing] = useState<Facing>("back");
   const [flash, setFlash] = useState<"off" | "on">("off");
-  const [zoom, setZoom] = useState(0);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [capturedLuma, setCapturedLuma] = useState(0);
   const [overlay, setOverlay] = useState<PhotoType>(PhotoType.front);
-  const [permission, requestPermission] = useCameraPermissions();
-  const cameraRef = useRef<CameraView | null>(null);
+  const [override, setOverride] = useState<number | null>(null);
+  const { hasPermission, requestPermission } = useCameraPermission();
+  const device = useCameraDevice(facing);
+  const cameraRef = useRef<CameraRef | null>(null);
   const [importedPhotoDate, setImportedPhotoDate] = useState<string | null>(null);
   const router = useRouter();
   const { effectiveColorScheme } = useTheme();
   const theme = Colors[effectiveColorScheme];
-  const { addPhoto } = usePhotos();
+  const { photos, addPhoto } = usePhotos();
   const { t } = useLocalization();
   const { canAddPhoto, featureUsage, isPremium } = useUser();
 
-  
   const [isCameraReady, setIsCameraReady] = useState(false);
-  const [cameraKey, setCameraKey] = useState(0);
   const [isFocused, setIsFocused] = useState(true);
-  const [showCamera, setShowCamera] = useState(true); // for unmount/remount
-
 
   const [isTimerEnabled, setIsTimerEnabled] = useState(false);
   const [timerDuration, setTimerDuration] = useState(3);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [remainingTime, setRemainingTime] = useState(0);
 
-  // TEMP DIAGNOSTICS - remove once the cold-start camera hang is root-caused.
-  const mountTsRef = useRef<number>(Date.now());
-  const logCam = useCallback((msg: string) => {
-    console.log(`[Camera +${Date.now() - mountTsRef.current}ms] ${msg}`);
-  }, []);
-  const isCameraReadyRef = useRef(false);
-  useEffect(() => {
-    isCameraReadyRef.current = isCameraReady;
-  }, [isCameraReady]);
-  const permissionGrantedRef = useRef(permission?.granted);
-  const facingRef = useRef(facing);
-  useEffect(() => {
-    permissionGrantedRef.current = permission?.granted;
-    facingRef.current = facing;
-  }, [permission?.granted, facing]);
+  // Camera outputs (vision-camera V5). The frame output drives live lighting.
+  const previewOutput = usePreviewOutput();
+  const photoOutput = usePhotoOutput({ qualityPrioritization: "quality" });
+  const { frameOutput, state: lightingState, currentLuma } = useLightingIndicator({
+    photos,
+    type: overlay,
+    override,
+  });
 
   // Check photo limit
   const photoLimitStatus = canAddPhoto();
   const isPhotoLimitReached = !photoLimitStatus.allowed;
 
-  // Handle navigation focus/blur to properly manage camera resources.
-  // React Navigation can fire a spurious focus -> blur -> focus sequence on
-  // cold start (before the initial route settles). Reacting to that blur by
-  // tearing down the CameraView mid-initialization races the native camera
-  // hardware and can leave it hung, so `onCameraReady` never fires. Debounce
-  // the teardown: a blur that's immediately followed by a refocus is treated
-  // as a no-op instead of a real release/reacquire cycle.
-  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
+  // Load the per-pose recalibration override whenever the pose changes.
   useEffect(() => {
+    let cancelled = false;
+    LightingBaselineStore.getOverride(overlay).then((value) => {
+      if (!cancelled) setOverride(value);
+    });
     return () => {
-      if (blurTimeoutRef.current) {
-        clearTimeout(blurTimeoutRef.current);
-      }
+      cancelled = true;
     };
-  }, []);
+  }, [overlay]);
 
+  // Release the camera on blur, reacquire on focus (vision-camera `isActive`).
   useFocusEffect(
     useCallback(() => {
-      if (blurTimeoutRef.current) {
-        // Refocused before the pending teardown ran - cancel it and keep
-        // the current camera instance instead of remounting it.
-        clearTimeout(blurTimeoutRef.current);
-        blurTimeoutRef.current = null;
-        logCam('focus: cancelled pending teardown, keeping existing camera instance');
-        setIsFocused(true);
-      } else {
-        logCam(`focus: reinitializing camera (permission=${permissionGrantedRef.current}, facing=${facingRef.current})`);
-        setIsFocused(true);
-        setIsCameraReady(false);
-        setShowCamera(true);
-        setCameraKey(prev => prev + 1);
-      }
-
+      setIsFocused(true);
       return () => {
-        logCam('blur: scheduling teardown in 300ms');
-        blurTimeoutRef.current = setTimeout(() => {
-          blurTimeoutRef.current = null;
-          logCam('blur: releasing camera resources');
-          setIsFocused(false);
-          setIsCameraReady(false);
-          setShowCamera(false);
-          // Cancel any running timer when leaving the screen
-          setIsTimerRunning(false);
-          setRemainingTime(0);
-        }, 300);
+        setIsFocused(false);
+        setIsTimerRunning(false);
+        setRemainingTime(0);
       };
-    }, [logCam])
+    }, [])
   );
-
-  // TEMP DIAGNOSTICS - watchdog to see if onCameraReady simply never fires.
-  useEffect(() => {
-    if (!(isFocused && showCamera)) return;
-    const keyAtArm = cameraKey;
-    logCam(`watchdog armed for key=${keyAtArm} (cameraRef=${!!cameraRef.current})`);
-    const watchdog = setTimeout(() => {
-      logCam(
-        `WATCHDOG: still not ready 4s after mount (key=${keyAtArm}, isCameraReady=${isCameraReadyRef.current}, cameraRef=${!!cameraRef.current}, permission=${permissionGrantedRef.current})`
-      );
-    }, 4000);
-    return () => clearTimeout(watchdog);
-  }, [isFocused, showCamera, cameraKey, logCam]);
-  // Unmount and remount CameraView on facing change to release resource.
-  // Effects fire on the initial mount too (there's no prior `facing` to
-  // diff against), so without this guard this ran on every screen mount -
-  // forcing an extra teardown/rebuild ~200ms into the focus effect's own
-  // mount, racing the native camera while it was still acquiring hardware.
-  const isInitialFacingRenderRef = useRef(true);
-  useEffect(() => {
-    if (isInitialFacingRenderRef.current) {
-      isInitialFacingRenderRef.current = false;
-      return;
-    }
-    setShowCamera(false);
-    const timeout = setTimeout(() => {
-      setCameraKey(prev => prev + 1);
-      setShowCamera(true);
-    }, 200); // 200ms to ensure unmount
-    return () => clearTimeout(timeout);
-  }, [facing]);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
@@ -184,35 +127,9 @@ export default function CameraScreen() {
     return () => clearInterval(interval);
   }, [isTimerRunning, remainingTime]);
 
-  const zoomShared = useSharedValue(zoom);
-  const savedZoomShared = useSharedValue(zoom);
-
-  useEffect(() => {
-    zoomShared.value = zoom;
-  }, [zoom]);
-
-  const pinchGesture = Gesture.Pinch()
-    .onStart(() => {
-      savedZoomShared.value = zoomShared.value;
-    })
-    .onUpdate((event) => {
-      const newZoom = Math.min(
-        1,
-        Math.max(0, savedZoomShared.value + (event.scale - 1) * 0.5)
-      );
-      zoomShared.value = newZoom;
-      runOnJS(setZoom)(newZoom);
-    });
-
-  // Removed unnecessary useEffect on [facing] that set isCameraReady to false.
-
-  if (!permission) {
-    return <View />;
-  }
-
-  if (!permission.granted) {
+  if (!hasPermission) {
     return (
-      <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <View style={[styles.container, styles.permissionContainer, { backgroundColor: theme.background }]}>
         <Text style={[styles.message, { color: theme.text }]}>
           {t("camera.permissionMessage")}
         </Text>
@@ -230,63 +147,45 @@ export default function CameraScreen() {
     setFacing((current) => (current === "back" ? "front" : "back"));
   }
 
-
-  const forceRefreshCamera = () => {
-    setIsCameraReady(false);
-    setCameraKey(prev => prev + 1);
-    setTimeout(() => {
-      setIsCameraReady(true);
-    }, 1500);
-  };
-
   const toggleFlash = () => {
     setFlash((current) => (current === "off" ? "on" : "off"));
   };
 
-  const takePicture = async () => {
-    if (!cameraRef.current) {
-      console.log("Camera ref not available");
-      return;
-    }
+  const handleRecalibrate = async () => {
+    await LightingBaselineStore.setOverride(overlay, currentLuma);
+    setOverride(currentLuma);
+  };
 
+  const takePicture = async () => {
     if (!isCameraReady) {
       console.log("Camera is not ready yet, please wait...");
       return;
     }
-
-    // Check photo limit before taking picture
     if (isPhotoLimitReached) {
       console.log("Photo limit reached");
       return;
     }
 
     try {
-      const photo = await cameraRef.current.takePictureAsync({
-        quality: 0.8,
-        skipProcessing: false,
-      });
+      // Snapshot the live luminance at the moment of capture.
+      const lumaAtCapture = currentLuma;
+      const photoFile = await photoOutput.capturePhotoToFile({ flashMode: flash }, {});
+      const rawUri = `file://${photoFile.filePath}`;
 
-      if (photo) {
-        let manipulatedImage: { uri: string } = photo;
-
-        if (facing === "front") {
-          manipulatedImage = await manipulateAsync(
-            photo.uri,
-            [{ flip: FlipType.Horizontal }],
-            { format: SaveFormat.JPEG }
-          );
-        }
-
-        setCapturedImage(manipulatedImage.uri);
+      let finalUri = rawUri;
+      if (facing === "front") {
+        const manipulated = await manipulateAsync(
+          rawUri,
+          [{ flip: FlipType.Horizontal }],
+          { format: SaveFormat.JPEG }
+        );
+        finalUri = manipulated.uri;
       }
+
+      setCapturedLuma(lumaAtCapture);
+      setCapturedImage(finalUri);
     } catch (error) {
       console.error("Error taking picture:", error);
-      
-      setIsCameraReady(false);
-      setTimeout(() => {
-        setCameraKey(prev => prev + 1);
-        setTimeout(() => setIsCameraReady(true), 500);
-      }, 100);
     }
   };
 
@@ -306,12 +205,10 @@ export default function CameraScreen() {
 
   const confirmPicture = async () => {
     if (capturedImage) {
-      
       let photoDate = new Date().toISOString();
 
       if (importedPhotoDate) {
         try {
-          
           const dateStr = importedPhotoDate.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3');
           const parsedDate = new Date(dateStr);
           if (!isNaN(parsedDate.getTime())) {
@@ -327,6 +224,8 @@ export default function CameraScreen() {
         uri: capturedImage,
         date: photoDate,
         type: overlay,
+        // Imported photos have no live reading (0); camera captures carry it.
+        luminance: importedPhotoDate ? undefined : capturedLuma,
       };
       await addPhoto(newPhoto);
       setCapturedImage(null);
@@ -341,14 +240,12 @@ export default function CameraScreen() {
   };
 
   const pickImage = async () => {
-    // Check photo limit before importing
     if (isPhotoLimitReached) {
       alert(photoLimitStatus.reason || t("camera.photoLimitReached") || "Photo limit reached. Delete photos or upgrade to Premium.");
       return;
     }
 
     try {
-
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (status !== 'granted') {
@@ -356,22 +253,19 @@ export default function CameraScreen() {
         return;
       }
 
-      
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [3, 4],
         quality: 1,
-        exif: true, 
+        exif: true,
       });
 
       if (!result.canceled && result.assets[0]) {
         const selectedAsset = result.assets[0];
         setCapturedImage(selectedAsset.uri);
 
-        
         if (selectedAsset.exif?.DateTimeOriginal) {
-          
           setImportedPhotoDate(selectedAsset.exif.DateTimeOriginal);
         } else {
           setImportedPhotoDate(null);
@@ -479,125 +373,125 @@ export default function CameraScreen() {
       style={[styles.container, { backgroundColor: theme.background }]}
     >
       <StatusBar style="light" />
-      <GestureDetector gesture={pinchGesture}>
-        <View style={styles.container}>
-          {permission.granted && isFocused && showCamera && (
-            <>
-              <CameraView
-                key={`camera-${facing}-${cameraKey}`}
-                ref={cameraRef}
-                style={StyleSheet.absoluteFill}
-                facing={facing}
-                flash={flash}
-                zoom={zoom}
-                onCameraReady={() => {
-                  logCam(`onCameraReady fired for key=${cameraKey}`);
-                  setIsCameraReady(true);
-                }}
-                onMountError={(error) => {
-                  logCam(`onMountError fired for key=${cameraKey}: ${JSON.stringify(error)}`);
-                  setIsCameraReady(false);
-                  setTimeout(() => {
-                    setCameraKey(prev => prev + 1);
-                  }, 1000);
-                }}
+      <View style={styles.container}>
+        {device != null && isFocused && (
+          <>
+            <Camera
+              ref={cameraRef}
+              style={StyleSheet.absoluteFill}
+              device={device}
+              isActive={isFocused}
+              outputs={[previewOutput, photoOutput, frameOutput]}
+              enableNativeZoomGesture={true}
+              onPreviewStarted={() => setIsCameraReady(true)}
+              onPreviewStopped={() => setIsCameraReady(false)}
+            />
+            {renderSilhouette()}
+            {!isCameraReady && (
+              <View
+                style={[
+                  styles.loadingContainer,
+                  { backgroundColor: theme.background },
+                ]}
               >
-                {renderSilhouette()}
-              </CameraView>
-              {!isCameraReady && (
-                <View
-                  style={[
-                    styles.loadingContainer,
-                    { backgroundColor: theme.background },
-                  ]}
-                >
-                  <ActivityIndicator size="large" color={theme.primary} />
-                </View>
-              )}
-            </>
+                <ActivityIndicator size="large" color={theme.primary} />
+              </View>
+            )}
+          </>
+        )}
+        {device == null && (
+          <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+            <Text style={[styles.message, { color: theme.text }]}>
+              {t("camera.permissionMessage")}
+            </Text>
+          </View>
+        )}
+        <View style={styles.overlayContainer}>
+          {renderOverlaySelector()}
+          {isCameraReady && (
+            <View style={styles.lightingIndicatorWrapper} pointerEvents="box-none">
+              <LightingIndicator state={lightingState} onRecalibrate={handleRecalibrate} />
+            </View>
           )}
-          <View style={styles.overlayContainer}>
-            {renderOverlaySelector()}
-            <View style={styles.bottomBarWrapper}>
-              {renderTimerDurationRow()}
-              <View style={styles.bottomControlsContainer}>
-                <TouchableOpacity style={styles.controlButton} onPress={toggleFlash}>
-                  <Ionicons
-                    name={flash === "on" ? "flash" : "flash-off"}
-                    size={24}
-                    color="white"
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.controlButton} onPress={toggleTimer}>
-                  <Ionicons
-                    name={isTimerEnabled ? "timer" : "timer-outline"}
-                    size={24}
-                    color="white"
-                  />
-                </TouchableOpacity>
-                {isTimerRunning ? (
-                  <View style={styles.timerRunningContainer}>
-                    <Text style={styles.timerText}>{remainingTime}</Text>
-                    <TouchableOpacity
-                      style={[
-                        styles.cancelTimerButton,
-                        { backgroundColor: theme.error },
-                      ]}
-                      onPress={cancelTimer}
-                    >
-                      <Ionicons name="close" size={24} color="white" />
-                    </TouchableOpacity>
-                  </View>
-                ) : (
+          <View style={styles.bottomBarWrapper}>
+            {renderTimerDurationRow()}
+            <View style={styles.bottomControlsContainer}>
+              <TouchableOpacity style={styles.controlButton} onPress={toggleFlash}>
+                <Ionicons
+                  name={flash === "on" ? "flash" : "flash-off"}
+                  size={24}
+                  color="white"
+                />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.controlButton} onPress={toggleTimer}>
+                <Ionicons
+                  name={isTimerEnabled ? "timer" : "timer-outline"}
+                  size={24}
+                  color="white"
+                />
+              </TouchableOpacity>
+              {isTimerRunning ? (
+                <View style={styles.timerRunningContainer}>
+                  <Text style={styles.timerText}>{remainingTime}</Text>
                   <TouchableOpacity
                     style={[
-                      styles.captureButton,
-                      {
-                        backgroundColor: isPhotoLimitReached ? theme.error : theme.primary,
-                        opacity: (isCameraReady && !isPhotoLimitReached) ? 1 : 0.5
-                      }
+                      styles.cancelTimerButton,
+                      { backgroundColor: theme.error },
                     ]}
-                    onPress={isTimerEnabled ? startTimer : takePicture}
-                    disabled={!isCameraReady || isPhotoLimitReached}
+                    onPress={cancelTimer}
                   >
-                    <View
-                      style={[
-                        styles.captureButtonInner,
-                        { backgroundColor: isPhotoLimitReached ? theme.error : "white" },
-                      ]}
-                    />
-                    {isPhotoLimitReached && (
-                      <View style={styles.limitBadge}>
-                        <Ionicons name="lock-closed" size={24} color="white" />
-                      </View>
-                    )}
+                    <Ionicons name="close" size={24} color="white" />
                   </TouchableOpacity>
-                )}
-                <TouchableOpacity
-                  style={styles.flipButton}
-                  onPress={toggleCameraFacing}
-                >
-                  <Ionicons name="camera-reverse-outline" size={32} color="white" />
-                </TouchableOpacity>
+                </View>
+              ) : (
                 <TouchableOpacity
                   style={[
-                    styles.importButton,
-                    isPhotoLimitReached && styles.disabledButton
+                    styles.captureButton,
+                    {
+                      backgroundColor: isPhotoLimitReached ? theme.error : theme.primary,
+                      opacity: (isCameraReady && !isPhotoLimitReached) ? 1 : 0.5
+                    }
                   ]}
-                  onPress={pickImage}
-                  disabled={isPhotoLimitReached}
+                  onPress={isTimerEnabled ? startTimer : takePicture}
+                  disabled={!isCameraReady || isPhotoLimitReached}
                 >
-                  <Ionicons
-                    name="image-outline"
-                    size={32}
-                    color={isPhotoLimitReached ? "rgba(255, 255, 255, 0.3)" : "white"}
+                  <View
+                    style={[
+                      styles.captureButtonInner,
+                      { backgroundColor: isPhotoLimitReached ? theme.error : "white" },
+                    ]}
                   />
+                  {isPhotoLimitReached && (
+                    <View style={styles.limitBadge}>
+                      <Ionicons name="lock-closed" size={24} color="white" />
+                    </View>
+                  )}
                 </TouchableOpacity>
-              </View>
+              )}
+              <TouchableOpacity
+                style={styles.flipButton}
+                onPress={toggleCameraFacing}
+              >
+                <Ionicons name="camera-reverse-outline" size={32} color="white" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.importButton,
+                  isPhotoLimitReached && styles.disabledButton
+                ]}
+                onPress={pickImage}
+                disabled={isPhotoLimitReached}
+              >
+                <Ionicons
+                  name="image-outline"
+                  size={32}
+                  color={isPhotoLimitReached ? "rgba(255, 255, 255, 0.3)" : "white"}
+                />
+              </TouchableOpacity>
             </View>
           </View>
         </View>
-      </GestureDetector>
+      </View>
 
       {/* Photo Limit Warning Banner */}
       {isPhotoLimitReached && (
@@ -630,6 +524,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  permissionContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
   loadingContainer: {
     ...StyleSheet.absoluteFill,
     justifyContent: "center",
@@ -656,6 +554,13 @@ const styles = StyleSheet.create({
   camera: {
     width: screenWidth,
     height: cameraHeight,
+  },
+  lightingIndicatorWrapper: {
+    position: "absolute",
+    top: 100,
+    left: 0,
+    right: 0,
+    alignItems: "center",
   },
   bottomBarWrapper: {
     position: "absolute",
