@@ -254,6 +254,7 @@ interface TranslationKeys {
   };
   featureGate: {
     premiumFeature: string;
+    pro: string;
     upgradeMessage: string;
     upgrade: string;
     upgradeNow: string;
@@ -563,6 +564,7 @@ export const translations: Translations = {
     },
     featureGate: {
       premiumFeature: "Premium Feature",
+      pro: "Pro",
       upgradeMessage: "Upgrade to Premium to unlock this feature",
       upgrade: "Upgrade",
       upgradeNow: "Upgrade Now",
@@ -868,6 +870,7 @@ export const translations: Translations = {
     },
     featureGate: {
       premiumFeature: "Función Premium",
+      pro: "Pro",
       upgradeMessage: "Actualiza a Premium para desbloquear esta función",
       upgrade: "Actualizar",
       upgradeNow: "Actualizar Ahora",
@@ -1173,6 +1176,7 @@ export const translations: Translations = {
     },
     featureGate: {
       premiumFeature: "Funzione Premium",
+      pro: "Pro",
       upgradeMessage: "Passa a Premium per sbloccare questa funzione",
       upgrade: "Aggiorna",
       upgradeNow: "Aggiorna Ora",
@@ -1479,6 +1483,7 @@ export const translations: Translations = {
     },
     featureGate: {
       premiumFeature: "Premium-Funktion",
+      pro: "Pro",
       upgradeMessage: "Upgraden Sie auf Premium, um diese Funktion freizuschalten",
       upgrade: "Upgraden",
       upgradeNow: "Jetzt Upgraden",
@@ -1784,6 +1789,7 @@ export const translations: Translations = {
     },
     featureGate: {
       premiumFeature: "Fonctionnalité Premium",
+      pro: "Pro",
       upgradeMessage: "Passez à Premium pour débloquer cette fonctionnalité",
       upgrade: "Mettre à Niveau",
       upgradeNow: "Mettre à Niveau Maintenant",
