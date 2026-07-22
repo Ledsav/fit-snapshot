@@ -689,6 +689,14 @@ git commit -m "chore: add react-native-vision-camera V5 and config plugin"
 
 ---
 
+> **⚠️ IMPLEMENTED FOR VISION-CAMERA V5 (5.1.1) — the code below was written against the v3/v4 API and is superseded.** V5 is a Nitro rewrite: there is no `useFrameProcessor`, no `frame.toArrayBuffer()`, no `runAtTargetFps`. What actually shipped (commit `aa75594`, `hooks/useLightingIndicator.ts`):
+> - Frame stream via `useFrameOutput({ pixelFormat: "yuv", dropFramesWhileBusy: true, onFrame })`; the returned `frameOutput` is passed to `<Camera outputs={[preview, photo, frameOutput]}>`.
+> - Inside the `onFrame` worklet: `frame.getPlanes()[0]` is the Y plane → `new Uint8Array(yPlane.getPixelBuffer())` → `meanLumaFromYPlane(y, yPlane.width, yPlane.height, yPlane.bytesPerRow, DEFAULT_BG_REGIONS)`. **`frame.dispose()` in a `finally`** (mandatory or the pipeline stalls).
+> - Throttle to ~5 Hz via a `useSharedValue` frame counter (process 1 in 6), not `runAtTargetFps`.
+> - Push to JS via `scheduleOnRN(setCurrentLuma, normalizeLuma(mean))` (V5's replacement for the deprecated `runOnJS`).
+> - Worklet-safety carryover applied: `'worklet'` directives added to `normalizeLuma` and `meanLumaFromYPlane`.
+> The pure functions (Tasks 2–4) are consumed **unchanged**. tsc clean; unit tests unchanged (16/16).
+
 ### Task 7: Build the luminance frame-processor hook
 
 **Files:**
@@ -781,6 +789,16 @@ git commit -m "feat: add luminance frame-processor hook"
 ```
 
 ---
+
+> **⚠️ IMPLEMENTED FOR VISION-CAMERA V5 (5.1.1) — steps below are v4-shaped and superseded.** What actually shipped (commit `aa75594`, `app/(tabs)/camera.tsx`):
+> - `useCameraPermission()` → `{ hasPermission, requestPermission }`; `useCameraDevice(facing)` → `device`.
+> - `<Camera device isActive={isFocused} outputs={[previewOutput, photoOutput, frameOutput]} enableNativeZoomGesture onPreviewStarted/onPreviewStopped />`. `isActive` (driven by `useFocusEffect`) replaces ALL the expo-camera cold-start/remount hacks (`cameraKey`, `onCameraReady`, `onMountError`, blur-debounce, facing-remount) — those are removed.
+> - **Native pinch-zoom** (`enableNativeZoomGesture`) replaces the manual reanimated pinch + `GestureDetector` + zoom shared values (removed). vision-camera zoom scale ≠ expo-camera's 0–1, so keeping it native avoids a scale bug.
+> - Capture: `photoOutput.capturePhotoToFile({ flashMode: flash }, {})` → `photoFile.filePath` → `file://…`; front-camera mirror flip via `expo-image-manipulator` preserved.
+> - `luminance: capturedLuma` persisted on camera captures (snapshotted at capture time); imported photos store `undefined`.
+> - `LightingIndicator` rendered when `isCameraReady`; `handleRecalibrate` writes `LightingBaselineStore.setOverride(overlay, currentLuma)` + updates local `override`. Per-pose override loaded in an effect keyed on `overlay`.
+> - Silhouette overlay moved from a `CameraView` child to an absolute sibling. Timer, import, confirm/retake, limit gating, banners preserved.
+> **⚠️ Behavior changes needing on-device verification:** (1) the removal of the expo-camera cold-start hang workarounds — verify no cold-start hang on this device; (2) native zoom feel; (3) Android YUV Y-plane orientation vs. the top-corner sample regions. tsc clean; full suite 38/38.
 
 ### Task 8: Migrate the camera screen to vision-camera and wire the indicator
 
