@@ -32,7 +32,7 @@ export const StreakBadge: React.FC<StreakBadgeProps> = ({ streak, best }) => {
       <Text style={[styles.label, preciseType.badgeLabel, { color: theme.milestone, fontFamily: fontFamily.mono }]}>
         {t("home.streak").toUpperCase()}
       </Text>
-      {!!best && best > 0 && (
+      {!!best && best > 0 && best >= streak && (
         <Text style={[styles.best, preciseType.statLabel, { color: theme.milestone, fontFamily: fontFamily.mono }]}>
           · {(t("home.streakBest") || "Best").toUpperCase()} {best}
         </Text>
