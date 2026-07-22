@@ -243,14 +243,6 @@ export default function CameraScreen() {
     setFlash((current) => (current === "off" ? "on" : "off"));
   };
 
-  const zoomIn = () => {
-    setZoom((current) => Math.min(current + 0.1, 1));
-  };
-
-  const zoomOut = () => {
-    setZoom((current) => Math.max(current - 0.1, 0));
-  };
-
   const takePicture = async () => {
     if (!cameraRef.current) {
       console.log("Camera ref not available");
@@ -425,41 +417,25 @@ export default function CameraScreen() {
     </View>
   );
 
-  const renderTimerControls = () => (
-    <View style={styles.timerControls}>
-      <TouchableOpacity
-        style={[
-          styles.timerToggle,
-          isTimerEnabled && { backgroundColor: theme.primary },
-        ]}
-        onPress={toggleTimer}
-      >
-        <Ionicons
-          name={isTimerEnabled ? "timer" : "timer-outline"}
-          size={24}
-          color={isTimerEnabled ? theme.background : theme.text}
-        />
-      </TouchableOpacity>
-      {isTimerEnabled && (
-        <View style={styles.timerDurationContainer}>
-          {[3, 5, 10].map((duration) => (
-            <TouchableOpacity
-              key={duration}
-              style={[
-                styles.timerButton,
-                timerDuration === duration && {
-                  backgroundColor: theme.primary,
-                },
-              ]}
-              onPress={() => setTimerDuration(duration)}
-            >
-              <Text style={styles.timerButtonText}>{duration}s</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
-    </View>
-  );
+  const renderTimerDurationRow = () =>
+    isTimerEnabled && (
+      <View style={styles.timerDurationContainer}>
+        {[3, 5, 10].map((duration) => (
+          <TouchableOpacity
+            key={duration}
+            style={[
+              styles.timerButton,
+              timerDuration === duration && {
+                backgroundColor: theme.primary,
+              },
+            ]}
+            onPress={() => setTimerDuration(duration)}
+          >
+            <Text style={styles.timerButtonText}>{duration}s</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
 
   if (capturedImage) {
     const confirmCaption = `${t(`camera.${overlay}`).toUpperCase()} · ${new Date().toLocaleDateString()}`;
@@ -542,81 +518,82 @@ export default function CameraScreen() {
           )}
           <View style={styles.overlayContainer}>
             {renderOverlaySelector()}
-            <View style={styles.controlsContainer}>
-              <TouchableOpacity style={styles.controlButton} onPress={toggleFlash}>
-                <Ionicons
-                  name={flash === "on" ? "flash" : "flash-off"}
-                  size={24}
-                  color="white"
-                />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.controlButton} onPress={zoomIn}>
-                <Ionicons name="add-circle-outline" size={24} color="white" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.controlButton} onPress={zoomOut}>
-                <Ionicons name="remove-circle-outline" size={24} color="white" />
-              </TouchableOpacity>
-            </View>
-            {renderTimerControls()}
-            <View style={styles.bottomControlsContainer}>
-              <TouchableOpacity
-                style={styles.flipButton}
-                onPress={toggleCameraFacing}
-              >
-                <Ionicons name="camera-reverse-outline" size={32} color="white" />
-              </TouchableOpacity>
-              {isTimerRunning ? (
-                <View style={styles.timerRunningContainer}>
-                  <Text style={styles.timerText}>{remainingTime}</Text>
+            <View style={styles.bottomBarWrapper}>
+              {renderTimerDurationRow()}
+              <View style={styles.bottomControlsContainer}>
+                <TouchableOpacity style={styles.controlButton} onPress={toggleFlash}>
+                  <Ionicons
+                    name={flash === "on" ? "flash" : "flash-off"}
+                    size={24}
+                    color="white"
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.controlButton} onPress={toggleTimer}>
+                  <Ionicons
+                    name={isTimerEnabled ? "timer" : "timer-outline"}
+                    size={24}
+                    color="white"
+                  />
+                </TouchableOpacity>
+                {isTimerRunning ? (
+                  <View style={styles.timerRunningContainer}>
+                    <Text style={styles.timerText}>{remainingTime}</Text>
+                    <TouchableOpacity
+                      style={[
+                        styles.cancelTimerButton,
+                        { backgroundColor: theme.error },
+                      ]}
+                      onPress={cancelTimer}
+                    >
+                      <Ionicons name="close" size={24} color="white" />
+                    </TouchableOpacity>
+                  </View>
+                ) : (
                   <TouchableOpacity
                     style={[
-                      styles.cancelTimerButton,
-                      { backgroundColor: theme.error },
+                      styles.captureButton,
+                      {
+                        backgroundColor: isPhotoLimitReached ? theme.error : theme.primary,
+                        opacity: (isCameraReady && !isPhotoLimitReached) ? 1 : 0.5
+                      }
                     ]}
-                    onPress={cancelTimer}
+                    onPress={isTimerEnabled ? startTimer : takePicture}
+                    disabled={!isCameraReady || isPhotoLimitReached}
                   >
-                    <Ionicons name="close" size={24} color="white" />
+                    <View
+                      style={[
+                        styles.captureButtonInner,
+                        { backgroundColor: isPhotoLimitReached ? theme.error : "white" },
+                      ]}
+                    />
+                    {isPhotoLimitReached && (
+                      <View style={styles.limitBadge}>
+                        <Ionicons name="lock-closed" size={24} color="white" />
+                      </View>
+                    )}
                   </TouchableOpacity>
-                </View>
-              ) : (
+                )}
+                <TouchableOpacity
+                  style={styles.flipButton}
+                  onPress={toggleCameraFacing}
+                >
+                  <Ionicons name="camera-reverse-outline" size={32} color="white" />
+                </TouchableOpacity>
                 <TouchableOpacity
                   style={[
-                    styles.captureButton,
-                    {
-                      backgroundColor: isPhotoLimitReached ? theme.error : theme.primary,
-                      opacity: (isCameraReady && !isPhotoLimitReached) ? 1 : 0.5
-                    }
+                    styles.importButton,
+                    isPhotoLimitReached && styles.disabledButton
                   ]}
-                  onPress={isTimerEnabled ? startTimer : takePicture}
-                  disabled={!isCameraReady || isPhotoLimitReached}
+                  onPress={pickImage}
+                  disabled={isPhotoLimitReached}
                 >
-                  <View
-                    style={[
-                      styles.captureButtonInner,
-                      { backgroundColor: isPhotoLimitReached ? theme.error : "white" },
-                    ]}
+                  <Ionicons
+                    name="image-outline"
+                    size={32}
+                    color={isPhotoLimitReached ? "rgba(255, 255, 255, 0.3)" : "white"}
                   />
-                  {isPhotoLimitReached && (
-                    <View style={styles.limitBadge}>
-                      <Ionicons name="lock-closed" size={24} color="white" />
-                    </View>
-                  )}
                 </TouchableOpacity>
-              )}
-              <TouchableOpacity
-                style={[
-                  styles.importButton,
-                  isPhotoLimitReached && styles.disabledButton
-                ]}
-                onPress={pickImage}
-                disabled={isPhotoLimitReached}
-              >
-                <Ionicons
-                  name="image-outline"
-                  size={32}
-                  color={isPhotoLimitReached ? "rgba(255, 255, 255, 0.3)" : "white"}
-                />
-              </TouchableOpacity>
+              </View>
             </View>
           </View>
         </View>
@@ -680,19 +657,15 @@ const styles = StyleSheet.create({
     width: screenWidth,
     height: cameraHeight,
   },
-  controlsContainer: {
-    position: "absolute",
-    top: 50,
-    right: spacing.xl,
-    backgroundColor: withOpacity('#000000', overlayOpacity.medium),
-    borderRadius: borderRadius.xl,
-    padding: spacing.md,
-  },
-  bottomControlsContainer: {
+  bottomBarWrapper: {
     position: "absolute",
     bottom: spacing.huge,
     left: 0,
     right: 0,
+    alignItems: "center",
+  },
+  bottomControlsContainer: {
+    width: "100%",
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
@@ -807,26 +780,15 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
   },
-  timerControls: {
-    position: "absolute",
-    top: 100,
-    left: spacing.xl,
-    flexDirection: "column",
-    alignItems: "flex-start",
-  },
-  timerToggle: {
-    padding: spacing.md,
-    borderRadius: borderRadius.xl,
-    backgroundColor: withOpacity('#000000', overlayOpacity.medium),
-    marginBottom: spacing.md,
-  },
   timerDurationContainer: {
-    flexDirection: "column",
-    alignItems: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: spacing.md,
   },
   timerButton: {
     padding: spacing.md,
-    marginBottom: spacing.md,
+    marginHorizontal: spacing.xs,
     borderRadius: borderRadius.xl,
     backgroundColor: withOpacity('#000000', overlayOpacity.medium),
     width: touchTarget.comfortable + 2, // 50px - timer button width
