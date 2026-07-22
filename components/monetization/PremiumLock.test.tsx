@@ -2,6 +2,13 @@ import React from "react";
 import { create, act } from "react-test-renderer";
 import { PremiumLock } from "./PremiumLock";
 
+// Stub the icon set so the real @expo/vector-icons async font loader doesn't
+// fire a setState after the test tears down (which surfaces as a non-zero
+// exit on isolated runs). A no-op glyph is fine for these behavioral checks.
+jest.mock("@expo/vector-icons", () => ({
+  Ionicons: (props: any) => null,
+}));
+
 jest.mock("@/context/ThemeContext", () => ({
   useTheme: () => ({ effectiveColorScheme: "dark" }),
 }));
