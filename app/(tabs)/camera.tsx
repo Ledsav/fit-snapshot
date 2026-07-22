@@ -480,7 +480,7 @@ export default function CameraScreen() {
               activeOpacity={0.8}
             >
               <Ionicons name="refresh-outline" size={18} color={theme.error} />
-              <Text style={[styles.confirmButtonText, { color: theme.error, fontFamily: fontFamily.mono }]}>
+              <Text style={[styles.confirmButtonText, preciseType.badgeLabel, { color: theme.error, fontFamily: fontFamily.mono }]}>
                 {(t("camera.retake") || "Retake").toUpperCase()}
               </Text>
             </TouchableOpacity>
@@ -491,7 +491,7 @@ export default function CameraScreen() {
               activeOpacity={0.8}
             >
               <Ionicons name="checkmark" size={18} color={theme.background} />
-              <Text style={[styles.confirmButtonText, { color: theme.background, fontFamily: fontFamily.mono }]}>
+              <Text style={[styles.confirmButtonText, preciseType.badgeLabel, { color: theme.background, fontFamily: fontFamily.mono }]}>
                 {(t("camera.confirm") || "Confirm").toUpperCase()}
               </Text>
             </TouchableOpacity>
@@ -804,10 +804,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xxl,
     gap: spacing.sm,
   },
-  confirmButtonText: {
-    fontSize: 10,
-    letterSpacing: 1,
-  },
+  confirmButtonText: {},
   helperText: {
     fontSize: 12,
     textAlign: "center",
