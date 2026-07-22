@@ -1,3 +1,4 @@
+import { ContactSheetFrame } from "@/components/home/ContactSheetFrame";
 import { Button } from "@/components/ui";
 import Colors, { overlayOpacity, withOpacity } from "@/constants/Colors";
 import {
@@ -461,73 +462,42 @@ export default function CameraScreen() {
   );
 
   if (capturedImage) {
+    const confirmCaption = `${t(`camera.${overlay}`).toUpperCase()} · ${new Date().toLocaleDateString()}`;
+
     return (
       <View style={[styles.container, { backgroundColor: theme.background }]}>
-        <Image source={{ uri: capturedImage }} style={styles.preview} />
-
-        {/* Photo Type Badge */}
-        <View style={styles.photoTypeBadgeContainer}>
-          <View
-            style={[
-              styles.photoTypeBadge,
-              { backgroundColor: theme.primary },
-            ]}
-          >
-            <Ionicons
-              name={
-                overlay === PhotoType.front ? "body-outline" :
-                overlay === PhotoType.side ? "arrow-forward-outline" :
-                "person-outline"
-              }
-              size={20}
-              color="white"
-            />
-            <Text style={styles.photoTypeBadgeText}>
-              {t(`camera.${overlay}`).toUpperCase()}
-            </Text>
-          </View>
+        <View style={styles.confirmFrameContainer}>
+          <ContactSheetFrame caption={confirmCaption}>
+            <Image source={{ uri: capturedImage }} style={styles.preview} />
+          </ContactSheetFrame>
         </View>
 
-        {/* Action Buttons */}
         <View style={styles.confirmationButtonsContainer}>
           <View style={styles.confirmationButtons}>
             <TouchableOpacity
-              style={styles.actionButton}
+              style={[styles.confirmButton, { borderColor: theme.error }]}
               onPress={retakePicture}
               activeOpacity={0.8}
             >
-              <View style={[styles.actionButtonCircle, { backgroundColor: theme.cardBackground, borderColor: theme.error }]}>
-                <Ionicons
-                  name="refresh-outline"
-                  size={32}
-                  color={theme.error}
-                />
-              </View>
-              <View style={styles.actionButtonLabelContainer}>
-                <Text style={styles.actionButtonLabel}>
-                  {t("camera.retake") || "Retake"}
-                </Text>
-              </View>
+              <Ionicons name="refresh-outline" size={18} color={theme.error} />
+              <Text style={[styles.confirmButtonText, { color: theme.error, fontFamily: fontFamily.mono }]}>
+                {(t("camera.retake") || "Retake").toUpperCase()}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.actionButton}
+              style={[styles.confirmButton, { backgroundColor: theme.primary, borderColor: theme.primary }]}
               onPress={confirmPicture}
               activeOpacity={0.8}
             >
-              <View style={[styles.actionButtonCircle, { backgroundColor: theme.success }]}>
-                <Ionicons name="checkmark" size={36} color="white" />
-              </View>
-              <View style={styles.actionButtonLabelContainer}>
-                <Text style={styles.actionButtonLabel}>
-                  {t("camera.confirm") || "Confirm"}
-                </Text>
-              </View>
+              <Ionicons name="checkmark" size={18} color={theme.background} />
+              <Text style={[styles.confirmButtonText, { color: theme.background, fontFamily: fontFamily.mono }]}>
+                {(t("camera.confirm") || "Confirm").toUpperCase()}
+              </Text>
             </TouchableOpacity>
           </View>
 
-          {/* Optional helper text */}
-          <Text style={[styles.helperText, { color: theme.text }]}>
+          <Text style={[styles.helperText, { color: theme.secondary }]}>
             {t("camera.confirmHelper") || "Review your photo before saving"}
           </Text>
         </View>
@@ -760,10 +730,14 @@ const styles = StyleSheet.create({
     width: iconSize.lg,
     height: iconSize.lg,
   },
-  preview: {
+  confirmFrameContainer: {
     flex: 1,
+    justifyContent: "center",
+    padding: spacing.xl,
+  },
+  preview: {
     width: "100%",
-    height: "100%",
+    aspectRatio: 3 / 4,
   },
   captureButtonContainer: {
     position: "absolute",
@@ -803,28 +777,6 @@ const styles = StyleSheet.create({
     color: "white",
     ...typography.h2,
   },
-  photoTypeBadgeContainer: {
-    position: "absolute",
-    top: spacing.huge + spacing.xl, // 60px - positioned below status bar
-    left: 0,
-    right: 0,
-    alignItems: "center",
-  },
-  photoTypeBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xl,
-    borderRadius: borderRadius.round,
-    gap: spacing.sm,
-    ...elevation.lg,
-  },
-  photoTypeBadgeText: {
-    color: "white",
-    ...typography.body,
-    fontWeight: "700",
-    letterSpacing: 1,
-  },
   confirmationButtonsContainer: {
     position: "absolute",
     bottom: 0,
@@ -836,44 +788,31 @@ const styles = StyleSheet.create({
   },
   confirmationButtons: {
     flexDirection: "row",
-    justifyContent: "space-evenly",
-    alignItems: "center",
-    width: "100%",
-    gap: spacing.huge + spacing.xl, // 60px - space between action buttons
-    marginBottom: spacing.lg,
-  },
-  actionButton: {
-    flexDirection: "column",
-    alignItems: "center",
-    gap: spacing.md,
-  },
-  actionButtonCircle: {
-    width: touchTarget.xlarge + spacing.lg, // 80px - large action buttons
-    height: touchTarget.xlarge + spacing.lg,
-    borderRadius: borderRadius.round,
     justifyContent: "center",
     alignItems: "center",
-    ...elevation.lg,
-    borderWidth: 3,
-    borderColor: "transparent",
+    width: "100%",
+    gap: spacing.lg,
+    marginBottom: spacing.lg,
   },
-  actionButtonLabelContainer: {
-    backgroundColor: withOpacity('#000000', overlayOpacity.heavy),
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.lg,
-    borderRadius: borderRadius.xl,
+  confirmButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderRadius: borderRadius.sm,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xxl,
+    gap: spacing.sm,
   },
-  actionButtonLabel: {
-    ...typography.body,
-    fontWeight: "700",
-    textAlign: "center",
-    color: "white",
+  confirmButtonText: {
+    fontSize: 10,
+    letterSpacing: 1,
   },
   helperText: {
-    ...typography.small,
-    opacity: designOpacity.secondary,
+    fontSize: 12,
     textAlign: "center",
     fontStyle: "italic",
+    fontFamily: fontFamily.body,
   },
   importButton: {
     alignSelf: "center",
