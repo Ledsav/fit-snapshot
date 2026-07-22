@@ -8,11 +8,12 @@ import { spacing, borderRadius, iconSize, fontFamily, preciseType } from "@/cons
 
 type StreakBadgeProps = {
   streak: number;
+  best?: number;
 };
 
 // The one place the 10% "athletic" accent (ember) is allowed to show up.
 // Deliberately compact — a milestone signal, not a primary metric.
-export const StreakBadge: React.FC<StreakBadgeProps> = ({ streak }) => {
+export const StreakBadge: React.FC<StreakBadgeProps> = ({ streak, best }) => {
   const { effectiveColorScheme } = useTheme();
   const theme = Colors[effectiveColorScheme];
   const { t } = useLocalization();
@@ -31,6 +32,11 @@ export const StreakBadge: React.FC<StreakBadgeProps> = ({ streak }) => {
       <Text style={[styles.label, preciseType.badgeLabel, { color: theme.milestone, fontFamily: fontFamily.mono }]}>
         {t("home.streak").toUpperCase()}
       </Text>
+      {!!best && best > 0 && (
+        <Text style={[styles.best, preciseType.statLabel, { color: theme.milestone, fontFamily: fontFamily.mono }]}>
+          · {(t("home.streakBest") || "Best").toUpperCase()} {best}
+        </Text>
+      )}
     </View>
   );
 };
@@ -47,4 +53,5 @@ const styles = StyleSheet.create({
   },
   count: {},
   label: {},
+  best: {},
 });

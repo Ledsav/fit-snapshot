@@ -39,6 +39,7 @@ export default function HomeScreen() {
   const [streakData, setStreakData] = useState<StreakData>({
     currentStreak: 0,
     lastPhotoDate: null,
+    bestStreak: 0,
   });
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -148,7 +149,7 @@ export default function HomeScreen() {
 
           {/* Streak badge - compact milestone signal, not a hero card */}
           <View style={styles.section}>
-            <StreakBadge streak={streakData.currentStreak} />
+            <StreakBadge streak={streakData.currentStreak} best={streakData.bestStreak} />
           </View>
 
           {/* Latest Photo - Quick gallery preview */}

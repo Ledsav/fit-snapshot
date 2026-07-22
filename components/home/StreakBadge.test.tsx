@@ -8,7 +8,7 @@ jest.mock("@/context/ThemeContext", () => ({
 
 jest.mock("@/context/LocalizationContext", () => ({
   useLocalization: () => ({
-    t: (key: string) => (key === "home.streak" ? "Streak" : key),
+    t: (key: string) => (key === "home.streak" ? "Streak" : key === "home.streakBest" ? "" : key),
   }),
 }));
 
@@ -21,5 +21,24 @@ describe("StreakBadge", () => {
     const json = JSON.stringify(tree!.toJSON());
     expect(json).toContain("7");
     expect(json).toContain("STREAK");
+  });
+
+  it("does not render the best suffix when best is omitted", () => {
+    let tree: ReturnType<typeof create>;
+    act(() => {
+      tree = create(<StreakBadge streak={7} />);
+    });
+    const json = JSON.stringify(tree!.toJSON());
+    expect(json).not.toContain("BEST");
+  });
+
+  it("renders the best suffix when best is passed", () => {
+    let tree: ReturnType<typeof create>;
+    act(() => {
+      tree = create(<StreakBadge streak={7} best={12} />);
+    });
+    const json = JSON.stringify(tree!.toJSON());
+    expect(json).toContain("12");
+    expect(json).toContain("BEST");
   });
 });
