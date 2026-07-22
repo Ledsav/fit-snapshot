@@ -301,13 +301,28 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
             </Text>
           </View>
         </View>
-        <Button
-          title={t("progress.change") || "Change"}
-          onPress={() => (hasCustomSelectionAccess ? setIsSelectingPhotos(true) : setPaywallVisible(true))}
-          variant="ghost"
-          size="small"
-          icon={<Ionicons name="images-outline" size={16} color={theme.text} />}
-        />
+        <View style={styles.changeWrap}>
+          {!hasCustomSelectionAccess && (
+            <View style={[styles.changeProChip, { borderColor: withOpacity(theme.primary, overlayOpacity.medium) }]}>
+              <Text style={[preciseType.statLabel, { color: theme.primary, fontFamily: fontFamily.mono }]}>
+                PRO
+              </Text>
+            </View>
+          )}
+          <Button
+            title={t("progress.change") || "Change"}
+            onPress={() => (hasCustomSelectionAccess ? setIsSelectingPhotos(true) : setPaywallVisible(true))}
+            variant="ghost"
+            size="small"
+            icon={
+              <Ionicons
+                name={hasCustomSelectionAccess ? "images-outline" : "lock-closed-outline"}
+                size={16}
+                color={hasCustomSelectionAccess ? theme.text : theme.primary}
+              />
+            }
+          />
+        </View>
       </View>
 
   {/* GIF Mode */}
@@ -557,7 +572,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
       <View style={styles.viewBar}>
         {([
           { key: 'slider' as const, label: t('progress.modeSlider'), icon: 'contrast-outline' as const, locked: false },
-          { key: 'sideBySide' as const, label: t('progress.modeSideBySide'), icon: 'copy-outline' as const, locked: !hasSideBySideAccess },
+          { key: 'sideBySide' as const, label: t('progress.modePair'), icon: 'copy-outline' as const, locked: !hasSideBySideAccess },
           { key: 'grid' as const, label: t('progress.modeGrid'), icon: 'grid-outline' as const, locked: !hasGridViewAccess },
           { key: 'gif' as const, label: t('progress.modeGif'), icon: 'film-outline' as const, locked: !hasGifAccess },
         ]).map((v) => {
@@ -626,6 +641,17 @@ const styles = StyleSheet.create({
   },
   headerRowSingle: {
     justifyContent: "flex-end",
+  },
+  changeWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+  },
+  changeProChip: {
+    borderWidth: 1,
+    borderRadius: borderRadius.round,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 3,
   },
   viewBarHead: {
     textTransform: "uppercase",

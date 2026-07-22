@@ -88,6 +88,7 @@ interface TranslationKeys {
     modeGif: string;
     modeGrid: string;
     modeSelect: string;
+    modePair: string;
     view: string;
     change: string;
     syncedZoomSwap: string;
@@ -365,6 +366,7 @@ export const translations: Translations = {
       gifGoToSettings: "Go to Settings to Sign In",
       modeSlider: "Slider",
       modeSideBySide: "Side-by-side",
+      modePair: "Pair",
       modeGif: "GIF",
       modeGrid: "Grid",
       modeSelect: "Select photos",
@@ -673,6 +675,7 @@ export const translations: Translations = {
       gifGoToSettings: "Ir a Configuración para Iniciar Sesión",
       modeSlider: "Deslizador",
       modeSideBySide: "Lado a lado",
+      modePair: "Par",
       modeGif: "GIF",
       modeGrid: "Cuadrícula",
       modeSelect: "Seleccionar fotos",
@@ -981,6 +984,7 @@ export const translations: Translations = {
       gifGoToSettings: "Vai alle Impostazioni per Accedere",
       modeSlider: "Slider",
       modeSideBySide: "Affiancate",
+      modePair: "Coppia",
       modeGif: "GIF",
       modeGrid: "Griglia",
       modeSelect: "Seleziona foto",
@@ -1289,6 +1293,7 @@ export const translations: Translations = {
       gifGoToSettings: "Zu Einstellungen Gehen um sich Anzumelden",
       modeSlider: "Schieberegler",
       modeSideBySide: "Nebeneinander",
+      modePair: "Paar",
       modeGif: "GIF",
       modeGrid: "Raster",
       modeSelect: "Fotos auswählen",
@@ -1598,6 +1603,7 @@ export const translations: Translations = {
       gifGoToSettings: "Aller aux Paramètres pour se Connecter",
       modeSlider: "Curseur",
       modeSideBySide: "Côte à côte",
+      modePair: "Paire",
       modeGif: "GIF",
       modeGrid: "Grille",
       modeSelect: "Sélectionner des photos",
