@@ -129,8 +129,11 @@ export default function HomeScreen() {
             </View>
           )}
 
-          {/* Instrument strip — precision readout, replaces ProgressSummary */}
+          {/* This week — instrument readout */}
           <View style={styles.section}>
+            <Text style={[styles.sectionTitle, preciseType.sectionLabel, { color: theme.secondary }]}>
+              {t("home.thisWeek") || "This Week"}
+            </Text>
             <InstrumentStrip
               totalDays={totalDays}
               consistency={consistency}
@@ -161,35 +164,35 @@ export default function HomeScreen() {
             </View>
           )}
 
-          {/* Achievements - Gamification for engagement - PREMIUM */}
-          <FeatureGate
-            feature={Feature.ACHIEVEMENT_BADGES}
-            showPreview={false}
-            containerStyle={styles.section}
-            compact={false}
-          >
-            <AchievementBadges photos={photos} currentStreak={streakData.currentStreak} />
-          </FeatureGate>
-
-          {/* Weekly Progress Chart - Recent activity trend - PREMIUM */}
-          <FeatureGate
-            feature={Feature.WEEKLY_PROGRESS_CHART}
-            showPreview={false}
-            containerStyle={styles.section}
-            compact={false}
-          >
-            <WeeklyProgressChart photos={photos} />
-          </FeatureGate>
-
-          {/* Consistency Heatmap - Long-term view - PREMIUM */}
-          <FeatureGate
-            feature={Feature.CONSISTENCY_HEATMAP}
-            showPreview={false}
-            containerStyle={styles.section}
-            compact={false}
-          >
-            <ConsistencyHeatmap photos={photos} />
-          </FeatureGate>
+          {/* Pro — premium insights, one quiet group */}
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, preciseType.sectionLabel, { color: theme.secondary }]}>
+              {t("home.pro") || "Pro"}
+            </Text>
+            <View style={styles.proGroup}>
+              <FeatureGate
+                feature={Feature.ACHIEVEMENT_BADGES}
+                customMessage={t("home.achievements")}
+                compact
+              >
+                <AchievementBadges photos={photos} currentStreak={streakData.currentStreak} />
+              </FeatureGate>
+              <FeatureGate
+                feature={Feature.WEEKLY_PROGRESS_CHART}
+                customMessage={t("home.weeklyActivity")}
+                compact
+              >
+                <WeeklyProgressChart photos={photos} />
+              </FeatureGate>
+              <FeatureGate
+                feature={Feature.CONSISTENCY_HEATMAP}
+                customMessage={t("home.consistency")}
+                compact
+              >
+                <ConsistencyHeatmap photos={photos} />
+              </FeatureGate>
+            </View>
+          </View>
 
           {/* Tips Section - Educational content at bottom */}
           <View style={styles.section}>
@@ -222,5 +225,8 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.mono,
     textTransform: "uppercase",
     marginBottom: spacing.sm,
+  },
+  proGroup: {
+    gap: spacing.sm,
   },
 });
