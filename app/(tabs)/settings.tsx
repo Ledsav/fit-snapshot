@@ -247,7 +247,7 @@ export default function SettingsScreen() {
                   {t("settings.premiumActive")}
                 </Text>
               </View>
-              <Text style={[styles.premiumSubtitle, { color: theme.secondary, fontFamily: fontFamily.body }]}>
+              <Text style={[styles.premiumSubtitle, preciseType.subtitle, { color: theme.secondary, fontFamily: fontFamily.body }]}>
                 {t("settings.thankYouMessage")}
               </Text>
               <View
@@ -292,7 +292,7 @@ export default function SettingsScreen() {
               <Text style={[styles.upgradeTitle, { color: theme.text, fontFamily: fontFamily.display }]}>
                 {t("settings.upgradeToPremium")}
               </Text>
-              <Text style={[styles.upgradeSubtitle, { color: theme.secondary, fontFamily: fontFamily.body }]}>
+              <Text style={[styles.upgradeSubtitle, preciseType.subtitle, { color: theme.secondary, fontFamily: fontFamily.body }]}>
                 {t("settings.unlimitedPhotosAnalytics")}
               </Text>
               <Text style={[styles.upgradeStatsText, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
@@ -484,7 +484,6 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
   },
   premiumSubtitle: {
-    fontSize: 13,
     marginBottom: spacing.xl,
   },
   premiumStats: {
@@ -525,7 +524,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   upgradeSubtitle: {
-    fontSize: 13,
     marginBottom: spacing.lg,
     textAlign: "center",
   },
