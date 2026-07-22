@@ -22,3 +22,46 @@ export function classifyLighting(
   if (delta <= LIGHTING_TOLERANCE.close) return "close";
   return "off";
 }
+
+export type LumaSampleRegion = {
+  /** All values are fractions of frame dimensions, 0–1. */
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+/**
+ * Two top-corner background bands, chosen to fall OUTSIDE the centered torso
+ * silhouette so shirt/skin color does not skew the reading.
+ */
+export const DEFAULT_BG_REGIONS: LumaSampleRegion[] = [
+  { x: 0.0, y: 0.0, width: 0.22, height: 0.25 }, // top-left
+  { x: 0.78, y: 0.0, width: 0.22, height: 0.25 }, // top-right
+];
+
+/** Average Y-plane bytes across the given normalized regions → 0–255 mean. */
+export function meanLumaFromYPlane(
+  y: Uint8Array,
+  width: number,
+  height: number,
+  bytesPerRow: number,
+  regions: LumaSampleRegion[]
+): number {
+  let sum = 0;
+  let count = 0;
+  for (const r of regions) {
+    const x0 = Math.max(0, Math.floor(r.x * width));
+    const y0 = Math.max(0, Math.floor(r.y * height));
+    const x1 = Math.min(width, Math.floor((r.x + r.width) * width));
+    const y1 = Math.min(height, Math.floor((r.y + r.height) * height));
+    for (let py = y0; py < y1; py++) {
+      const rowStart = py * bytesPerRow;
+      for (let px = x0; px < x1; px++) {
+        sum += y[rowStart + px];
+        count++;
+      }
+    }
+  }
+  return count === 0 ? 0 : sum / count;
+}
