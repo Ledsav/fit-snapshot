@@ -1,10 +1,14 @@
+import { ContactSheetFrame } from "@/components/home/ContactSheetFrame";
+import { LightingIndicator } from "@/components/camera/LightingIndicator";
 import { Button } from "@/components/ui";
 import Colors, { overlayOpacity, withOpacity } from "@/constants/Colors";
 import {
   borderRadius,
   opacity as designOpacity,
   elevation,
+  fontFamily,
   iconSize,
+  preciseType,
   spacing,
   touchTarget,
   typography,
@@ -14,8 +18,15 @@ import { usePhotos } from "@/context/PhotoContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useUser } from "@/context/UserContext";
 import { PhotoType } from "@/enums/Photos";
+import { LightingBaselineStore } from "@/services/lightingBaselineStore";
+import { useLightingIndicator } from "@/hooks/useLightingIndicator";
 import { Ionicons } from "@expo/vector-icons";
-import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
+import {
+  Camera,
+  useCameraDevice,
+  useCameraPermission,
+  usePhotoOutput,
+} from "react-native-vision-camera";
 import { FlipType, manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useRouter } from "expo-router";
@@ -37,67 +48,76 @@ const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const aspectRatio = 4 / 3;
 const cameraHeight = screenWidth * aspectRatio;
 
+type Facing = "back" | "front";
+
 export default function CameraScreen() {
-  const [facing, setFacing] = useState<CameraType>("back");
+  const [facing, setFacing] = useState<Facing>("back");
   const [flash, setFlash] = useState<"off" | "on">("off");
-  const [zoom, setZoom] = useState(0);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [capturedLuma, setCapturedLuma] = useState(0);
+  // True when the pending capturedImage came from the gallery (import), not the
+  // camera — imported photos have no live luminance reading to store.
+  const [isImported, setIsImported] = useState(false);
   const [overlay, setOverlay] = useState<PhotoType>(PhotoType.front);
-  const [permission, requestPermission] = useCameraPermissions();
-  const cameraRef = useRef<CameraView | null>(null);
+  const [override, setOverride] = useState<number | null>(null);
+  const { hasPermission, requestPermission } = useCameraPermission();
+  const device = useCameraDevice(facing);
   const [importedPhotoDate, setImportedPhotoDate] = useState<string | null>(null);
   const router = useRouter();
   const { effectiveColorScheme } = useTheme();
   const theme = Colors[effectiveColorScheme];
-  const { addPhoto } = usePhotos();
+  const { photos, addPhoto } = usePhotos();
   const { t } = useLocalization();
   const { canAddPhoto, featureUsage, isPremium } = useUser();
 
-  
   const [isCameraReady, setIsCameraReady] = useState(false);
-  const [cameraKey, setCameraKey] = useState(0);
   const [isFocused, setIsFocused] = useState(true);
-  const [showCamera, setShowCamera] = useState(true); // for unmount/remount
-
 
   const [isTimerEnabled, setIsTimerEnabled] = useState(false);
   const [timerDuration, setTimerDuration] = useState(3);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [remainingTime, setRemainingTime] = useState(0);
 
+  // Camera outputs (vision-camera V5). The <Camera> view renders its own
+  // preview, so we only add the photo + frame (lighting) outputs — adding an
+  // explicit preview output too would bind a 2nd Preview use case and Android
+  // CameraX rejects the surface combination.
+  const photoOutput = usePhotoOutput({ qualityPrioritization: "quality" });
+  const { frameOutput, state: lightingState, currentLuma } = useLightingIndicator({
+    photos,
+    type: overlay,
+    override,
+  });
+
   // Check photo limit
   const photoLimitStatus = canAddPhoto();
   const isPhotoLimitReached = !photoLimitStatus.allowed;
 
-  // Handle navigation focus/blur to properly manage camera resources
+  // Load the per-pose recalibration override whenever the pose changes.
+  useEffect(() => {
+    let cancelled = false;
+    LightingBaselineStore.getOverride(overlay).then((value) => {
+      if (!cancelled) setOverride(value);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [overlay]);
+
+  // Release the camera on blur, reacquire on focus (vision-camera `isActive`).
   useFocusEffect(
     useCallback(() => {
-      console.log('Camera screen focused - reinitializing camera');
       setIsFocused(true);
-      setIsCameraReady(false);
-      setShowCamera(true);
-      setCameraKey(prev => prev + 1);
-
       return () => {
-        console.log('Camera screen blurred - releasing camera resources');
         setIsFocused(false);
+        // Camera goes inactive on blur; force the ready gate closed so the
+        // capture button can't fire before the refocused preview restarts.
         setIsCameraReady(false);
-        setShowCamera(false);
-        // Cancel any running timer when leaving the screen
         setIsTimerRunning(false);
         setRemainingTime(0);
       };
     }, [])
   );
-  // Unmount and remount CameraView on facing change to release resource
-  useEffect(() => {
-    setShowCamera(false);
-    const timeout = setTimeout(() => {
-      setCameraKey(prev => prev + 1);
-      setShowCamera(true);
-    }, 200); // 200ms to ensure unmount
-    return () => clearTimeout(timeout);
-  }, [facing]);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
@@ -112,16 +132,9 @@ export default function CameraScreen() {
     return () => clearInterval(interval);
   }, [isTimerRunning, remainingTime]);
 
-  
-  // Removed unnecessary useEffect on [facing] that set isCameraReady to false.
-
-  if (!permission) {
-    return <View />;
-  }
-
-  if (!permission.granted) {
+  if (!hasPermission) {
     return (
-      <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <View style={[styles.container, styles.permissionContainer, { backgroundColor: theme.background }]}>
         <Text style={[styles.message, { color: theme.text }]}>
           {t("camera.permissionMessage")}
         </Text>
@@ -139,71 +152,46 @@ export default function CameraScreen() {
     setFacing((current) => (current === "back" ? "front" : "back"));
   }
 
-  
-  const forceRefreshCamera = () => {
-    setIsCameraReady(false);
-    setCameraKey(prev => prev + 1);
-    setTimeout(() => {
-      setIsCameraReady(true);
-    }, 1500);
-  };
-
   const toggleFlash = () => {
     setFlash((current) => (current === "off" ? "on" : "off"));
   };
 
-  const zoomIn = () => {
-    setZoom((current) => Math.min(current + 0.1, 1));
-  };
-
-  const zoomOut = () => {
-    setZoom((current) => Math.max(current - 0.1, 0));
+  const handleRecalibrate = async () => {
+    await LightingBaselineStore.setOverride(overlay, currentLuma);
+    setOverride(currentLuma);
   };
 
   const takePicture = async () => {
-    if (!cameraRef.current) {
-      console.log("Camera ref not available");
-      return;
-    }
-
     if (!isCameraReady) {
       console.log("Camera is not ready yet, please wait...");
       return;
     }
-
-    // Check photo limit before taking picture
     if (isPhotoLimitReached) {
       console.log("Photo limit reached");
       return;
     }
 
     try {
-      const photo = await cameraRef.current.takePictureAsync({
-        quality: 0.8,
-        skipProcessing: false,
-      });
+      // Snapshot the live luminance at the moment of capture.
+      const lumaAtCapture = currentLuma;
+      const photoFile = await photoOutput.capturePhotoToFile({ flashMode: flash }, {});
+      const rawUri = `file://${photoFile.filePath}`;
 
-      if (photo) {
-        let manipulatedImage: { uri: string } = photo;
-
-        if (facing === "front") {
-          manipulatedImage = await manipulateAsync(
-            photo.uri,
-            [{ flip: FlipType.Horizontal }],
-            { format: SaveFormat.JPEG }
-          );
-        }
-
-        setCapturedImage(manipulatedImage.uri);
+      let finalUri = rawUri;
+      if (facing === "front") {
+        const manipulated = await manipulateAsync(
+          rawUri,
+          [{ flip: FlipType.Horizontal }],
+          { format: SaveFormat.JPEG }
+        );
+        finalUri = manipulated.uri;
       }
+
+      setCapturedLuma(lumaAtCapture);
+      setIsImported(false);
+      setCapturedImage(finalUri);
     } catch (error) {
       console.error("Error taking picture:", error);
-      
-      setIsCameraReady(false);
-      setTimeout(() => {
-        setCameraKey(prev => prev + 1);
-        setTimeout(() => setIsCameraReady(true), 500);
-      }, 100);
     }
   };
 
@@ -223,12 +211,10 @@ export default function CameraScreen() {
 
   const confirmPicture = async () => {
     if (capturedImage) {
-      
       let photoDate = new Date().toISOString();
 
       if (importedPhotoDate) {
         try {
-          
           const dateStr = importedPhotoDate.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3');
           const parsedDate = new Date(dateStr);
           if (!isNaN(parsedDate.getTime())) {
@@ -244,6 +230,8 @@ export default function CameraScreen() {
         uri: capturedImage,
         date: photoDate,
         type: overlay,
+        // Imported photos have no live reading; only camera captures carry one.
+        luminance: isImported ? undefined : capturedLuma,
       };
       await addPhoto(newPhoto);
       setCapturedImage(null);
@@ -258,14 +246,12 @@ export default function CameraScreen() {
   };
 
   const pickImage = async () => {
-    // Check photo limit before importing
     if (isPhotoLimitReached) {
       alert(photoLimitStatus.reason || t("camera.photoLimitReached") || "Photo limit reached. Delete photos or upgrade to Premium.");
       return;
     }
 
     try {
-
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (status !== 'granted') {
@@ -273,22 +259,20 @@ export default function CameraScreen() {
         return;
       }
 
-      
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [3, 4],
         quality: 1,
-        exif: true, 
+        exif: true,
       });
 
       if (!result.canceled && result.assets[0]) {
         const selectedAsset = result.assets[0];
+        setIsImported(true);
         setCapturedImage(selectedAsset.uri);
 
-        
         if (selectedAsset.exif?.DateTimeOriginal) {
-          
           setImportedPhotoDate(selectedAsset.exif.DateTimeOriginal);
         } else {
           setImportedPhotoDate(null);
@@ -323,120 +307,67 @@ export default function CameraScreen() {
           <Text
             style={[
               styles.overlayButtonText,
+              preciseType.badgeLabel,
               { color: overlay === type ? theme.background : theme.text },
             ]}
           >
-            {t(`camera.${type}`)}
+            {t(`camera.${type}`).toUpperCase()}
           </Text>
         </TouchableOpacity>
       ))}
     </View>
   );
 
-  const renderTimerControls = () => (
-    <View style={styles.timerControls}>
-      <TouchableOpacity
-        style={[
-          styles.timerToggle,
-          isTimerEnabled && { backgroundColor: theme.primary },
-        ]}
-        onPress={toggleTimer}
-      >
-        <Ionicons
-          name={isTimerEnabled ? "timer" : "timer-outline"}
-          size={24}
-          color={isTimerEnabled ? theme.background : theme.text}
-        />
-      </TouchableOpacity>
-      {isTimerEnabled && (
-        <View style={styles.timerDurationContainer}>
-          {[3, 5, 10].map((duration) => (
-            <TouchableOpacity
-              key={duration}
-              style={[
-                styles.timerButton,
-                timerDuration === duration && {
-                  backgroundColor: theme.primary,
-                },
-              ]}
-              onPress={() => setTimerDuration(duration)}
-            >
-              <Text style={styles.timerButtonText}>{duration}s</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
-    </View>
-  );
+  const renderTimerDurationRow = () =>
+    isTimerEnabled && (
+      <View style={styles.timerDurationContainer}>
+        {[3, 5, 10].map((duration) => (
+          <TouchableOpacity
+            key={duration}
+            style={[
+              styles.timerButton,
+              timerDuration === duration && {
+                backgroundColor: theme.primary,
+              },
+            ]}
+            onPress={() => setTimerDuration(duration)}
+          >
+            <Text style={styles.timerButtonText}>{duration}s</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
 
   if (capturedImage) {
+    const confirmCaption = `${t(`camera.${overlay}`).toUpperCase()} · ${new Date().toLocaleDateString()}`;
+
     return (
       <View style={[styles.container, { backgroundColor: theme.background }]}>
-        <Image source={{ uri: capturedImage }} style={styles.preview} />
-
-        {/* Photo Type Badge */}
-        <View style={styles.photoTypeBadgeContainer}>
-          <View
-            style={[
-              styles.photoTypeBadge,
-              { backgroundColor: theme.primary },
-            ]}
-          >
-            <Ionicons
-              name={
-                overlay === PhotoType.front ? "body-outline" :
-                overlay === PhotoType.side ? "arrow-forward-outline" :
-                "person-outline"
-              }
-              size={20}
-              color="white"
-            />
-            <Text style={styles.photoTypeBadgeText}>
-              {t(`camera.${overlay}`).toUpperCase()}
-            </Text>
-          </View>
+        <View style={styles.confirmFrameContainer}>
+          <ContactSheetFrame caption={confirmCaption}>
+            <Image source={{ uri: capturedImage }} style={styles.preview} />
+          </ContactSheetFrame>
         </View>
 
-        {/* Action Buttons */}
         <View style={styles.confirmationButtonsContainer}>
           <View style={styles.confirmationButtons}>
-            <TouchableOpacity
-              style={styles.actionButton}
+            <Button
+              title={t("camera.retake") || "Retake"}
               onPress={retakePicture}
-              activeOpacity={0.8}
-            >
-              <View style={[styles.actionButtonCircle, { backgroundColor: theme.cardBackground, borderColor: theme.error }]}>
-                <Ionicons
-                  name="refresh-outline"
-                  size={32}
-                  color={theme.error}
-                />
-              </View>
-              <View style={styles.actionButtonLabelContainer}>
-                <Text style={styles.actionButtonLabel}>
-                  {t("camera.retake") || "Retake"}
-                </Text>
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.actionButton}
+              variant="danger"
+              icon={<Ionicons name="refresh-outline" size={18} color={theme.error} />}
+              style={styles.confirmBtn}
+            />
+            <Button
+              title={t("camera.confirm") || "Confirm"}
               onPress={confirmPicture}
-              activeOpacity={0.8}
-            >
-              <View style={[styles.actionButtonCircle, { backgroundColor: theme.success }]}>
-                <Ionicons name="checkmark" size={36} color="white" />
-              </View>
-              <View style={styles.actionButtonLabelContainer}>
-                <Text style={styles.actionButtonLabel}>
-                  {t("camera.confirm") || "Confirm"}
-                </Text>
-              </View>
-            </TouchableOpacity>
+              variant="primary"
+              icon={<Ionicons name="checkmark" size={18} color={theme.background} />}
+              style={styles.confirmBtn}
+            />
           </View>
 
-          {/* Optional helper text */}
-          <Text style={[styles.helperText, { color: theme.text }]}>
+          <Text style={[styles.helperText, { color: theme.secondary }]}>
             {t("camera.confirmHelper") || "Review your photo before saving"}
           </Text>
         </View>
@@ -449,118 +380,122 @@ export default function CameraScreen() {
       style={[styles.container, { backgroundColor: theme.background }]}
     >
       <StatusBar style="light" />
-      {permission.granted && isFocused && showCamera && (
-        <>
-          <CameraView
-            key={`camera-${facing}-${cameraKey}`}
-            ref={cameraRef}
-            style={StyleSheet.absoluteFill}
-            facing={facing}
-            flash={flash}
-            zoom={zoom}
-            onCameraReady={() => {
-              console.log('Camera ready');
-              setIsCameraReady(true);
-            }}
-            onMountError={(error) => {
-              console.error('Camera mount error:', error);
-              setIsCameraReady(false);
-              setTimeout(() => {
-                setCameraKey(prev => prev + 1);
-              }, 1000);
-            }}
-          >
-            {renderSilhouette()}
-          </CameraView>
-          {!isCameraReady && (
-            <View
-              style={[
-                styles.loadingContainer,
-                { backgroundColor: theme.background },
-              ]}
-            >
-              <ActivityIndicator size="large" color={theme.primary} />
-            </View>
-          )}
-        </>
-      )}
-      <View style={styles.overlayContainer}>
-        {renderOverlaySelector()}
-        <View style={styles.controlsContainer}>
-          <TouchableOpacity style={styles.controlButton} onPress={toggleFlash}>
-            <Ionicons
-              name={flash === "on" ? "flash" : "flash-off"}
-              size={24}
-              color="white"
+      <View style={styles.container}>
+        {device != null && (
+          <>
+            <Camera
+              style={StyleSheet.absoluteFill}
+              device={device}
+              isActive={isFocused}
+              outputs={[photoOutput, frameOutput]}
+              enableNativeZoomGesture={true}
+              onPreviewStarted={() => setIsCameraReady(true)}
+              onPreviewStopped={() => setIsCameraReady(false)}
             />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.controlButton} onPress={zoomIn}>
-            <Ionicons name="add-circle-outline" size={24} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.controlButton} onPress={zoomOut}>
-            <Ionicons name="remove-circle-outline" size={24} color="white" />
-          </TouchableOpacity>
-        </View>
-        {renderTimerControls()}
-        <View style={styles.bottomControlsContainer}>
-          <TouchableOpacity
-            style={styles.flipButton}
-            onPress={toggleCameraFacing}
-          >
-            <Ionicons name="camera-reverse-outline" size={32} color="white" />
-          </TouchableOpacity>
-          {isTimerRunning ? (
-            <View style={styles.timerRunningContainer}>
-              <Text style={styles.timerText}>{remainingTime}</Text>
-              <TouchableOpacity
-                style={[
-                  styles.cancelTimerButton,
-                  { backgroundColor: theme.error },
-                ]}
-                onPress={cancelTimer}
-              >
-                <Ionicons name="close" size={24} color="white" />
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <TouchableOpacity
-              style={[
-                styles.captureButton,
-                {
-                  backgroundColor: isPhotoLimitReached ? theme.error : theme.primary,
-                  opacity: (isCameraReady && !isPhotoLimitReached) ? 1 : 0.5
-                }
-              ]}
-              onPress={isTimerEnabled ? startTimer : takePicture}
-              disabled={!isCameraReady || isPhotoLimitReached}
-            >
+            {renderSilhouette()}
+            {!isCameraReady && (
               <View
                 style={[
-                  styles.captureButtonInner,
-                  { backgroundColor: isPhotoLimitReached ? theme.error : "white" },
+                  styles.loadingContainer,
+                  { backgroundColor: theme.background },
                 ]}
-              />
-              {isPhotoLimitReached && (
-                <View style={styles.limitBadge}>
-                  <Ionicons name="lock-closed" size={24} color="white" />
-                </View>
-              )}
-            </TouchableOpacity>
+              >
+                <ActivityIndicator size="large" color={theme.primary} />
+              </View>
+            )}
+          </>
+        )}
+        {device == null && (
+          <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+            <Text style={[styles.message, { color: theme.text }]}>
+              {t("camera.permissionMessage")}
+            </Text>
+          </View>
+        )}
+        <View style={styles.overlayContainer}>
+          {renderOverlaySelector()}
+          {isCameraReady && (
+            <View style={styles.lightingIndicatorWrapper} pointerEvents="box-none">
+              <LightingIndicator state={lightingState} onRecalibrate={handleRecalibrate} />
+            </View>
           )}
-          <TouchableOpacity
-            style={[
-              styles.importButton,
-              isPhotoLimitReached && styles.disabledButton
-            ]}
-            onPress={pickImage}
-            disabled={isPhotoLimitReached}
-          >
-            <Ionicons
-              name="image-outline"
-              size={32}
-              color={isPhotoLimitReached ? "rgba(255, 255, 255, 0.3)" : "white"}
-            />
-          </TouchableOpacity>
+          <View style={styles.bottomBarWrapper}>
+            {renderTimerDurationRow()}
+            <View style={styles.bottomControlsContainer}>
+              <TouchableOpacity style={styles.controlButton} onPress={toggleFlash}>
+                <Ionicons
+                  name={flash === "on" ? "flash" : "flash-off"}
+                  size={24}
+                  color="white"
+                />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.controlButton} onPress={toggleTimer}>
+                <Ionicons
+                  name={isTimerEnabled ? "timer" : "timer-outline"}
+                  size={24}
+                  color="white"
+                />
+              </TouchableOpacity>
+              {isTimerRunning ? (
+                <View style={styles.timerRunningContainer}>
+                  <Text style={styles.timerText}>{remainingTime}</Text>
+                  <TouchableOpacity
+                    style={[
+                      styles.cancelTimerButton,
+                      { backgroundColor: theme.error },
+                    ]}
+                    onPress={cancelTimer}
+                  >
+                    <Ionicons name="close" size={24} color="white" />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={[
+                    styles.captureButton,
+                    {
+                      backgroundColor: isPhotoLimitReached ? theme.error : theme.primary,
+                      opacity: (isCameraReady && !isPhotoLimitReached) ? 1 : 0.5
+                    }
+                  ]}
+                  onPress={isTimerEnabled ? startTimer : takePicture}
+                  disabled={!isCameraReady || isPhotoLimitReached}
+                >
+                  <View
+                    style={[
+                      styles.captureButtonInner,
+                      { backgroundColor: isPhotoLimitReached ? theme.error : "white" },
+                    ]}
+                  />
+                  {isPhotoLimitReached && (
+                    <View style={styles.limitBadge}>
+                      <Ionicons name="lock-closed" size={24} color="white" />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                style={styles.flipButton}
+                onPress={toggleCameraFacing}
+              >
+                <Ionicons name="camera-reverse-outline" size={32} color="white" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.importButton,
+                  isPhotoLimitReached && styles.disabledButton
+                ]}
+                onPress={pickImage}
+                disabled={isPhotoLimitReached}
+              >
+                <Ionicons
+                  name="image-outline"
+                  size={32}
+                  color={isPhotoLimitReached ? "rgba(255, 255, 255, 0.3)" : "white"}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </View>
 
@@ -595,6 +530,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  permissionContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
   loadingContainer: {
     ...StyleSheet.absoluteFill,
     justifyContent: "center",
@@ -622,19 +561,22 @@ const styles = StyleSheet.create({
     width: screenWidth,
     height: cameraHeight,
   },
-  controlsContainer: {
+  lightingIndicatorWrapper: {
     position: "absolute",
-    top: 50,
-    right: spacing.xl,
-    backgroundColor: withOpacity('#000000', overlayOpacity.medium),
-    borderRadius: borderRadius.xl,
-    padding: spacing.md,
+    top: 100,
+    left: 0,
+    right: 0,
+    alignItems: "center",
   },
-  bottomControlsContainer: {
+  bottomBarWrapper: {
     position: "absolute",
     bottom: spacing.huge,
     left: 0,
     right: 0,
+    alignItems: "center",
+  },
+  bottomControlsContainer: {
+    width: "100%",
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
@@ -665,10 +607,14 @@ const styles = StyleSheet.create({
     width: iconSize.lg,
     height: iconSize.lg,
   },
-  preview: {
+  confirmFrameContainer: {
     flex: 1,
+    justifyContent: "center",
+    padding: spacing.xl,
+  },
+  preview: {
     width: "100%",
-    height: "100%",
+    aspectRatio: 3 / 4,
   },
   captureButtonContainer: {
     position: "absolute",
@@ -682,17 +628,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   overlayButton: {
-    padding: spacing.md,
-    marginRight: spacing.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    marginRight: spacing.sm,
     backgroundColor: withOpacity('#000000', overlayOpacity.medium),
-    borderRadius: borderRadius.xl,
+    borderRadius: borderRadius.round,
   },
   activeOverlayButton: {
     backgroundColor: withOpacity('#ffffff', overlayOpacity.light),
   },
   overlayButtonText: {
     color: "white",
-    ...typography.captionBold,
+    fontFamily: fontFamily.mono,
   },
   overlayText: {
     position: "absolute",
@@ -707,28 +654,6 @@ const styles = StyleSheet.create({
     color: "white",
     ...typography.h2,
   },
-  photoTypeBadgeContainer: {
-    position: "absolute",
-    top: spacing.huge + spacing.xl, // 60px - positioned below status bar
-    left: 0,
-    right: 0,
-    alignItems: "center",
-  },
-  photoTypeBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xl,
-    borderRadius: borderRadius.round,
-    gap: spacing.sm,
-    ...elevation.lg,
-  },
-  photoTypeBadgeText: {
-    color: "white",
-    ...typography.body,
-    fontWeight: "700",
-    letterSpacing: 1,
-  },
   confirmationButtonsContainer: {
     position: "absolute",
     bottom: 0,
@@ -740,44 +665,20 @@ const styles = StyleSheet.create({
   },
   confirmationButtons: {
     flexDirection: "row",
-    justifyContent: "space-evenly",
-    alignItems: "center",
-    width: "100%",
-    gap: spacing.huge + spacing.xl, // 60px - space between action buttons
-    marginBottom: spacing.lg,
-  },
-  actionButton: {
-    flexDirection: "column",
-    alignItems: "center",
-    gap: spacing.md,
-  },
-  actionButtonCircle: {
-    width: touchTarget.xlarge + spacing.lg, // 80px - large action buttons
-    height: touchTarget.xlarge + spacing.lg,
-    borderRadius: borderRadius.round,
     justifyContent: "center",
     alignItems: "center",
-    ...elevation.lg,
-    borderWidth: 3,
-    borderColor: "transparent",
+    width: "100%",
+    gap: spacing.lg,
+    marginBottom: spacing.lg,
   },
-  actionButtonLabelContainer: {
-    backgroundColor: withOpacity('#000000', overlayOpacity.heavy),
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.lg,
-    borderRadius: borderRadius.xl,
-  },
-  actionButtonLabel: {
-    ...typography.body,
-    fontWeight: "700",
-    textAlign: "center",
-    color: "white",
+  confirmBtn: {
+    flex: 1,
   },
   helperText: {
-    ...typography.small,
-    opacity: designOpacity.secondary,
+    fontSize: 12,
     textAlign: "center",
     fontStyle: "italic",
+    fontFamily: fontFamily.body,
   },
   importButton: {
     alignSelf: "center",
@@ -790,26 +691,15 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
   },
-  timerControls: {
-    position: "absolute",
-    top: 100,
-    left: spacing.xl,
-    flexDirection: "column",
-    alignItems: "flex-start",
-  },
-  timerToggle: {
-    padding: spacing.md,
-    borderRadius: borderRadius.xl,
-    backgroundColor: withOpacity('#000000', overlayOpacity.medium),
-    marginBottom: spacing.md,
-  },
   timerDurationContainer: {
-    flexDirection: "column",
-    alignItems: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: spacing.md,
   },
   timerButton: {
     padding: spacing.md,
-    marginBottom: spacing.md,
+    marginHorizontal: spacing.xs,
     borderRadius: borderRadius.xl,
     backgroundColor: withOpacity('#000000', overlayOpacity.medium),
     width: touchTarget.comfortable + 2, // 50px - timer button width

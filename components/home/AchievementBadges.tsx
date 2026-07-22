@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useTheme } from "@/context/ThemeContext";
 import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
 import { Photo } from "@/services/photoStorage";
 import { useLocalization } from "@/context/LocalizationContext";
@@ -28,8 +28,8 @@ type AchievementBadgesProps = {
 };
 
 export const AchievementBadges: React.FC<AchievementBadgesProps> = ({ photos, currentStreak }) => {
-  const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme ?? "light"];
+  const { effectiveColorScheme } = useTheme();
+  const theme = Colors[effectiveColorScheme];
   const { t } = useLocalization();
 
   const now = new Date();
@@ -119,11 +119,13 @@ export const AchievementBadges: React.FC<AchievementBadgesProps> = ({ photos, cu
               },
             ]}
           >
-            <Ionicons
-              name={achievement.icon}
-              size={iconSize.lg}
-              color={achievement.unlocked ? theme.background : withOpacity(theme.text, overlayOpacity.medium)}
-            />
+            {achievement.unlocked ? (
+              <Ionicons name={achievement.icon} size={iconSize.lg} color={theme.background} />
+            ) : (
+              <View style={[styles.iconChip, { backgroundColor: withOpacity(theme.primary, overlayOpacity.subtle) }]}>
+                <Ionicons name={achievement.icon} size={iconSize.md} color={theme.primary} />
+              </View>
+            )}
             <Text
               style={[
                 styles.badgeTitle,
@@ -205,6 +207,13 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md,
     borderWidth: 2,
     marginRight: spacing.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  iconChip: {
+    width: iconSize.lg + spacing.md,
+    height: iconSize.lg + spacing.md,
+    borderRadius: borderRadius.round,
     alignItems: "center",
     justifyContent: "center",
   },

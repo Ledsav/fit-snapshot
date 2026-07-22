@@ -1,22 +1,11 @@
 import React, { useState, useRef, useMemo } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Dimensions,
-} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from "react-native";
 import PagerView from "react-native-pager-view";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/context/ThemeContext";
 import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
-import {
-  spacing,
-  borderRadius,
-  typography,
-  iconSize,
-} from "@/constants/DesignSystem";
+import { spacing, borderRadius, iconSize, fontFamily, preciseType } from "@/constants/DesignSystem";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const CARD_MARGIN = spacing.sm;
@@ -54,34 +43,26 @@ export const ShreddedTipsCarousel: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <PagerView
-        ref={pagerRef}
-        style={styles.pagerView}
-        initialPage={0}
-        onPageSelected={handlePageSelected}
-      >
+      <PagerView ref={pagerRef} style={styles.pagerView} initialPage={0} onPageSelected={handlePageSelected}>
         {tips.map((tip: Tip, index: number) => (
           <View key={index} style={styles.page}>
-            <View style={[styles.slide, { backgroundColor: theme.primary }]}>
+            <View
+              style={[
+                styles.slide,
+                {
+                  backgroundColor: theme.cardBackground,
+                  borderColor: withOpacity(theme.secondary, overlayOpacity.light),
+                },
+              ]}
+            >
               <View style={styles.iconContainer}>
-                <Ionicons
-                  name={tip.icon as any}
-                  size={iconSize.xl}
-                  color={theme.cardBackground}
-                />
+                <Ionicons name={tip.icon as any} size={iconSize.xl} color={theme.primary} />
               </View>
               <View style={styles.textContainer}>
-                <Text
-                  style={[styles.mainText, { color: theme.cardBackground }]}
-                >
+                <Text style={[styles.mainText, preciseType.tipHeadline, { color: theme.text, fontFamily: fontFamily.display }]}>
                   {tip.main}
                 </Text>
-                <Text
-                  style={[
-                    styles.clarificationText,
-                    { color: theme.cardBackground },
-                  ]}
-                >
+                <Text style={[styles.clarificationText, preciseType.tipBody, { color: theme.secondary, fontFamily: fontFamily.body }]}>
                   {tip.clarification}
                 </Text>
               </View>
@@ -97,9 +78,7 @@ export const ShreddedTipsCarousel: React.FC = () => {
               styles.paginationDot,
               {
                 backgroundColor:
-                  index === activeIndex
-                    ? theme.primary
-                    : withOpacity(theme.text, overlayOpacity.heavy),
+                  index === activeIndex ? theme.primary : withOpacity(theme.secondary, overlayOpacity.heavy),
               },
             ]}
             onPress={() => scrollToIndex(index)}
@@ -126,7 +105,8 @@ const styles = StyleSheet.create({
   slide: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.sm,
+    borderWidth: 1,
     padding: spacing.xl,
     width: CARD_WIDTH,
     height: "100%",
@@ -138,12 +118,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   mainText: {
-    ...typography.h3,
-    fontWeight: "bold",
+    fontStyle: "italic",
     marginBottom: spacing.xs,
   },
   clarificationText: {
-    ...typography.body,
     flexWrap: "wrap",
   },
   pagination: {

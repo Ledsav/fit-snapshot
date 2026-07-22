@@ -22,6 +22,9 @@ interface TranslationKeys {
     consistency: string;
     last12Weeks: string;
     last10Weeks: string;
+    thisWeek: string;
+    pro: string;
+    streakBest: string;
   };
   camera: {
     title: string;
@@ -39,6 +42,11 @@ interface TranslationKeys {
     photoLimitReached: string;
     photosUsed: string;
     photoLimitMessage: string;
+    lightingMatched: string;
+    lightingClose: string;
+    lightingOff: string;
+    lightingNone: string;
+    recalibrateLighting: string;
   };
   gallery: {
     title: string;
@@ -51,6 +59,15 @@ interface TranslationKeys {
     delete: string;
     selectAll: string;
     deselectAll: string;
+    deleteConfirmMessage: string;
+    deleteBulkConfirmMessage: string;
+    gifsTitle: string;
+    deleteGif: string;
+    deleteGifConfirmMessage: string;
+    addContent: string;
+    addPhoto: string;
+    importGif: string;
+    invalidGifFile: string;
   };
   progress: {
     title: string;
@@ -78,6 +95,15 @@ interface TranslationKeys {
     gifErrorTitle: string;
     gifAuthRequired: string;
     gifGoToSettings: string;
+    modeSlider: string;
+    modeSideBySide: string;
+    modeGif: string;
+    modeGrid: string;
+    modePair: string;
+    view: string;
+    change: string;
+    syncedZoomSwap: string;
+    syncedZoomReset: string;
   };
   achievements: {
     firstPhoto: string;
@@ -160,7 +186,8 @@ interface TranslationKeys {
   progressSummary: {
     days: string;
     photos: string;
-    active: string;
+    consistency: string;
+    thisWeek: string;
   };
   onboardingCarousel: {
     takePhoto: {
@@ -234,12 +261,14 @@ interface TranslationKeys {
     processing: string;
     continueToPayment: string;
     cancelAnytime: string;
+    trustLine: string;
     termsAgreement: string;
     perMonth: string;
     currency: string;
   };
   featureGate: {
     premiumFeature: string;
+    pro: string;
     upgradeMessage: string;
     upgrade: string;
     upgradeNow: string;
@@ -249,14 +278,10 @@ interface TranslationKeys {
     unlimitedStorageDesc: string;
     advancedAnalyticsTitle: string;
     advancedAnalyticsDesc: string;
-    advancedComparisonsTitle: string;
-    advancedComparisonsDesc: string;
-    exportShareTitle: string;
-    exportShareDesc: string;
-    premiumThemesTitle: string;
-    premiumThemesDesc: string;
-    adFreeTitle: string;
-    adFreeDesc: string;
+    customComparisonsTitle: string;
+    customComparisonsDesc: string;
+    gifExportTitle: string;
+    gifExportDesc: string;
   };
 }
 
@@ -289,6 +314,9 @@ export const translations: Translations = {
       consistency: "Consistency Tracker",
       last12Weeks: "Last 12 weeks",
       last10Weeks: "Last 10 weeks",
+      thisWeek: "This Week",
+      pro: "Pro",
+      streakBest: "Best",
     },
     camera: {
       title: "Camera",
@@ -306,6 +334,11 @@ export const translations: Translations = {
       photoLimitReached: "Photo Limit Reached",
       photosUsed: "photos",
       photoLimitMessage: "You've reached the free tier limit. Upgrade to Premium for unlimited photos.",
+      lightingMatched: "Lighting matched",
+      lightingClose: "Lighting close",
+      lightingOff: "Lighting off",
+      lightingNone: "This shot sets your baseline",
+      recalibrateLighting: "Set as baseline",
     },
     gallery: {
       title: "Gallery",
@@ -318,6 +351,15 @@ export const translations: Translations = {
       delete: "Delete",
       selectAll: "Select All",
       deselectAll: "Deselect All",
+      deleteConfirmMessage: "This photo will be permanently deleted. This can't be undone.",
+      deleteBulkConfirmMessage: "selected photos will be permanently deleted. This can't be undone.",
+      gifsTitle: "GIFs",
+      deleteGif: "Delete GIF",
+      deleteGifConfirmMessage: "This GIF will be permanently deleted. This can't be undone.",
+      addContent: "Add to Gallery",
+      addPhoto: "Add Photo",
+      importGif: "Import GIF",
+      invalidGifFile: "Please select a GIF file.",
     },
     progress: {
       title: "Your Progress",
@@ -345,6 +387,15 @@ export const translations: Translations = {
       gifErrorTitle: "Unable to Generate GIF",
       gifAuthRequired: "Sign in required to generate GIFs",
       gifGoToSettings: "Go to Settings to Sign In",
+      modeSlider: "Slider",
+      modeSideBySide: "Side-by-side",
+      modePair: "Pair",
+      modeGif: "GIF",
+      modeGrid: "Grid",
+      view: "View",
+      change: "Change",
+      syncedZoomSwap: "Swap",
+      syncedZoomReset: "Reset zoom",
     },
     achievements: {
       firstPhoto: "First Step",
@@ -431,7 +482,8 @@ export const translations: Translations = {
     progressSummary: {
       days: "days",
       photos: "photos",
-      active: "active",
+      consistency: "consistency",
+      thisWeek: "this week",
     },
     onboardingCarousel: {
       takePhoto: {
@@ -533,29 +585,27 @@ export const translations: Translations = {
       processing: "Processing...",
       continueToPayment: "Continue to Payment",
       cancelAnytime: "Cancel anytime. No commitment.",
+      trustLine: "Your photos stay yours either way.",
       termsAgreement: "By continuing, you agree to our Terms & Privacy Policy",
       perMonth: "/month",
       currency: "$",
     },
     featureGate: {
       premiumFeature: "Premium Feature",
+      pro: "Pro",
       upgradeMessage: "Upgrade to Premium to unlock this feature",
       upgrade: "Upgrade",
       upgradeNow: "Upgrade Now",
     },
     premiumBenefits: {
       unlimitedStorageTitle: "Unlimited Photo Storage",
-      unlimitedStorageDesc: "Store unlimited progress photos with cloud backup",
-      advancedAnalyticsTitle: "Advanced Analytics",
-      advancedAnalyticsDesc: "Track your progress with detailed charts and insights",
-      advancedComparisonsTitle: "Advanced Comparisons",
-      advancedComparisonsDesc: "Side-by-side, grid view, and photo morphing",
-      exportShareTitle: "Export & Share",
-      exportShareDesc: "Create videos, PDFs, and share your transformation",
-      premiumThemesTitle: "Premium Themes",
-      premiumThemesDesc: "Customize your experience with exclusive themes",
-      adFreeTitle: "Ad-Free Experience",
-      adFreeDesc: "Enjoy the app without any advertisements",
+      unlimitedStorageDesc: "Free is capped at 20 photos — Premium removes the limit",
+      advancedAnalyticsTitle: "Full Progress Analytics",
+      advancedAnalyticsDesc: "Unlock your weekly activity chart, consistency heatmap, and achievement badges",
+      customComparisonsTitle: "Custom Photo Comparisons",
+      customComparisonsDesc: "Pick any two photos to compare, not just your oldest and newest",
+      gifExportTitle: "Before/After GIF Export",
+      gifExportDesc: "Create and save one before/after transformation GIF every month",
     },
   },
 
@@ -583,6 +633,9 @@ export const translations: Translations = {
       consistency: "Rastreador de Consistencia",
       last12Weeks: "Últimas 12 semanas",
       last10Weeks: "Últimas 10 semanas",
+      thisWeek: "Esta Semana",
+      pro: "Pro",
+      streakBest: "Mejor",
     },
     camera: {
       title: "Cámara",
@@ -600,6 +653,11 @@ export const translations: Translations = {
       photoLimitReached: "Límite de Fotos Alcanzado",
       photosUsed: "fotos",
       photoLimitMessage: "Has alcanzado el límite del plan gratuito. Actualiza a Premium para fotos ilimitadas.",
+      lightingMatched: "Iluminación coincidente",
+      lightingClose: "Iluminación cercana",
+      lightingOff: "Iluminación desajustada",
+      lightingNone: "Esta foto establece tu referencia",
+      recalibrateLighting: "Establecer como referencia",
     },
     gallery: {
       title: "Galería",
@@ -612,6 +670,15 @@ export const translations: Translations = {
       delete: "Eliminar",
       selectAll: "Seleccionar Todo",
       deselectAll: "Deseleccionar Todo",
+      deleteConfirmMessage: "Esta foto se eliminará permanentemente. Esta acción no se puede deshacer.",
+      deleteBulkConfirmMessage: "fotos seleccionadas se eliminarán permanentemente. Esta acción no se puede deshacer.",
+      gifsTitle: "GIFs",
+      deleteGif: "Eliminar GIF",
+      deleteGifConfirmMessage: "Este GIF se eliminará permanentemente. Esta acción no se puede deshacer.",
+      addContent: "Añadir a la Galería",
+      addPhoto: "Añadir Foto",
+      importGif: "Importar GIF",
+      invalidGifFile: "Por favor selecciona un archivo GIF.",
     },
     progress: {
       title: "Tu Progreso",
@@ -640,6 +707,15 @@ export const translations: Translations = {
       gifErrorTitle: "No se Puede Generar GIF",
       gifAuthRequired: "Se requiere iniciar sesión para generar GIFs",
       gifGoToSettings: "Ir a Configuración para Iniciar Sesión",
+      modeSlider: "Deslizador",
+      modeSideBySide: "Lado a lado",
+      modePair: "Par",
+      modeGif: "GIF",
+      modeGrid: "Cuadrícula",
+      view: "Vista",
+      change: "Cambiar",
+      syncedZoomSwap: "Intercambiar",
+      syncedZoomReset: "Restablecer zoom",
     },
     achievements: {
       firstPhoto: "Primer Paso",
@@ -726,7 +802,8 @@ export const translations: Translations = {
     progressSummary: {
       days: "días",
       photos: "fotos",
-      active: "activo",
+      consistency: "consistencia",
+      thisWeek: "esta semana",
     },
     onboardingCarousel: {
       takePhoto: {
@@ -828,29 +905,27 @@ export const translations: Translations = {
       processing: "Procesando...",
       continueToPayment: "Continuar al Pago",
       cancelAnytime: "Cancela en cualquier momento. Sin compromiso.",
+      trustLine: "Tus fotos siguen siendo tuyas en cualquier caso.",
       termsAgreement: "Al continuar, aceptas nuestros Términos y Política de Privacidad",
       perMonth: "/mes",
       currency: "€",
     },
     featureGate: {
       premiumFeature: "Función Premium",
+      pro: "Pro",
       upgradeMessage: "Actualiza a Premium para desbloquear esta función",
       upgrade: "Actualizar",
       upgradeNow: "Actualizar Ahora",
     },
     premiumBenefits: {
       unlimitedStorageTitle: "Almacenamiento Ilimitado de Fotos",
-      unlimitedStorageDesc: "Almacena fotos de progreso ilimitadas con respaldo en la nube",
-      advancedAnalyticsTitle: "Análisis Avanzados",
-      advancedAnalyticsDesc: "Rastrea tu progreso con gráficos detallados e información",
-      advancedComparisonsTitle: "Comparaciones Avanzadas",
-      advancedComparisonsDesc: "Lado a lado, vista en cuadrícula y transformación de fotos",
-      exportShareTitle: "Exportar y Compartir",
-      exportShareDesc: "Crea videos, PDFs y comparte tu transformación",
-      premiumThemesTitle: "Temas Premium",
-      premiumThemesDesc: "Personaliza tu experiencia con temas exclusivos",
-      adFreeTitle: "Experiencia Sin Anuncios",
-      adFreeDesc: "Disfruta la aplicación sin ningún anuncio",
+      unlimitedStorageDesc: "El plan gratuito tiene un límite de 20 fotos — Premium elimina el límite",
+      advancedAnalyticsTitle: "Análisis Completo de Progreso",
+      advancedAnalyticsDesc: "Desbloquea tu gráfico de actividad semanal, mapa de calor de constancia e insignias de logros",
+      customComparisonsTitle: "Comparaciones de Fotos Personalizadas",
+      customComparisonsDesc: "Elige dos fotos cualquiera para comparar, no solo la más antigua y la más reciente",
+      gifExportTitle: "Exportación de GIF Antes/Después",
+      gifExportDesc: "Crea y guarda un GIF de transformación antes/después cada mes",
     },
   },
 
@@ -878,6 +953,9 @@ export const translations: Translations = {
       consistency: "Tracciatore di Costanza",
       last12Weeks: "Ultime 12 settimane",
       last10Weeks: "Ultime 10 settimane",
+      thisWeek: "Questa Settimana",
+      pro: "Pro",
+      streakBest: "Migliore",
     },
     camera: {
       title: "Fotocamera",
@@ -896,6 +974,11 @@ export const translations: Translations = {
       photoLimitReached: "Limite Foto Raggiunto",
       photosUsed: "foto",
       photoLimitMessage: "Hai raggiunto il limite del piano gratuito. Passa a Premium per foto illimitate.",
+      lightingMatched: "Illuminazione corrispondente",
+      lightingClose: "Illuminazione simile",
+      lightingOff: "Illuminazione non corrispondente",
+      lightingNone: "Questo scatto imposta la tua base di riferimento",
+      recalibrateLighting: "Imposta come riferimento",
     },
     gallery: {
       title: "Galleria",
@@ -908,6 +991,15 @@ export const translations: Translations = {
       delete: "Elimina",
       selectAll: "Seleziona Tutto",
       deselectAll: "Deseleziona Tutto",
+      deleteConfirmMessage: "Questa foto verrà eliminata definitivamente. Questa azione non può essere annullata.",
+      deleteBulkConfirmMessage: "foto selezionate verranno eliminate definitivamente. Questa azione non può essere annullata.",
+      gifsTitle: "GIF",
+      deleteGif: "Elimina GIF",
+      deleteGifConfirmMessage: "Questa GIF verrà eliminata definitivamente. Questa azione non può essere annullata.",
+      addContent: "Aggiungi alla Galleria",
+      addPhoto: "Aggiungi Foto",
+      importGif: "Importa GIF",
+      invalidGifFile: "Seleziona un file GIF.",
     },
     progress: {
       title: "I Tuoi Progressi",
@@ -935,6 +1027,15 @@ export const translations: Translations = {
       gifErrorTitle: "Impossibile Generare GIF",
       gifAuthRequired: "Accesso richiesto per generare GIF",
       gifGoToSettings: "Vai alle Impostazioni per Accedere",
+      modeSlider: "Slider",
+      modeSideBySide: "Affiancate",
+      modePair: "Coppia",
+      modeGif: "GIF",
+      modeGrid: "Griglia",
+      view: "Vista",
+      change: "Cambia",
+      syncedZoomSwap: "Scambia",
+      syncedZoomReset: "Reimposta zoom",
     },
     achievements: {
       firstPhoto: "Primo Passo",
@@ -1021,7 +1122,8 @@ export const translations: Translations = {
     progressSummary: {
       days: "giorni",
       photos: "foto",
-      active: "attivo",
+      consistency: "costanza",
+      thisWeek: "questa settimana",
     },
     onboardingCarousel: {
       takePhoto: {
@@ -1123,29 +1225,27 @@ export const translations: Translations = {
       processing: "Elaborazione...",
       continueToPayment: "Continua al Pagamento",
       cancelAnytime: "Annulla in qualsiasi momento. Nessun impegno.",
+      trustLine: "Le tue foto restano tue in ogni caso.",
       termsAgreement: "Continuando, accetti i nostri Termini e la Politica sulla Privacy",
       perMonth: "/mese",
       currency: "€",
     },
     featureGate: {
       premiumFeature: "Funzione Premium",
+      pro: "Pro",
       upgradeMessage: "Passa a Premium per sbloccare questa funzione",
       upgrade: "Aggiorna",
       upgradeNow: "Aggiorna Ora",
     },
     premiumBenefits: {
       unlimitedStorageTitle: "Archiviazione Foto Illimitata",
-      unlimitedStorageDesc: "Archivia foto di progresso illimitate con backup nel cloud",
-      advancedAnalyticsTitle: "Analisi Avanzate",
-      advancedAnalyticsDesc: "Traccia i tuoi progressi con grafici dettagliati e approfondimenti",
-      advancedComparisonsTitle: "Confronti Avanzati",
-      advancedComparisonsDesc: "Affiancamento, vista a griglia e morphing fotografico",
-      exportShareTitle: "Esporta e Condividi",
-      exportShareDesc: "Crea video, PDF e condividi la tua trasformazione",
-      premiumThemesTitle: "Temi Premium",
-      premiumThemesDesc: "Personalizza la tua esperienza con temi esclusivi",
-      adFreeTitle: "Esperienza Senza Pubblicità",
-      adFreeDesc: "Goditi l'app senza alcuna pubblicità",
+      unlimitedStorageDesc: "Il piano gratuito è limitato a 20 foto — Premium rimuove il limite",
+      advancedAnalyticsTitle: "Analisi Complete dei Progressi",
+      advancedAnalyticsDesc: "Sblocca il grafico dell'attività settimanale, la heatmap di costanza e i badge dei traguardi",
+      customComparisonsTitle: "Confronti Foto Personalizzati",
+      customComparisonsDesc: "Scegli due foto qualsiasi da confrontare, non solo la più vecchia e la più recente",
+      gifExportTitle: "Esportazione GIF Prima/Dopo",
+      gifExportDesc: "Crea e salva una GIF di trasformazione prima/dopo ogni mese",
     },
   },
   de: {
@@ -1172,6 +1272,9 @@ export const translations: Translations = {
       consistency: "Konsistenz-Tracker",
       last12Weeks: "Letzte 12 Wochen",
       last10Weeks: "Letzte 10 Wochen",
+      thisWeek: "Diese Woche",
+      pro: "Pro",
+      streakBest: "Beste",
     },
     camera: {
       title: "Kamera",
@@ -1190,6 +1293,11 @@ export const translations: Translations = {
       photoLimitReached: "Fotolimit Erreicht",
       photosUsed: "Fotos",
       photoLimitMessage: "Sie haben das Limit des kostenlosen Plans erreicht. Upgraden Sie auf Premium für unbegrenzte Fotos.",
+      lightingMatched: "Beleuchtung passt",
+      lightingClose: "Beleuchtung fast passend",
+      lightingOff: "Beleuchtung passt nicht",
+      lightingNone: "Diese Aufnahme legt deine Referenz fest",
+      recalibrateLighting: "Als Referenz festlegen",
     },
     gallery: {
       title: "Galerie",
@@ -1202,6 +1310,15 @@ export const translations: Translations = {
       delete: "Löschen",
       selectAll: "Alle Auswählen",
       deselectAll: "Alle Abwählen",
+      deleteConfirmMessage: "Dieses Foto wird dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.",
+      deleteBulkConfirmMessage: "ausgewählte Fotos werden dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.",
+      gifsTitle: "GIFs",
+      deleteGif: "GIF löschen",
+      deleteGifConfirmMessage: "Dieses GIF wird dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.",
+      addContent: "Zur Galerie hinzufügen",
+      addPhoto: "Foto hinzufügen",
+      importGif: "GIF importieren",
+      invalidGifFile: "Bitte wähle eine GIF-Datei aus.",
     },
     progress: {
       title: "Ihr Fortschritt",
@@ -1230,6 +1347,15 @@ export const translations: Translations = {
       gifErrorTitle: "GIF Konnte Nicht Erstellt Werden",
       gifAuthRequired: "Anmeldung erforderlich zum Erstellen von GIFs",
       gifGoToSettings: "Zu Einstellungen Gehen um sich Anzumelden",
+      modeSlider: "Schieberegler",
+      modeSideBySide: "Nebeneinander",
+      modePair: "Paar",
+      modeGif: "GIF",
+      modeGrid: "Raster",
+      view: "Ansicht",
+      change: "Ändern",
+      syncedZoomSwap: "Tauschen",
+      syncedZoomReset: "Zoom zurücksetzen",
     },
     achievements: {
       firstPhoto: "Erster Schritt",
@@ -1316,7 +1442,8 @@ export const translations: Translations = {
     progressSummary: {
       days: "Tage",
       photos: "Fotos",
-      active: "aktiv",
+      consistency: "Konsistenz",
+      thisWeek: "diese Woche",
     },
     onboardingCarousel: {
       takePhoto: {
@@ -1419,29 +1546,27 @@ export const translations: Translations = {
       processing: "Verarbeitung...",
       continueToPayment: "Weiter zur Zahlung",
       cancelAnytime: "Jederzeit kündbar. Keine Verpflichtung.",
+      trustLine: "Deine Fotos bleiben so oder so deine.",
       termsAgreement: "Indem Sie fortfahren, stimmen Sie unseren Bedingungen und Datenschutzrichtlinien zu",
       perMonth: "/Monat",
       currency: "€",
     },
     featureGate: {
       premiumFeature: "Premium-Funktion",
+      pro: "Pro",
       upgradeMessage: "Upgraden Sie auf Premium, um diese Funktion freizuschalten",
       upgrade: "Upgraden",
       upgradeNow: "Jetzt Upgraden",
     },
     premiumBenefits: {
       unlimitedStorageTitle: "Unbegrenzter Fotospeicher",
-      unlimitedStorageDesc: "Speichern Sie unbegrenzt Fortschrittsfotos mit Cloud-Backup",
-      advancedAnalyticsTitle: "Erweiterte Analysen",
-      advancedAnalyticsDesc: "Verfolgen Sie Ihren Fortschritt mit detaillierten Diagrammen und Einblicken",
-      advancedComparisonsTitle: "Erweiterte Vergleiche",
-      advancedComparisonsDesc: "Seite an Seite, Rasteransicht und Foto-Morphing",
-      exportShareTitle: "Exportieren & Teilen",
-      exportShareDesc: "Erstellen Sie Videos, PDFs und teilen Sie Ihre Transformation",
-      premiumThemesTitle: "Premium-Themes",
-      premiumThemesDesc: "Passen Sie Ihr Erlebnis mit exklusiven Themes an",
-      adFreeTitle: "Werbefreies Erlebnis",
-      adFreeDesc: "Genießen Sie die App ohne jegliche Werbung",
+      unlimitedStorageDesc: "Die kostenlose Version ist auf 20 Fotos begrenzt — Premium hebt das Limit auf",
+      advancedAnalyticsTitle: "Vollständige Fortschrittsanalyse",
+      advancedAnalyticsDesc: "Schalten Sie Ihr wöchentliches Aktivitätsdiagramm, die Konsistenz-Heatmap und Erfolgs-Abzeichen frei",
+      customComparisonsTitle: "Individuelle Fotovergleiche",
+      customComparisonsDesc: "Wählen Sie zwei beliebige Fotos zum Vergleich aus, nicht nur das älteste und neueste",
+      gifExportTitle: "Vorher/Nachher-GIF-Export",
+      gifExportDesc: "Erstellen und speichern Sie jeden Monat ein Vorher/Nachher-Transformations-GIF",
     },
   },
   fr: {
@@ -1468,6 +1593,9 @@ export const translations: Translations = {
       consistency: "Suivi de Constance",
       last12Weeks: "12 dernières semaines",
       last10Weeks: "10 dernières semaines",
+      thisWeek: "Cette Semaine",
+      pro: "Pro",
+      streakBest: "Record",
     },
     camera: {
       title: "Appareil Photo",
@@ -1486,6 +1614,11 @@ export const translations: Translations = {
       photoLimitReached: "Limite de Photos Atteinte",
       photosUsed: "photos",
       photoLimitMessage: "Vous avez atteint la limite du plan gratuit. Passez à Premium pour des photos illimitées.",
+      lightingMatched: "Éclairage correspondant",
+      lightingClose: "Éclairage proche",
+      lightingOff: "Éclairage non correspondant",
+      lightingNone: "Cette photo définit votre référence",
+      recalibrateLighting: "Définir comme référence",
     },
     gallery: {
       title: "Galerie",
@@ -1498,6 +1631,15 @@ export const translations: Translations = {
       delete: "Supprimer",
       selectAll: "Tout Sélectionner",
       deselectAll: "Tout Désélectionner",
+      deleteConfirmMessage: "Cette photo sera définitivement supprimée. Cette action est irréversible.",
+      deleteBulkConfirmMessage: "photos sélectionnées seront définitivement supprimées. Cette action est irréversible.",
+      gifsTitle: "GIFs",
+      deleteGif: "Supprimer le GIF",
+      deleteGifConfirmMessage: "Ce GIF sera définitivement supprimé. Cette action est irréversible.",
+      addContent: "Ajouter à la Galerie",
+      addPhoto: "Ajouter une Photo",
+      importGif: "Importer un GIF",
+      invalidGifFile: "Veuillez sélectionner un fichier GIF.",
     },
     progress: {
       title: "Votre Progrès",
@@ -1526,6 +1668,15 @@ export const translations: Translations = {
       gifErrorTitle: "Impossible de Générer le GIF",
       gifAuthRequired: "Connexion requise pour générer des GIF",
       gifGoToSettings: "Aller aux Paramètres pour se Connecter",
+      modeSlider: "Curseur",
+      modeSideBySide: "Côte à côte",
+      modePair: "Paire",
+      modeGif: "GIF",
+      modeGrid: "Grille",
+      view: "Vue",
+      change: "Changer",
+      syncedZoomSwap: "Inverser",
+      syncedZoomReset: "Réinitialiser le zoom",
     },
     achievements: {
       firstPhoto: "Premier Pas",
@@ -1612,7 +1763,8 @@ export const translations: Translations = {
     progressSummary: {
       days: "jours",
       photos: "photos",
-      active: "actif",
+      consistency: "constance",
+      thisWeek: "cette semaine",
     },
     onboardingCarousel: {
       takePhoto: {
@@ -1714,29 +1866,27 @@ export const translations: Translations = {
       processing: "Traitement...",
       continueToPayment: "Continuer vers le Paiement",
       cancelAnytime: "Annulez à tout moment. Aucun engagement.",
+      trustLine: "Vos photos restent les vôtres, quoi qu'il arrive.",
       termsAgreement: "En continuant, vous acceptez nos Conditions et notre Politique de Confidentialité",
       perMonth: "/mois",
       currency: "€",
     },
     featureGate: {
       premiumFeature: "Fonctionnalité Premium",
+      pro: "Pro",
       upgradeMessage: "Passez à Premium pour débloquer cette fonctionnalité",
       upgrade: "Mettre à Niveau",
       upgradeNow: "Mettre à Niveau Maintenant",
     },
     premiumBenefits: {
       unlimitedStorageTitle: "Stockage de Photos Illimité",
-      unlimitedStorageDesc: "Stockez des photos de progression illimitées avec sauvegarde cloud",
-      advancedAnalyticsTitle: "Analyses Avancées",
-      advancedAnalyticsDesc: "Suivez vos progrès avec des graphiques détaillés et des informations",
-      advancedComparisonsTitle: "Comparaisons Avancées",
-      advancedComparisonsDesc: "Côte à côte, vue en grille et morphing de photos",
-      exportShareTitle: "Exporter et Partager",
-      exportShareDesc: "Créez des vidéos, des PDFs et partagez votre transformation",
-      premiumThemesTitle: "Thèmes Premium",
-      premiumThemesDesc: "Personnalisez votre expérience avec des thèmes exclusifs",
-      adFreeTitle: "Expérience Sans Publicité",
-      adFreeDesc: "Profitez de l'application sans aucune publicité",
+      unlimitedStorageDesc: "La version gratuite est limitée à 20 photos — Premium supprime la limite",
+      advancedAnalyticsTitle: "Analyses Complètes de Progression",
+      advancedAnalyticsDesc: "Débloquez votre graphique d'activité hebdomadaire, votre carte de chaleur de régularité et vos badges de réussite",
+      customComparisonsTitle: "Comparaisons de Photos Personnalisées",
+      customComparisonsDesc: "Choisissez deux photos quelconques à comparer, pas seulement la plus ancienne et la plus récente",
+      gifExportTitle: "Export GIF Avant/Après",
+      gifExportDesc: "Créez et enregistrez un GIF de transformation avant/après chaque mois",
     },
   },
 };

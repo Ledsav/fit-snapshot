@@ -8,17 +8,21 @@ import {
   spacing,
   borderRadius,
   elevation,
+  fontFamily,
   typography,
+  preciseType,
   iconSize,
   opacity as designOpacity,
   touchTarget,
 } from "@/constants/DesignSystem";
 import { IconButton, Button } from "@/components/ui";
+import { useGifs } from "@/context/GifContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { usePhotos } from "@/context/PhotoContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useUser } from "@/context/UserContext";
 import { PhotoType } from "@/enums/Photos";
+import { GeneratedGif } from "@/services/gifStorage";
 import { Photo } from "@/services/photoStorage";
 import { Ionicons } from "@expo/vector-icons";
 import * as FileSystem from 'expo-file-system/legacy';
@@ -28,6 +32,7 @@ import { usePathname } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Dimensions,
   Image,
   Modal,
@@ -41,6 +46,15 @@ import {
 
 const { width } = Dimensions.get("window");
 const itemSize = width / 3 - 10;
+
+// Compact caption date, e.g. "Jul 22, 2025". Year is always shown so photos
+// are unambiguous across a multi-year progress history.
+const formatCaptionDate = (dateStr: string) =>
+  new Date(dateStr).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 type Section = {
   title: string;
   data: Photo[];
@@ -60,6 +74,8 @@ export default function GalleryScreen() {
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedPhotoIds, setSelectedPhotoIds] = useState<Set<string>>(new Set());
   const [isPaywallVisible, setIsPaywallVisible] = useState(false);
+  const [isGifsExpanded, setIsGifsExpanded] = useState(true);
+  const [isAddChooserVisible, setIsAddChooserVisible] = useState(false);
   const pathname = usePathname();
   const { effectiveColorScheme } = useTheme();
   const theme = Colors[effectiveColorScheme];
@@ -72,6 +88,7 @@ export default function GalleryScreen() {
     isLoading: contextLoading,
     error,
   } = usePhotos();
+  const { gifs, addGif, removeGif, refreshGifs } = useGifs();
   const { storageUsagePercentage, featureUsage } = useUser();
   const { t } = useLocalization();
 
@@ -80,6 +97,7 @@ export default function GalleryScreen() {
       setIsLoading(true);
       try {
         await refreshPhotos();
+        await refreshGifs();
         loadPhotos();
       } catch (error) {
         console.error("Error refreshing photos:", error);
@@ -152,9 +170,25 @@ export default function GalleryScreen() {
     }
   };
 
-  const handleDeletePhoto = async (id: string) => {
-    await removePhoto(id);
-    
+  const sortedGifs = [...gifs].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  const handleDeleteGif = (id: string) => {
+    Alert.alert(
+      t("gallery.deleteGif"),
+      t("gallery.deleteGifConfirmMessage"),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("gallery.delete"),
+          style: "destructive",
+          onPress: async () => {
+            await removeGif(id);
+          },
+        },
+      ]
+    );
   };
 
   const togglePhotoSelection = (id: string) => {
@@ -176,14 +210,28 @@ export default function GalleryScreen() {
     setSelectedPhotoIds(new Set());
   };
 
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = () => {
     if (selectedPhotoIds.size === 0) return;
 
-    for (const id of selectedPhotoIds) {
-      await removePhoto(id);
-    }
-    setSelectedPhotoIds(new Set());
-    setSelectionMode(false);
+    const count = selectedPhotoIds.size;
+    Alert.alert(
+      t("gallery.deletePhoto"),
+      `${count} ${t("gallery.deleteBulkConfirmMessage")}`,
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("gallery.delete"),
+          style: "destructive",
+          onPress: async () => {
+            for (const id of selectedPhotoIds) {
+              await removePhoto(id);
+            }
+            setSelectedPhotoIds(new Set());
+            setSelectionMode(false);
+          },
+        },
+      ]
+    );
   };
 
   const toggleSelectionMode = () => {
@@ -363,54 +411,80 @@ export default function GalleryScreen() {
     setIsTypeSelectionVisible(false);
   };
 
+  const pickGif = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (status !== 'granted') {
+        alert(t("camera.galleryPermissionDenied") || 'Sorry, we need media library permissions to import images!');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: false,
+        quality: 1,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        const selectedAsset = result.assets[0];
+        const isGif =
+          selectedAsset.mimeType === 'image/gif' ||
+          selectedAsset.fileName?.toLowerCase().endsWith('.gif') ||
+          selectedAsset.uri.toLowerCase().endsWith('.gif');
+
+        if (!isGif) {
+          Alert.alert(t("common.error"), t("gallery.invalidGifFile"));
+          return;
+        }
+
+        const addResult = await addGif({
+          id: Date.now().toString(),
+          uri: selectedAsset.uri,
+          date: new Date().toISOString(),
+        });
+
+        if (!addResult.success) {
+          Alert.alert(t("common.error"), addResult.error || t("gallery.invalidGifFile"));
+        }
+      }
+    } catch (error) {
+      console.error("Error picking GIF:", error);
+      alert(t("camera.imagePickerError") || 'Error selecting GIF. Please try again.');
+    }
+  };
+
   const renderItem = ({ item }: { item: Photo }) => {
     const isSelected = selectedPhotoIds.has(item.id);
+    const caption =
+      viewMode === 'timeline'
+        ? `${formatCaptionDate(item.date)} · ${item.type.toUpperCase()}`
+        : formatCaptionDate(item.date);
 
     return (
       <View key={item.id} style={styles.item}>
         <TouchableOpacity
           style={[
             styles.imageWrapper,
-            isSelected && { borderWidth: 3, borderColor: theme.primary }
+            { borderColor: withOpacity(theme.secondary, overlayOpacity.light) },
+            isSelected && { borderWidth: 2, borderColor: theme.primary },
           ]}
           onPress={() => selectionMode ? togglePhotoSelection(item.id) : openFullScreenPhoto(item.uri)}
           activeOpacity={0.95}
         >
           <Image source={{ uri: item.uri }} style={styles.image} />
-          <View style={styles.imageDateOverlay}>
-            <Text style={styles.dateText}>
-              {new Date(item.date).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: '2-digit'
-              })}
-            </Text>
-          </View>
-          {viewMode === 'timeline' && (
-            <View style={[styles.typeIndicator, { backgroundColor: theme.primary }]}>
-              <Text style={styles.typeIndicatorText}>
-                {item.type.charAt(0).toUpperCase()}
-              </Text>
-            </View>
-          )}
           {selectionMode && isSelected && (
-            <View style={[styles.selectedOverlay, { backgroundColor: theme.primary + '40' }]}>
-              <Ionicons name="checkmark-circle" size={32} color={theme.primary} />
+            <View style={[styles.selectedOverlay, { backgroundColor: withOpacity(theme.primary, overlayOpacity.medium) }]}>
+              <Ionicons name="checkmark-circle" size={28} color={theme.primary} />
             </View>
           )}
         </TouchableOpacity>
-        {!selectionMode && (
-          <TouchableOpacity
-            style={[styles.deleteButton, { backgroundColor: theme.error }]}
-            onPress={(e) => {
-              e.stopPropagation();
-              handleDeletePhoto(item.id);
-            }}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="close" size={16} color="white" />
-          </TouchableOpacity>
-        )}
+        <Text
+          style={[styles.itemCaption, { color: theme.secondary, fontFamily: fontFamily.mono }]}
+          numberOfLines={1}
+        >
+          {caption}
+        </Text>
       </View>
     );
   };
@@ -462,6 +536,83 @@ export default function GalleryScreen() {
     return <View>{rows}</View>;
   };
 
+  const renderGifItem = (gif: GeneratedGif) => (
+    <View key={gif.id} style={styles.item}>
+      <TouchableOpacity
+        style={[styles.imageWrapper, { borderColor: withOpacity(theme.secondary, overlayOpacity.light) }]}
+        onPress={() => openFullScreenPhoto(gif.uri)}
+        activeOpacity={0.95}
+      >
+        <Image source={{ uri: gif.uri }} style={styles.image} />
+      </TouchableOpacity>
+      <Text
+        style={[styles.itemCaption, { color: theme.secondary, fontFamily: fontFamily.mono }]}
+        numberOfLines={1}
+      >
+        {formatCaptionDate(gif.date)}
+      </Text>
+      {selectionMode && (
+        <TouchableOpacity
+          style={[styles.deleteButton, { backgroundColor: withOpacity('#000000', overlayOpacity.veryHeavy) }]}
+          onPress={(e) => {
+            e.stopPropagation();
+            handleDeleteGif(gif.id);
+          }}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="close" size={14} color="white" />
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+
+  const renderGifSection = () => {
+    if (sortedGifs.length === 0) return null;
+
+    const rows = [];
+    for (let i = 0; i < sortedGifs.length; i += 3) {
+      const rowItems = sortedGifs.slice(i, i + 3);
+      rows.push(
+        <View key={`gif-row-${i}`} style={styles.row}>
+          {rowItems.map((gif) => renderGifItem(gif))}
+          {rowItems.length < 3 &&
+            Array(3 - rowItems.length)
+              .fill(null)
+              .map((_, index) => (
+                <View key={`gif-empty-${i}-${index}`} style={styles.emptyItem} />
+              ))}
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.gifSectionContainer}>
+        <TouchableOpacity
+          style={styles.sectionHeaderContainer}
+          onPress={() => setIsGifsExpanded(!isGifsExpanded)}
+          activeOpacity={0.8}
+        >
+          <View style={styles.sectionHeaderLeft}>
+            <View style={[styles.sectionIndicator, { backgroundColor: theme.primary }]} />
+            <Text style={[styles.sectionHeader, { color: theme.text }]}>
+              {t("gallery.gifsTitle")}
+            </Text>
+            <Text style={[styles.photoCount, { color: theme.text }]}>
+              {sortedGifs.length}
+            </Text>
+          </View>
+          <Ionicons
+            name={isGifsExpanded ? "chevron-up-outline" : "chevron-down-outline"}
+            size={22}
+            color={theme.text}
+            style={{ opacity: 0.5 }}
+          />
+        </TouchableOpacity>
+        {isGifsExpanded && <View>{rows}</View>}
+      </View>
+    );
+  };
+
   return (
     <BackgroundImage blurIntensity={0} overlayOpacity={1}>
       <SafeAreaView
@@ -471,7 +622,7 @@ export default function GalleryScreen() {
 
         {/* Storage Warning Banner */}
         {storageUsagePercentage >= 80 && storageUsagePercentage < 100 && (
-          <View style={[styles.warningBanner, { backgroundColor: theme.warning + '20' }]}>
+          <View style={[styles.warningBanner, { backgroundColor: withOpacity(theme.warning, overlayOpacity.light) }]}>
             <Ionicons name="warning-outline" size={20} color={theme.warning} />
             <Text style={[styles.warningText, { color: theme.warning }]}>
               {featureUsage.photoCount} / {FREE_TIER_LIMITS.MAX_PHOTOS} photos used ({storageUsagePercentage}%)
@@ -485,7 +636,7 @@ export default function GalleryScreen() {
         )}
 
         {storageUsagePercentage >= 100 && (
-          <View style={[styles.errorBanner, { backgroundColor: theme.error + '20' }]}>
+          <View style={[styles.errorBanner, { backgroundColor: withOpacity(theme.error, overlayOpacity.light) }]}>
             <Ionicons name="alert-circle-outline" size={20} color={theme.error} />
             <Text style={[styles.errorText, { color: theme.error }]}>
               Storage full! Delete photos or upgrade to Premium
@@ -499,7 +650,9 @@ export default function GalleryScreen() {
             <TouchableOpacity
               style={[
                 styles.viewModeButton,
-                viewMode === 'grouped' && { backgroundColor: theme.primary }
+                viewMode === 'grouped'
+                  ? { backgroundColor: theme.primary, borderColor: theme.primary }
+                  : { backgroundColor: theme.transparent, borderColor: withOpacity(theme.secondary, overlayOpacity.light) },
               ]}
               onPress={() => setViewMode('grouped')}
             >
@@ -510,6 +663,7 @@ export default function GalleryScreen() {
               />
               <Text style={[
                 styles.viewModeText,
+                preciseType.badgeLabel,
                 { color: viewMode === 'grouped' ? theme.background : theme.text }
               ]}>
                 {t("gallery.grouped") || "Grouped"}
@@ -518,7 +672,9 @@ export default function GalleryScreen() {
             <TouchableOpacity
               style={[
                 styles.viewModeButton,
-                viewMode === 'timeline' && { backgroundColor: theme.primary }
+                viewMode === 'timeline'
+                  ? { backgroundColor: theme.primary, borderColor: theme.primary }
+                  : { backgroundColor: theme.transparent, borderColor: withOpacity(theme.secondary, overlayOpacity.light) },
               ]}
               onPress={() => setViewMode('timeline')}
             >
@@ -529,6 +685,7 @@ export default function GalleryScreen() {
               />
               <Text style={[
                 styles.viewModeText,
+                preciseType.badgeLabel,
                 { color: viewMode === 'timeline' ? theme.background : theme.text }
               ]}>
                 {t("gallery.timeline") || "Timeline"}
@@ -539,7 +696,9 @@ export default function GalleryScreen() {
           <TouchableOpacity
             style={[
               styles.selectionButton,
-              selectionMode && { backgroundColor: theme.primary }
+              selectionMode
+                ? { backgroundColor: theme.primary, borderColor: theme.primary }
+                : { backgroundColor: theme.transparent, borderColor: withOpacity(theme.secondary, overlayOpacity.light) },
             ]}
             onPress={toggleSelectionMode}
           >
@@ -613,6 +772,7 @@ export default function GalleryScreen() {
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.list}
             stickySectionHeadersEnabled={false}
+            ListHeaderComponent={renderGifSection}
           />
         )}
         <FullScreenPhotoModal
@@ -674,10 +834,60 @@ export default function GalleryScreen() {
           </View>
         </Modal>
 
+        {/* Add Content Chooser Modal */}
+        <Modal
+          visible={isAddChooserVisible}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setIsAddChooserVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, { backgroundColor: theme.cardBackground }]}>
+              <Text style={[styles.modalTitle, { color: theme.text }]}>
+                {t("gallery.addContent")}
+              </Text>
+              <View style={styles.typeButtonsContainer}>
+                <TouchableOpacity
+                  style={[styles.typeButton, styles.chooserButton, { backgroundColor: theme.primary }]}
+                  onPress={() => {
+                    setIsAddChooserVisible(false);
+                    pickImage();
+                  }}
+                >
+                  <Ionicons name="image-outline" size={20} color={theme.background} />
+                  <Text style={[styles.typeButtonText, { color: theme.background }]}>
+                    {t("gallery.addPhoto")}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.typeButton, styles.chooserButton, { backgroundColor: theme.primary }]}
+                  onPress={() => {
+                    setIsAddChooserVisible(false);
+                    pickGif();
+                  }}
+                >
+                  <Ionicons name="film-outline" size={20} color={theme.background} />
+                  <Text style={[styles.typeButtonText, { color: theme.background }]}>
+                    {t("gallery.importGif")}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity
+                style={[styles.cancelButton, { backgroundColor: theme.error }]}
+                onPress={() => setIsAddChooserVisible(false)}
+              >
+                <Text style={[styles.cancelButtonText, { color: theme.background }]}>
+                  {t("common.cancel") || "Cancel"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
         {/* Floating Action Button */}
         <TouchableOpacity
           style={[styles.fab, { backgroundColor: theme.primary }]}
-          onPress={pickImage}
+          onPress={() => setIsAddChooserVisible(true)}
           activeOpacity={0.9}
         >
           <Ionicons name="add" size={iconSize.lg} color={theme.background} />
@@ -741,9 +951,7 @@ const styles = StyleSheet.create({
   },
   viewModeToggle: {
     flexDirection: 'row',
-    backgroundColor: withOpacity('#808080', overlayOpacity.subtle),
-    borderRadius: borderRadius.sm,
-    padding: 2,
+    gap: spacing.xs,
   },
   viewModeButton: {
     flexDirection: 'row',
@@ -751,16 +959,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: borderRadius.sm,
+    borderWidth: 1,
     gap: spacing.xs,
   },
   viewModeText: {
-    ...typography.caption,
-    fontWeight: '600',
+    fontFamily: fontFamily.mono,
   },
   selectionButton: {
     padding: spacing.md,
     borderRadius: borderRadius.sm,
-    backgroundColor: withOpacity('#808080', overlayOpacity.subtle),
+    borderWidth: 1,
   },
   bulkActionsBar: {
     flexDirection: 'row',
@@ -808,21 +1016,6 @@ const styles = StyleSheet.create({
     ...typography.caption,
     fontWeight: '600',
   },
-  typeIndicator: {
-    position: 'absolute',
-    top: spacing.sm,
-    left: spacing.sm,
-    width: iconSize.md,
-    height: iconSize.md,
-    borderRadius: borderRadius.round,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  typeIndicatorText: {
-    color: 'white',
-    ...typography.small,
-    fontWeight: 'bold',
-  },
   selectedOverlay: {
     ...StyleSheet.absoluteFill,
     justifyContent: 'center',
@@ -832,6 +1025,9 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     paddingTop: spacing.sm,
     paddingBottom: 100,
+  },
+  gifSectionContainer: {
+    marginBottom: spacing.md,
   },
   sectionHeaderContainer: {
     flexDirection: "row",
@@ -868,7 +1064,6 @@ const styles = StyleSheet.create({
   },
   item: {
     width: itemSize,
-    height: itemSize,
     position: "relative",
   },
   emptyItem: {
@@ -876,10 +1071,11 @@ const styles = StyleSheet.create({
     height: itemSize,
   },
   imageWrapper: {
-    width: "100%",
-    height: "100%",
+    width: itemSize,
+    height: itemSize,
     borderRadius: borderRadius.sm,
     overflow: "hidden",
+    borderWidth: 1,
     backgroundColor: "#000",
   },
   image: {
@@ -887,20 +1083,11 @@ const styles = StyleSheet.create({
     height: "100%",
     resizeMode: "cover",
   },
-  imageDateOverlay: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: withOpacity('#000000', overlayOpacity.heavy),
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-  },
-  dateText: {
-    color: "white",
-    ...typography.tiny,
-    fontWeight: "500",
-    opacity: designOpacity.high,
+  itemCaption: {
+    fontSize: 9,
+    letterSpacing: 0.3,
+    marginTop: spacing.xs,
+    textAlign: "center",
   },
   deleteButton: {
     position: "absolute",
@@ -958,6 +1145,11 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md,
     marginBottom: spacing.md,
     alignItems: "center",
+  },
+  chooserButton: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: spacing.sm,
   },
   typeButtonText: {
     ...typography.body,

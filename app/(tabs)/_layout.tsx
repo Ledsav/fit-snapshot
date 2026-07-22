@@ -1,26 +1,59 @@
-import React, { useState, useLayoutEffect } from "react";
-import { View, StyleSheet, ActivityIndicator, ColorValue } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { Tabs } from "expo-router";
+import { OnboardingCarousel } from "@/components/onBoarding/OnboardingCarousel";
 import Colors from "@/constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
+import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { OnboardingCarousel } from "@/components/onBoarding/OnboardingCarousel";
+import { Tabs } from "expo-router";
+import React, { useLayoutEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  ColorValue,
+  GestureResponderEvent,
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  View,
+  ViewStyle,
+} from "react-native";
 
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof Ionicons>["name"];
   color: ColorValue;
 }) {
-  return <Ionicons size={24} style={{ marginBottom: -3 }} {...props} />;
+  return <Ionicons size={24} {...props} />;
+}
+
+function TabBarButton({
+  children,
+  style,
+  onPress,
+  onLongPress,
+  accessibilityLabel,
+  testID,
+}: {
+  children: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+  onPress?: ((e: GestureResponderEvent) => void) | null;
+  onLongPress?: ((e: GestureResponderEvent) => void) | null;
+  accessibilityLabel?: string;
+  testID?: string;
+}) {
+  return (
+    <Pressable
+      style={({ pressed }) => [style, pressed && styles.tabBarButtonPressed]}
+      onPress={onPress}
+      onLongPress={onLongPress}
+      accessibilityLabel={accessibilityLabel}
+      testID={testID}
+    >
+      {children}
+    </Pressable>
+  );
 }
 
 function TabNavigator() {
   const { effectiveColorScheme } = useTheme();
   const theme = Colors[effectiveColorScheme];
-
-  const getActiveIconStyle = () => ({
-    backgroundColor: theme.tint + "20",
-  });
 
   return (
     <Tabs
@@ -33,6 +66,7 @@ function TabNavigator() {
         },
         tabBarItemStyle: styles.tabBarItem,
         tabBarShowLabel: false,
+        tabBarButton: TabBarButton,
         headerShown: false,
       }}
     >
@@ -40,13 +74,8 @@ function TabNavigator() {
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color, focused }) => (
-            <View
-              style={[
-                styles.iconContainer,
-                focused && getActiveIconStyle(),
-              ]}
-            >
+          tabBarIcon: ({ color }) => (
+            <View style={styles.iconContainer}>
               <TabBarIcon name="home" color={color} />
             </View>
           ),
@@ -56,13 +85,8 @@ function TabNavigator() {
         name="camera"
         options={{
           title: "Camera",
-          tabBarIcon: ({ color, focused }) => (
-            <View
-              style={[
-                styles.iconContainer,
-                focused && getActiveIconStyle(),
-              ]}
-            >
+          tabBarIcon: ({ color }) => (
+            <View style={styles.iconContainer}>
               <TabBarIcon name="camera" color={color} />
             </View>
           ),
@@ -72,13 +96,8 @@ function TabNavigator() {
         name="progress"
         options={{
           title: "Progress",
-          tabBarIcon: ({ color, focused }) => (
-            <View
-              style={[
-                styles.iconContainer,
-                focused && getActiveIconStyle(),
-              ]}
-            >
+          tabBarIcon: ({ color }) => (
+            <View style={styles.iconContainer}>
               <TabBarIcon name="bar-chart" color={color} />
             </View>
           ),
@@ -88,13 +107,8 @@ function TabNavigator() {
         name="gallery"
         options={{
           title: "Gallery",
-          tabBarIcon: ({ color, focused }) => (
-            <View
-              style={[
-                styles.iconContainer,
-                focused && getActiveIconStyle(),
-              ]}
-            >
+          tabBarIcon: ({ color }) => (
+            <View style={styles.iconContainer}>
               <TabBarIcon name="images" color={color} />
             </View>
           ),
@@ -104,13 +118,8 @@ function TabNavigator() {
         name="settings"
         options={{
           title: "Settings",
-          tabBarIcon: ({ color, focused }) => (
-            <View
-              style={[
-                styles.iconContainer,
-                focused && getActiveIconStyle(),
-              ]}
-            >
+          tabBarIcon: ({ color }) => (
+            <View style={styles.iconContainer}>
               <TabBarIcon name="settings" color={color} />
             </View>
           ),
@@ -183,7 +192,6 @@ export default function RootLayout() {
 }
 const styles = StyleSheet.create({
   tabBar: {
-    height: 60,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -210,5 +218,8 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
+  },
+  tabBarButtonPressed: {
+    opacity: 0.5,
   },
 });

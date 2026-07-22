@@ -62,7 +62,7 @@
       "category": "comparisons",
       "name": "Side-by-Side Comparison",
       "description": "Compare photos side-by-side with advanced controls",
-      "requiredTier": "premium",
+      "requiredTier": "free",
       "enabled": true,
       "betaOnly": false
     },
@@ -71,7 +71,7 @@
       "category": "comparisons",
       "name": "Grid View Comparison",
       "description": "View multiple progress points in a grid layout",
-      "requiredTier": "premium",
+      "requiredTier": "free",
       "enabled": true,
       "betaOnly": false
     },

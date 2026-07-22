@@ -55,3 +55,9 @@ android/app/google-services.json
 ai-support/
 
 .claude/
+
+#folders
+/support/
+
+# superpowers brainstorming companion
+.superpowers/

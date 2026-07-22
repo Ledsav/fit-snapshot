@@ -2,16 +2,11 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/context/ThemeContext";
-import Colors from "@/constants/Colors";
+import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
 import { Photo } from "@/services/photoStorage";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useRouter } from "expo-router";
-import {
-  spacing,
-  borderRadius,
-  typography,
-  iconSize,
-} from "@/constants/DesignSystem";
+import { spacing, borderRadius, iconSize, fontFamily, preciseType } from "@/constants/DesignSystem";
 
 type NextPhotoReminderProps = {
   latestPhoto: Photo | null;
@@ -23,37 +18,25 @@ export const NextPhotoReminder: React.FC<NextPhotoReminderProps> = ({ latestPhot
   const { t } = useLocalization();
   const router = useRouter();
 
-  if (!latestPhoto) {
-    return (
-      <TouchableOpacity
-        style={[styles.container, { backgroundColor: theme.primary }]}
-        onPress={() => router.push("/(tabs)/camera")}
-        activeOpacity={0.9}
-      >
-        <Ionicons name="camera-outline" size={iconSize.lg} color={theme.background} />
-        <View style={styles.textContainer}>
-          <Text style={[styles.title, { color: theme.background }]}>
-            {t("home.takeFirstPhoto") || "Take Your First Photo!"}
-          </Text>
-          <Text style={[styles.subtitle, { color: theme.background }]}>
-            {t("home.startJourney") || "Start your transformation journey today"}
-          </Text>
-        </View>
-        <Ionicons name="arrow-forward" size={iconSize.md} color={theme.background} />
-      </TouchableOpacity>
+  const message = (() => {
+    if (!latestPhoto) {
+      return {
+        title: t("home.takeFirstPhoto") || "Take Your First Photo!",
+        subtitle: t("home.startJourney") || "Start your transformation journey today",
+        icon: "camera-outline" as const,
+        color: theme.primary,
+      };
+    }
+
+    const daysSinceLastPhoto = Math.floor(
+      (new Date().getTime() - new Date(latestPhoto.date).getTime()) / (1000 * 60 * 60 * 24)
     );
-  }
 
-  const daysSinceLastPhoto = Math.floor(
-    (new Date().getTime() - new Date(latestPhoto.date).getTime()) / (1000 * 60 * 60 * 24)
-  );
-
-  const getMessage = () => {
     if (daysSinceLastPhoto === 0) {
       return {
         title: t("home.photoTakenToday") || "Photo Taken Today!",
         subtitle: t("home.keepItUp") || "Great job staying consistent",
-        icon: "checkmark-circle" as const,
+        icon: "checkmark-circle-outline" as const,
         color: theme.success,
       };
     } else if (daysSinceLastPhoto === 1) {
@@ -78,22 +61,32 @@ export const NextPhotoReminder: React.FC<NextPhotoReminderProps> = ({ latestPhot
         color: theme.error,
       };
     }
-  };
-
-  const message = getMessage();
+  })();
 
   return (
     <TouchableOpacity
-      style={[styles.container, { backgroundColor: message.color }]}
+      style={[
+        styles.container,
+        {
+          backgroundColor: theme.cardBackground,
+          borderColor: withOpacity(message.color, overlayOpacity.heavy),
+        },
+      ]}
       onPress={() => router.push("/(tabs)/camera")}
-      activeOpacity={0.9}
+      activeOpacity={0.85}
     >
-      <Ionicons name={message.icon} size={iconSize.lg} color="white" />
+      <Ionicons name={message.icon} size={iconSize.lg} color={message.color} />
       <View style={styles.textContainer}>
-        <Text style={[styles.title, { color: "white" }]}>{message.title}</Text>
-        <Text style={[styles.subtitle, { color: "white" }]}>{message.subtitle}</Text>
+        <Text style={[styles.title, preciseType.message, { color: theme.text, fontFamily: fontFamily.display }]}>
+          {message.title}
+        </Text>
+        <Text style={[styles.subtitle, preciseType.subtitle, { color: theme.secondary, fontFamily: fontFamily.body }]}>
+          {message.subtitle}
+        </Text>
       </View>
-      <Ionicons name="camera" size={iconSize.md} color="white" />
+      <Text style={[styles.action, preciseType.badgeLabel, { color: message.color, fontFamily: fontFamily.mono }]}>
+        {(t("home.takePhoto") || "capture").toUpperCase()}
+      </Text>
     </TouchableOpacity>
   );
 };
@@ -103,19 +96,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: spacing.lg,
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.sm,
+    borderWidth: 1,
     gap: spacing.md,
   },
   textContainer: {
     flex: 1,
   },
   title: {
-    ...typography.body,
-    fontWeight: "bold",
+    fontStyle: "italic",
   },
   subtitle: {
-    ...typography.caption,
     marginTop: spacing.xs,
-    opacity: 0.9,
   },
+  action: {},
 });

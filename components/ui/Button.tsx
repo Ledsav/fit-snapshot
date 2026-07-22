@@ -1,11 +1,16 @@
 /**
  * Standardized Button Component
  *
- * A reusable button component with multiple variants and sizes.
+ * The single button system for the app (Measured Confidence).
+ * Mono uppercase label, hairline or solid fill, no drop shadow.
  * All buttons meet WCAG touch target requirements (minimum 44x44px).
  *
- * Usage:
- * <Button title="Click Me" onPress={handlePress} variant="primary" size="medium" />
+ * Variants:
+ * - primary:   brass fill — the one action that matters in a view
+ * - ghost:     transparent + steel hairline — secondary action
+ * - outline:   alias of ghost (kept for API compatibility)
+ * - secondary: subtle steel fill (kept for API compatibility)
+ * - danger:    transparent + brick border/label — destructive
  */
 
 import React from 'react';
@@ -18,12 +23,12 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '@/context/ThemeContext';
-import Colors from '@/constants/Colors';
+import Colors, { withOpacity, overlayOpacity } from '@/constants/Colors';
 import {
   borderRadius,
   spacing,
-  typography,
-  elevation,
+  fontFamily,
+  preciseType,
   touchTarget,
   opacity,
 } from '@/constants/DesignSystem';
@@ -58,7 +63,6 @@ export const Button: React.FC<ButtonProps> = ({
   const { effectiveColorScheme } = useTheme();
   const theme = Colors[effectiveColorScheme];
 
-  // Size configurations
   const sizeStyles = {
     small: {
       paddingVertical: spacing.sm,
@@ -77,46 +81,34 @@ export const Button: React.FC<ButtonProps> = ({
     },
   };
 
-  // Variant configurations
+  const hairline = withOpacity(theme.secondary, overlayOpacity.light);
+
   const variantStyles: Record<string, ViewStyle> = {
-    primary: {
-      backgroundColor: theme.primary,
-      borderWidth: 0,
-    },
+    primary: { backgroundColor: theme.primary, borderWidth: 1, borderColor: theme.primary },
     secondary: {
-      backgroundColor: theme.secondary,
-      borderWidth: 0,
+      backgroundColor: withOpacity(theme.secondary, overlayOpacity.subtle),
+      borderWidth: 1,
+      borderColor: hairline,
     },
-    outline: {
-      backgroundColor: 'transparent',
-      borderWidth: 2,
-      borderColor: theme.primary,
-    },
-    ghost: {
-      backgroundColor: 'transparent',
-      borderWidth: 0,
-    },
+    outline: { backgroundColor: 'transparent', borderWidth: 1, borderColor: hairline },
+    ghost: { backgroundColor: 'transparent', borderWidth: 1, borderColor: hairline },
     danger: {
-      backgroundColor: theme.error,
-      borderWidth: 0,
+      backgroundColor: 'transparent',
+      borderWidth: 1,
+      borderColor: withOpacity(theme.error, overlayOpacity.heavy),
     },
   };
 
-  // Text color configurations
   const textVariantStyles: Record<string, TextStyle> = {
-    primary: { color: theme.background },
-    secondary: { color: theme.background },
-    outline: { color: theme.primary },
-    ghost: { color: theme.primary },
-    danger: { color: theme.background },
+    primary: { color: theme.onAccent },
+    secondary: { color: theme.text },
+    outline: { color: theme.text },
+    ghost: { color: theme.text },
+    danger: { color: theme.error },
   };
 
-  // Typography by size
-  const textSizeStyles = {
-    small: typography.caption,
-    medium: typography.body,
-    large: typography.h4,
-  };
+  const spinnerColor =
+    variant === 'primary' ? theme.onAccent : variant === 'danger' ? theme.error : theme.text;
 
   const isDisabled = disabled || loading;
 
@@ -126,42 +118,24 @@ export const Button: React.FC<ButtonProps> = ({
         styles.base,
         sizeStyles[size],
         variantStyles[variant],
-        // Apply elevation only to solid variants
-        (variant === 'primary' || variant === 'secondary' || variant === 'danger') &&
-          !isDisabled &&
-          elevation.md,
         fullWidth && styles.fullWidth,
         isDisabled && { opacity: opacity.disabled },
         style,
       ]}
       onPress={onPress}
       disabled={isDisabled}
-      activeOpacity={0.7}
+      activeOpacity={0.85}
     >
       {loading ? (
-        <ActivityIndicator
-          color={
-            variant === 'outline' || variant === 'ghost'
-              ? theme.primary
-              : theme.background
-          }
-          size="small"
-        />
+        <ActivityIndicator color={spinnerColor} size="small" />
       ) : (
         <>
           {icon && iconPosition === 'left' && icon}
           {title && (
             <Text
-              style={[
-                styles.text,
-                textSizeStyles[size],
-                textVariantStyles[variant],
-                icon && iconPosition === 'left' ? { marginLeft: spacing.sm } : undefined,
-                icon && iconPosition === 'right' ? { marginRight: spacing.sm } : undefined,
-                textStyle,
-              ]}
+              style={[styles.text, preciseType.badgeLabel, textVariantStyles[variant], textStyle]}
             >
-              {title}
+              {title.toUpperCase()}
             </Text>
           )}
           {icon && iconPosition === 'right' && icon}
@@ -173,13 +147,14 @@ export const Button: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.sm,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
+    gap: spacing.sm,
   },
   text: {
-    fontWeight: '600',
+    fontFamily: fontFamily.mono,
   },
   fullWidth: {
     width: '100%',

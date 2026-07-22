@@ -11,7 +11,6 @@ import { useLocalization } from '@/context/LocalizationContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useUser } from '@/context/UserContext';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import {
     Dimensions,
@@ -29,6 +28,8 @@ import {
   spacing,
   borderRadius,
   elevation,
+  fontFamily,
+  preciseType,
   typography,
   iconSize,
   opacity as designOpacity,
@@ -114,7 +115,7 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
           styles.pricingCard,
           {
             backgroundColor: theme.cardBackground,
-            borderColor: isSelected ? theme.primary : 'transparent',
+            borderColor: isSelected ? theme.primary : withOpacity(theme.secondary, overlayOpacity.light),
             borderWidth: isSelected ? 2 : 1,
           },
         ]}
@@ -123,31 +124,31 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
       >
         {isPopular && (
           <View style={[styles.popularBadge, { backgroundColor: theme.primary }]}>
-            <Text style={[styles.popularBadgeText, { color: theme.background }]}>
-              {t("paywall.mostPopular")}
+            <Text style={[styles.popularBadgeText, { color: theme.background, fontFamily: fontFamily.mono }]}>
+              {t("paywall.mostPopular").toUpperCase()}
             </Text>
           </View>
         )}
         <View style={styles.pricingHeader}>
-          <View style={styles.radioButton}>
+          <View style={[styles.radioButton, { borderColor: isSelected ? theme.primary : theme.secondary }]}>
             {isSelected && (
-              <View
-                style={[styles.radioButtonInner, { backgroundColor: theme.primary }]}
-              />
+              <View style={[styles.radioButtonInner, { backgroundColor: theme.primary }]} />
             )}
           </View>
           <View style={styles.pricingInfo}>
-            <Text style={[styles.pricingTitle, { color: theme.text }]}>{title}</Text>
-            <Text style={[styles.pricingSubtitle, { color: theme.text }]}>
+            <Text style={[styles.pricingTitle, { color: theme.text, fontFamily: fontFamily.body }]}>{title}</Text>
+            <Text style={[styles.pricingSubtitle, { color: theme.secondary, fontFamily: fontFamily.body }]}>
               {subtitle}
             </Text>
           </View>
         </View>
         <View style={styles.pricingBottom}>
-          <Text style={[styles.pricingPrice, { color: theme.primary }]}>{t("paywall.currency")}{price}</Text>
+          <Text style={[styles.pricingPrice, { color: theme.primary, fontFamily: fontFamily.mono }]}>
+            {t("paywall.currency")}{price}
+          </Text>
           {savings && (
-            <View style={[styles.savingsBadge, { backgroundColor: theme.success + '20' }]}>
-              <Text style={[styles.savingsText, { color: theme.success }]}>
+            <View style={[styles.savingsBadge, { backgroundColor: withOpacity(theme.success, overlayOpacity.subtle) }]}>
+              <Text style={[styles.savingsText, { color: theme.success, fontFamily: fontFamily.mono }]}>
                 {t("paywall.save")} {savings}%
               </Text>
             </View>
@@ -184,18 +185,16 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
           showsVerticalScrollIndicator={false}
         >
           {/* Hero Section */}
-          <LinearGradient
-            colors={[theme.primary + '20', theme.primary + '05']}
-            style={styles.hero}
-          >
-            <Ionicons name="star" size={48} color={theme.primary} />
-            <Text style={[styles.heroTitle, { color: theme.text }]}>
+          <View style={styles.hero}>
+            <Text
+              style={[styles.heroTitle, preciseType.heroTitle, { color: theme.text, fontFamily: fontFamily.display }]}
+            >
               {t("paywall.upgradeTitle")}
             </Text>
-            <Text style={[styles.heroSubtitle, { color: theme.text }]}>
+            <Text style={[styles.heroSubtitle, preciseType.tipBody, { color: theme.secondary, fontFamily: fontFamily.body }]}>
               {t("paywall.upgradeSubtitle")}
             </Text>
-          </LinearGradient>
+          </View>
 
           {/* Benefits List */}
           <View style={styles.benefitsContainer}>
@@ -269,10 +268,13 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
 
           {/* Footer */}
           <View style={styles.footer}>
-            <Text style={[styles.footerText, { color: theme.text }]}>
+            <Text style={[styles.footerText, { color: theme.secondary, fontFamily: fontFamily.body }]}>
               {t("paywall.cancelAnytime")}
             </Text>
-            <Text style={[styles.footerText, { color: theme.text }]}>
+            <Text style={[styles.trustLine, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
+              {t("paywall.trustLine")}
+            </Text>
+            <Text style={[styles.footerText, { color: theme.secondary, fontFamily: fontFamily.body }]}>
               {t("paywall.termsAgreement")}
             </Text>
           </View>
@@ -312,20 +314,16 @@ const styles = StyleSheet.create({
   },
   hero: {
     alignItems: 'center',
-    paddingVertical: spacing.huge,
+    paddingVertical: spacing.xxxl,
     paddingHorizontal: spacing.xl,
-    marginHorizontal: spacing.xl,
     marginBottom: spacing.xxxl,
-    borderRadius: borderRadius.xl,
   },
   heroTitle: {
-    ...typography.h2,
-    marginTop: spacing.lg,
+    fontStyle: 'italic',
+    textAlign: 'center',
     marginBottom: spacing.sm,
   },
   heroSubtitle: {
-    ...typography.body,
-    opacity: designOpacity.medium,
     textAlign: 'center',
   },
   benefitsContainer: {
@@ -395,7 +393,6 @@ const styles = StyleSheet.create({
     height: iconSize.md,
     borderRadius: borderRadius.round,
     borderWidth: 2,
-    borderColor: withOpacity('#cccccc', 1),
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: spacing.md,
@@ -443,8 +440,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   footerText: {
-    ...typography.small,
-    opacity: designOpacity.hint,
+    fontSize: 12,
+    textAlign: 'center',
+    marginBottom: spacing.sm,
+  },
+  trustLine: {
+    fontSize: 10,
+    letterSpacing: 0.5,
     textAlign: 'center',
     marginBottom: spacing.sm,
   },

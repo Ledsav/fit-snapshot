@@ -2,31 +2,26 @@ import { AchievementBadges } from "@/components/home/AchievementBadges";
 import { ConsistencyHeatmap } from "@/components/home/ConsistencyHeatmap";
 import { Header } from "@/components/home/Header";
 import { LatestPhotoCard } from "@/components/home/LatestPhotoCard";
+import { InstrumentStrip } from "@/components/home/InstrumentStrip";
 import { MiniComparisonPreview } from "@/components/home/MiniComparisonPreview";
 import { NextPhotoReminder } from "@/components/home/NextPhotoReminder";
-import { ProgressSummary } from "@/components/home/ProgressSummary";
 import { ShreddedTipsCarousel } from "@/components/home/ShreddedTipsCarousel";
-import { StreakCard } from "@/components/home/StreakCard";
+import { StreakBadge } from "@/components/home/StreakBadge";
 import { WeeklyProgressChart } from "@/components/home/WeeklyProgressChart";
 import { FeatureGate } from "@/components/monetization/FeatureGate";
 import { OnboardingCarousel } from "@/components/onBoarding/OnboardingCarousel";
 import BackgroundImage from "@/components/style/BackgroundImage";
 import Colors from "@/constants/Colors";
 import { Feature } from "@/constants/Features";
-import {
-  spacing,
-  borderRadius,
-  elevation,
-  typography,
-  iconSize,
-} from "@/constants/DesignSystem";
+import { spacing, fontFamily, preciseType } from "@/constants/DesignSystem";
 import { useLocalization } from "@/context/LocalizationContext";
 import { usePhotos } from "@/context/PhotoContext";
 import { useTheme } from "@/context/ThemeContext";
 import { StreakData, StreakService } from "@/services/streakService";
+import { getBestComparisonPair, getPhotosInLastNDays } from "@/utils/photoUtils";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Href, useRouter } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   RefreshControl,
   SafeAreaView,
@@ -44,12 +39,14 @@ export default function HomeScreen() {
   const [streakData, setStreakData] = useState<StreakData>({
     currentStreak: 0,
     lastPhotoDate: null,
+    bestStreak: 0,
   });
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const { photos, refreshPhotos } = usePhotos();
   const latestPhoto = photos.length > 0 ? photos[photos.length - 1] : null;
+  const hasComparisonPhotos = useMemo(() => getBestComparisonPair(photos) !== null, [photos]);
 
   const totalDays =
     photos.length > 0
@@ -60,10 +57,11 @@ export default function HomeScreen() {
       : 0;
   const totalPhotos = photos.length;
   const totalExpectedPhotos = totalDays * 3;
-  const improvement = Math.min(
-    100,
-    Math.round((totalPhotos / totalExpectedPhotos) * 100)
-  );
+  const consistency =
+    totalExpectedPhotos > 0
+      ? Math.min(100, Math.round((totalPhotos / totalExpectedPhotos) * 100))
+      : 0;
+  const weeklyPhotoCount = useMemo(() => getPhotosInLastNDays(photos, 7), [photos]);
 
   const loadStreakData = useCallback(async () => {
     const streak = await StreakService.getStreakData();
@@ -125,81 +123,81 @@ export default function HomeScreen() {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
         >
-          {/* Next Photo Reminder - Most important action */}
-          <View style={styles.section}>
-            <NextPhotoReminder latestPhoto={latestPhoto} />
-          </View>
-
-          {/* Mini Comparison Preview - Visual progress hook */}
-          {photos.length >= 2 && (
+          {/* Contact-sheet hero — the screen's thesis: the photos themselves */}
+          {hasComparisonPhotos && (
             <View style={styles.section}>
               <MiniComparisonPreview photos={photos} />
             </View>
           )}
 
-          {/* Streak & Stats - Key metrics at a glance */}
+          {/* This week — instrument readout */}
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              {t("home.streak")}
+            <Text style={[styles.sectionTitle, preciseType.sectionLabel, { color: theme.secondary }]}>
+              {t("home.thisWeek") || "This Week"}
             </Text>
-            <StreakCard streak={streakData.currentStreak} />
-          </View>
-
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              {t("home.stats")}
-            </Text>
-            <ProgressSummary
+            <InstrumentStrip
               totalDays={totalDays}
-              totalPhotos={totalPhotos}
-              improvement={improvement}
+              consistency={consistency}
+              weeklyPhotoCount={weeklyPhotoCount}
             />
           </View>
 
-          {/* Achievements - Gamification for engagement - PREMIUM */}
-          <FeatureGate
-            feature={Feature.ACHIEVEMENT_BADGES}
-            showPreview={false}
-            containerStyle={styles.section}
-            compact={false}
-          >
-            <AchievementBadges photos={photos} currentStreak={streakData.currentStreak} />
-          </FeatureGate>
+          {/* Next Photo Reminder - primary action */}
+          <View style={styles.section}>
+            <NextPhotoReminder latestPhoto={latestPhoto} />
+          </View>
 
-          {/* Weekly Progress Chart - Recent activity trend - PREMIUM */}
-          <FeatureGate
-            feature={Feature.WEEKLY_PROGRESS_CHART}
-            showPreview={false}
-            containerStyle={styles.section}
-            compact={false}
-          >
-            <WeeklyProgressChart photos={photos} />
-          </FeatureGate>
-
-          {/* Consistency Heatmap - Long-term view - PREMIUM */}
-          <FeatureGate
-            feature={Feature.CONSISTENCY_HEATMAP}
-            showPreview={false}
-            containerStyle={styles.section}
-            compact={false}
-          >
-            <ConsistencyHeatmap photos={photos} />
-          </FeatureGate>
+          {/* Streak badge - compact milestone signal, not a hero card */}
+          <View style={styles.section}>
+            <StreakBadge streak={streakData.currentStreak} best={streakData.bestStreak} />
+          </View>
 
           {/* Latest Photo - Quick gallery preview */}
+          {latestPhoto && (
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, preciseType.sectionLabel, { color: theme.secondary }]}>
+                {t("home.latestPhoto")}
+              </Text>
+              <LatestPhotoCard
+                latestPhoto={latestPhoto}
+                onPress={() => navigateTo("/(tabs)/gallery")}
+              />
+            </View>
+          )}
+
+          {/* Pro — premium insights, one quiet group */}
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              {t("home.latestPhoto")}
+            <Text style={[styles.sectionTitle, preciseType.sectionLabel, { color: theme.secondary }]}>
+              {t("home.pro") || "Pro"}
             </Text>
-            <LatestPhotoCard
-              latestPhoto={latestPhoto}
-              onPress={() => navigateTo("/(tabs)/gallery")}
-            />
+            <View style={styles.proGroup}>
+              <FeatureGate
+                feature={Feature.ACHIEVEMENT_BADGES}
+                customMessage={t("home.achievements")}
+                compact
+              >
+                <AchievementBadges photos={photos} currentStreak={streakData.currentStreak} />
+              </FeatureGate>
+              <FeatureGate
+                feature={Feature.WEEKLY_PROGRESS_CHART}
+                customMessage={t("home.weeklyActivity")}
+                compact
+              >
+                <WeeklyProgressChart photos={photos} />
+              </FeatureGate>
+              <FeatureGate
+                feature={Feature.CONSISTENCY_HEATMAP}
+                customMessage={t("home.consistency")}
+                compact
+              >
+                <ConsistencyHeatmap photos={photos} />
+              </FeatureGate>
+            </View>
           </View>
 
           {/* Tips Section - Educational content at bottom */}
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+            <Text style={[styles.sectionTitle, preciseType.sectionLabel, { color: theme.secondary }]}>
               {t("home.tips")}
             </Text>
             <ShreddedTipsCarousel />
@@ -225,61 +223,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xxl,
   },
   sectionTitle: {
-    ...typography.h4,
-    marginBottom: spacing.md,
+    fontFamily: fontFamily.mono,
+    textTransform: "uppercase",
+    marginBottom: spacing.sm,
   },
-  quickCameraButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    marginBottom: spacing.xxl,
-    gap: spacing.md,
-    ...elevation.md,
-  },
-  quickCameraText: {
-    ...typography.h4,
-  },
-  quickActions: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  quickActionButton: {
-    flex: 1,
-    height: 100,
-    borderRadius: borderRadius.lg,
-    justifyContent: "center",
-    alignItems: "center",
-    marginHorizontal: spacing.xs,
-  },
-  quickActionText: {
-    marginTop: spacing.sm,
-    ...typography.caption,
-    fontWeight: "bold",
-  },
-  viewGalleryButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    marginTop: spacing.md,
-  },
-  viewGalleryText: {
-    ...typography.h4,
-    marginRight: spacing.md,
-  },
-  settingsButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    marginTop: spacing.md,
-  },
-  settingsText: {
-    ...typography.h4,
-    marginLeft: spacing.md,
+  proGroup: {
+    gap: spacing.sm,
   },
 });

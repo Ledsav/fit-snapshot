@@ -4,6 +4,7 @@
     "strict": true,
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
+    "types": ["jest"],
     "paths": {
       "@/*": ["./*"]
     }

@@ -121,57 +121,13 @@ export const getPremiumBenefits = (t: (key: string) => string) => [
   },
   {
     icon: 'images-outline' as const,
-    title: t('premiumBenefits.advancedComparisonsTitle'),
-    description: t('premiumBenefits.advancedComparisonsDesc'),
+    title: t('premiumBenefits.customComparisonsTitle'),
+    description: t('premiumBenefits.customComparisonsDesc'),
   },
   {
-    icon: 'download-outline' as const,
-    title: t('premiumBenefits.exportShareTitle'),
-    description: t('premiumBenefits.exportShareDesc'),
-  },
-  {
-    icon: 'color-palette-outline' as const,
-    title: t('premiumBenefits.premiumThemesTitle'),
-    description: t('premiumBenefits.premiumThemesDesc'),
-  },
-  {
-    icon: 'flash-off-outline' as const,
-    title: t('premiumBenefits.adFreeTitle'),
-    description: t('premiumBenefits.adFreeDesc'),
-  },
-];
-
-// Backward compatibility: Keep PREMIUM_BENEFITS for any code that uses it directly
-export const PREMIUM_BENEFITS = [
-  {
-    icon: 'cloud-upload-outline' as const,
-    title: 'Unlimited Photo Storage',
-    description: 'Store unlimited progress photos with cloud backup',
-  },
-  {
-    icon: 'analytics-outline' as const,
-    title: 'Advanced Analytics',
-    description: 'Track your progress with detailed charts and insights',
-  },
-  {
-    icon: 'images-outline' as const,
-    title: 'Advanced Comparisons',
-    description: 'Side-by-side, grid view, and photo morphing',
-  },
-  {
-    icon: 'download-outline' as const,
-    title: 'Export & Share',
-    description: 'Create videos, PDFs, and share your transformation',
-  },
-  {
-    icon: 'color-palette-outline' as const,
-    title: 'Premium Themes',
-    description: 'Customize your experience with exclusive themes',
-  },
-  {
-    icon: 'flash-off-outline' as const,
-    title: 'Ad-Free Experience',
-    description: 'Enjoy the app without any advertisements',
+    icon: 'film-outline' as const,
+    title: t('premiumBenefits.gifExportTitle'),
+    description: t('premiumBenefits.gifExportDesc'),
   },
 ];
 

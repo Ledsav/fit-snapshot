@@ -1,6 +1,6 @@
-import { BlurView } from "expo-blur";
 import React from "react";
-import { ImageBackground, StyleSheet, View, ViewStyle } from "react-native";
+import { StyleSheet, View, ViewStyle } from "react-native";
+import Colors from "@/constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
 
 interface BackgroundImageProps {
@@ -10,32 +10,18 @@ interface BackgroundImageProps {
   overlayOpacity?: number;
 }
 
-const BackgroundImage: React.FC<BackgroundImageProps> = ({
-  children,
-  style,
-  blurIntensity = 50,
-  overlayOpacity = 0.3,
-}) => {
+// Flat instrument-panel ground. Replaces the photographic background, which
+// no longer matches the Graphite & Brass palette even blurred/tinted.
+// blurIntensity/overlayOpacity are kept in the prop signature so existing
+// call sites don't need changes, but are no longer used.
+const BackgroundImage: React.FC<BackgroundImageProps> = ({ children, style }) => {
   const { effectiveColorScheme } = useTheme();
-
-  const backgroundSource = effectiveColorScheme === "dark"
-    ? require("../../assets/images/background_dark.jpg")
-    : require("../../assets/images/background_light.jpg");
+  const theme = Colors[effectiveColorScheme];
 
   return (
-    <ImageBackground
-      source={backgroundSource}
-      style={[styles.background, style]}
-      blurRadius={blurIntensity}
-      resizeMode="cover"
-    >
-      <BlurView
-        intensity={60}
-        tint={effectiveColorScheme}
-        style={[styles.blurView, { opacity: overlayOpacity }]}
-      />
+    <View style={[styles.background, { backgroundColor: theme.background }, style]}>
       <View style={styles.content}>{children}</View>
-    </ImageBackground>
+    </View>
   );
 };
 
@@ -44,9 +30,6 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     height: "100%",
-  },
-  blurView: {
-    ...StyleSheet.absoluteFill,
   },
   content: {
     flex: 1,

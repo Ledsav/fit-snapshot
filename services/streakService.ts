@@ -3,10 +3,12 @@ import { Photo } from "./photoStorage";
 
 const STREAK_KEY = "fitness_tracker_streak";
 const LAST_PHOTO_DATE_KEY = "fitness_tracker_last_photo_date";
+const BEST_STREAK_KEY = "fitness_tracker_best_streak";
 
 export interface StreakData {
   currentStreak: number;
   lastPhotoDate: string | null;
+  bestStreak: number;
 }
 
 export const StreakService = {
@@ -48,6 +50,10 @@ export const StreakService = {
         LAST_PHOTO_DATE_KEY,
         streakData.lastPhotoDate || ""
       );
+      await AsyncStorage.setItem(
+        BEST_STREAK_KEY,
+        String(streakData.bestStreak)
+      );
     } catch (error) {
       console.error("Error saving streak data:", error);
     }
@@ -57,18 +63,20 @@ export const StreakService = {
     try {
       const streakString = await AsyncStorage.getItem(STREAK_KEY);
       const lastPhotoDate = await AsyncStorage.getItem(LAST_PHOTO_DATE_KEY);
+      const bestString = await AsyncStorage.getItem(BEST_STREAK_KEY);
       return {
         currentStreak: streakString ? parseInt(streakString, 10) : 0,
         lastPhotoDate: lastPhotoDate || null,
+        bestStreak: bestString ? parseInt(bestString, 10) : 0,
       };
     } catch (error) {
       console.error("Error getting streak data:", error);
-      return { currentStreak: 0, lastPhotoDate: null };
+      return { currentStreak: 0, lastPhotoDate: null, bestStreak: 0 };
     }
   },
 
   updateStreak: async (newPhoto: Photo): Promise<StreakData> => {
-    const { lastPhotoDate } = await StreakService.getStreakData();
+    const { lastPhotoDate, bestStreak: previousBest } = await StreakService.getStreakData();
     const newPhotoDate = new Date(newPhoto.date);
     newPhotoDate.setHours(0, 0, 0, 0);
 
@@ -79,6 +87,7 @@ export const StreakService = {
       updatedStreak = {
         currentStreak: 1,
         lastPhotoDate: newPhotoDate.toISOString(),
+        bestStreak: Math.max(previousBest, 1),
       };
     } else {
       const lastDate = new Date(lastPhotoDate);
@@ -94,17 +103,19 @@ export const StreakService = {
         updatedStreak = {
           currentStreak: currentStreak + 1,
           lastPhotoDate: newPhotoDate.toISOString(),
+          bestStreak: Math.max(previousBest, currentStreak + 1),
         };
       } else if (newPhotoDate.getTime() > lastDate.getTime()) {
         // New photo is more recent, but streak was broken
         updatedStreak = {
           currentStreak: 1,
           lastPhotoDate: newPhotoDate.toISOString(),
+          bestStreak: Math.max(previousBest, 1),
         };
       } else {
         // New photo is older than the last recorded photo, no change in streak
         const { currentStreak } = await StreakService.getStreakData();
-        updatedStreak = { currentStreak, lastPhotoDate };
+        updatedStreak = { currentStreak, lastPhotoDate, bestStreak: Math.max(previousBest, currentStreak) };
       }
     }
 

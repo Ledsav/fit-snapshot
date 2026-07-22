@@ -1,8 +1,8 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useColorScheme } from "@/hooks/useColorScheme";
-import Colors from "@/constants/Colors";
+import { useTheme } from "@/context/ThemeContext";
+import Colors, { withOpacity, overlayOpacity } from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
 import {
   spacing,
@@ -15,16 +15,16 @@ import {
 type ProgressSummaryProps = {
   totalDays: number;
   totalPhotos: number;
-  improvement: number;
+  consistency: number;
 };
 
 export const ProgressSummary: React.FC<ProgressSummaryProps> = ({
   totalDays,
   totalPhotos,
-  improvement,
+  consistency,
 }) => {
-  const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme ?? "light"];
+  const { effectiveColorScheme } = useTheme();
+  const theme = Colors[effectiveColorScheme];
   const { t } = useLocalization();
 
   return (
@@ -36,21 +36,27 @@ export const ProgressSummary: React.FC<ProgressSummaryProps> = ({
       ]}
     >
       <View style={styles.summaryItem}>
-        <Ionicons name="calendar-outline" size={iconSize.md} color={theme.text} />
+        <View style={[styles.iconChip, { backgroundColor: withOpacity(theme.primary, overlayOpacity.subtle) }]}>
+          <Ionicons name="calendar-outline" size={iconSize.md} color={theme.primary} />
+        </View>
         <Text style={[styles.summaryText, { color: theme.text }]}>
           {totalDays} {t("progressSummary.days")}
         </Text>
       </View>
       <View style={styles.summaryItem}>
-        <Ionicons name="camera-outline" size={iconSize.md} color={theme.text} />
+        <View style={[styles.iconChip, { backgroundColor: withOpacity(theme.primary, overlayOpacity.subtle) }]}>
+          <Ionicons name="camera-outline" size={iconSize.md} color={theme.primary} />
+        </View>
         <Text style={[styles.summaryText, { color: theme.text }]}>
           {totalPhotos} {t("progressSummary.photos")}
         </Text>
       </View>
       <View style={styles.summaryItem}>
-        <Ionicons name="trending-up-outline" size={iconSize.md} color={theme.text} />
+        <View style={[styles.iconChip, { backgroundColor: withOpacity(theme.primary, overlayOpacity.subtle) }]}>
+          <Ionicons name="trending-up-outline" size={iconSize.md} color={theme.primary} />
+        </View>
         <Text style={[styles.summaryText, { color: theme.text }]}>
-          {improvement.toFixed(0)}% {t("progressSummary.active")}
+          {consistency.toFixed(0)}% {t("progressSummary.consistency")}
         </Text>
       </View>
     </View>
@@ -68,6 +74,13 @@ const styles = StyleSheet.create({
   },
   summaryItem: {
     alignItems: "center",
+  },
+  iconChip: {
+    width: iconSize.md + spacing.lg,
+    height: iconSize.md + spacing.lg,
+    borderRadius: borderRadius.round,
+    alignItems: "center",
+    justifyContent: "center",
   },
   summaryText: {
     marginTop: spacing.xs,
