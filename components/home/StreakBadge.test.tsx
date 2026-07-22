@@ -2,6 +2,12 @@ import React from "react";
 import { create, act } from "react-test-renderer";
 import { StreakBadge } from "./StreakBadge";
 
+// Stub the icon set so the async font loader doesn't fire a setState after
+// teardown (surfaces as an act() warning / non-zero isolated exit).
+jest.mock("@expo/vector-icons", () => ({
+  Ionicons: (props: any) => null,
+}));
+
 jest.mock("@/context/ThemeContext", () => ({
   useTheme: () => ({ effectiveColorScheme: "dark" }),
 }));
