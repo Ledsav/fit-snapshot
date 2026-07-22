@@ -10,6 +10,8 @@ import Colors, { overlayOpacity, withOpacity } from "@/constants/Colors";
 import {
   borderRadius,
   opacity as designOpacity,
+  fontFamily,
+  preciseType,
   iconSize,
   spacing,
   typography
@@ -20,7 +22,6 @@ import { useLocalization } from "@/context/LocalizationContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useUser } from "@/context/UserContext";
 import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -46,24 +47,20 @@ const SettingItem: React.FC<{
       styles.settingItem,
       {
         backgroundColor: theme.cardBackground,
-        borderColor: withOpacity(theme.primary, overlayOpacity.light)
+        borderColor: withOpacity(theme.secondary, overlayOpacity.light)
       }
     ]}
     onPress={onPress}
     activeOpacity={0.7}
   >
     <View style={[styles.iconContainer, { backgroundColor: withOpacity(theme.primary, overlayOpacity.subtle) }]}>
-      <Ionicons
-        name={icon as any}
-        size={24}
-        color={theme.primary}
-      />
+      <Ionicons name={icon as any} size={20} color={theme.primary} />
     </View>
-    <Text style={[styles.settingText, { color: theme.text }]}>{title}</Text>
+    <Text style={[styles.settingText, { color: theme.text, fontFamily: fontFamily.body }]}>{title}</Text>
     {value && (
-      <Text style={[styles.settingValue, { color: theme.text }]}>{value}</Text>
+      <Text style={[styles.settingValue, { color: theme.secondary, fontFamily: fontFamily.mono }]}>{value}</Text>
     )}
-    <Ionicons name="chevron-forward" size={20} color={theme.text} />
+    <Ionicons name="chevron-forward" size={18} color={theme.secondary} />
   </TouchableOpacity>
 );
 
@@ -243,65 +240,70 @@ export default function SettingsScreen() {
         {/* Premium Section */}
         <View style={styles.section}>
           {isPremium ? (
-            <LinearGradient
-              colors={[theme.primary + '20', theme.primary + '05']}
-              style={styles.premiumCard}
-            >
+            <View style={[styles.premiumCard, { backgroundColor: theme.cardBackground, borderColor: theme.primary }]}>
               <View style={styles.premiumHeader}>
                 <PremiumBadge size="large" />
-                <Text style={[styles.premiumTitle, { color: theme.text }]}>
+                <Text style={[styles.premiumTitle, { color: theme.text, fontFamily: fontFamily.display }]}>
                   {t("settings.premiumActive")}
                 </Text>
               </View>
-              <Text style={[styles.premiumSubtitle, { color: theme.text }]}>
+              <Text style={[styles.premiumSubtitle, { color: theme.secondary, fontFamily: fontFamily.body }]}>
                 {t("settings.thankYouMessage")}
               </Text>
-              <View style={styles.premiumStats}>
+              <View
+                style={[
+                  styles.premiumStats,
+                  {
+                    borderTopColor: withOpacity(theme.secondary, overlayOpacity.light),
+                    borderBottomColor: withOpacity(theme.secondary, overlayOpacity.light),
+                  },
+                ]}
+              >
                 <View style={styles.statItem}>
-                  <Text style={[styles.statValue, { color: theme.primary }]}>
+                  <Text style={[styles.statValue, { color: theme.text, fontFamily: fontFamily.mono }]}>
                     {featureUsage.photoCount}
                   </Text>
-                  <Text style={[styles.statLabel, { color: theme.text }]}>{t("settings.photos")}</Text>
+                  <Text style={[styles.statLabel, preciseType.statLabel, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
+                    {t("settings.photos").toUpperCase()}
+                  </Text>
                 </View>
                 <View style={styles.statItem}>
-                  <Text style={[styles.statValue, { color: theme.primary }]}>∞</Text>
-                  <Text style={[styles.statLabel, { color: theme.text }]}>{t("settings.limit")}</Text>
+                  <Text style={[styles.statValue, { color: theme.primary, fontFamily: fontFamily.mono }]}>&#8734;</Text>
+                  <Text style={[styles.statLabel, preciseType.statLabel, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
+                    {t("settings.limit").toUpperCase()}
+                  </Text>
                 </View>
               </View>
               <TouchableOpacity
-                style={[styles.manageButton, { borderColor: theme.primary }]}
+                style={[styles.manageButton, { borderColor: withOpacity(theme.secondary, overlayOpacity.light) }]}
                 onPress={handleManageSubscription}
               >
-                <Text style={[styles.manageButtonText, { color: theme.primary }]}>
-                  {t("settings.manageSubscription")}
+                <Text style={[styles.manageButtonText, preciseType.badgeLabel, { color: theme.text, fontFamily: fontFamily.mono }]}>
+                  {t("settings.manageSubscription").toUpperCase()}
                 </Text>
               </TouchableOpacity>
-            </LinearGradient>
+            </View>
           ) : (
             <TouchableOpacity
-              style={styles.upgradeCard}
+              style={[styles.upgradeCard, { backgroundColor: theme.cardBackground, borderColor: theme.primary }]}
               onPress={handleUpgradePress}
-              activeOpacity={0.9}
+              activeOpacity={0.85}
             >
-              <LinearGradient
-                colors={[theme.primary, theme.primary + 'CC']}
-                style={styles.upgradeGradient}
-              >
-                <Ionicons name="star" size={40} color="#FFF" />
-                <Text style={styles.upgradeTitle}>{t("settings.upgradeToPremium")}</Text>
-                <Text style={styles.upgradeSubtitle}>
-                  {t("settings.unlimitedPhotosAnalytics")}
+              <Text style={[styles.upgradeTitle, { color: theme.text, fontFamily: fontFamily.display }]}>
+                {t("settings.upgradeToPremium")}
+              </Text>
+              <Text style={[styles.upgradeSubtitle, { color: theme.secondary, fontFamily: fontFamily.body }]}>
+                {t("settings.unlimitedPhotosAnalytics")}
+              </Text>
+              <Text style={[styles.upgradeStatsText, { color: theme.secondary, fontFamily: fontFamily.mono }]}>
+                {featureUsage.photoCount} / {FREE_TIER_LIMITS.MAX_PHOTOS} {t("settings.photosUsed").toUpperCase()}
+              </Text>
+              <View style={[styles.upgradeButton, { backgroundColor: theme.primary }]}>
+                <Text style={[styles.upgradeButtonText, preciseType.badgeLabel, { color: theme.background, fontFamily: fontFamily.mono }]}>
+                  {t("settings.seePlans").toUpperCase()}
                 </Text>
-                <View style={styles.upgradeStats}>
-                  <Text style={styles.upgradeStatsText}>
-                    {featureUsage.photoCount} / {FREE_TIER_LIMITS.MAX_PHOTOS} {t("settings.photosUsed")}
-                  </Text>
-                </View>
-                <View style={styles.upgradeButton}>
-                  <Text style={styles.upgradeButtonText}>{t("settings.seePlans")}</Text>
-                  <Ionicons name="arrow-forward" size={20} color="#FFF" />
-                </View>
-              </LinearGradient>
+                <Ionicons name="arrow-forward" size={18} color={theme.background} />
+              </View>
             </TouchableOpacity>
           )}
         </View>
@@ -433,11 +435,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xxxl,
   },
   sectionTitle: {
-    ...typography.caption,
-    fontWeight: "600",
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
     marginBottom: spacing.md,
     textTransform: "uppercase",
-    letterSpacing: 0.5,
+    letterSpacing: 1.5,
     opacity: designOpacity.secondary,
   },
   settingItem: {
@@ -468,7 +470,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   premiumCard: {
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
     padding: spacing.xl,
     marginBottom: spacing.sm,
   },
@@ -479,85 +482,67 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   premiumTitle: {
-    ...typography.h3,
+    fontSize: 18,
+    fontStyle: "italic",
   },
   premiumSubtitle: {
-    ...typography.caption,
-    opacity: designOpacity.medium,
+    fontSize: 13,
     marginBottom: spacing.xl,
   },
   premiumStats: {
     flexDirection: "row",
     justifyContent: "space-around",
     marginBottom: spacing.xl,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    paddingVertical: spacing.lg,
   },
   statItem: {
     alignItems: "center",
   },
   statValue: {
-    ...typography.h1,
+    fontSize: 22,
   },
   statLabel: {
-    ...typography.small,
-    opacity: designOpacity.medium,
     marginTop: spacing.xs,
   },
   manageButton: {
-    borderWidth: 2,
-    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderRadius: borderRadius.sm,
     paddingVertical: spacing.md,
     alignItems: "center",
   },
-  manageButtonText: {
-    ...typography.body,
-    fontWeight: "600",
-  },
+  manageButtonText: {},
   upgradeCard: {
-    borderRadius: borderRadius.lg,
-    overflow: "hidden",
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    padding: spacing.xl,
     marginBottom: spacing.sm,
-  },
-  upgradeGradient: {
-    padding: spacing.xxl,
     alignItems: "center",
   },
   upgradeTitle: {
-    ...typography.h2,
-    color: "#FFF",
-    marginTop: spacing.md,
+    fontSize: 18,
+    fontStyle: "italic",
     marginBottom: spacing.sm,
+    textAlign: "center",
   },
   upgradeSubtitle: {
-    ...typography.caption,
-    color: "#FFF",
-    opacity: designOpacity.high,
+    fontSize: 13,
     marginBottom: spacing.lg,
     textAlign: "center",
   },
-  upgradeStats: {
-    backgroundColor: withOpacity('#ffffff', overlayOpacity.subtle),
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.xl,
-    marginBottom: spacing.lg,
-  },
   upgradeStatsText: {
-    color: "#FFF",
-    ...typography.small,
-    fontWeight: "600",
+    fontSize: 10,
+    letterSpacing: 0.5,
+    marginBottom: spacing.lg,
   },
   upgradeButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: withOpacity('#ffffff', overlayOpacity.light),
     paddingHorizontal: spacing.xxl,
     paddingVertical: spacing.md,
     borderRadius: borderRadius.round,
     gap: spacing.sm,
   },
-  upgradeButtonText: {
-    color: "#FFF",
-    ...typography.body,
-    fontWeight: "bold",
-  },
+  upgradeButtonText: {},
 });
