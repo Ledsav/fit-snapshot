@@ -202,11 +202,11 @@ export default function SettingsScreen() {
                   styles.settingItem,
                   {
                     backgroundColor: theme.cardBackground,
-                    borderColor: theme.primary + '40',
+                    borderColor: withOpacity(theme.primary, overlayOpacity.medium),
                   },
                 ]}
               >
-                <View style={[styles.iconContainer, { backgroundColor: theme.primary + '20' }]}>
+                <View style={[styles.iconContainer, { backgroundColor: withOpacity(theme.primary, overlayOpacity.subtle) }]}>
                   <Ionicons name="person" size={24} color={theme.primary} />
                 </View>
                 <View style={{ flex: 1, marginLeft: 12 }}>
@@ -308,27 +308,29 @@ export default function SettingsScreen() {
           )}
         </View>
 
-        {/* Test Mode Toggle (for development) */}
-        <View style={styles.section}>
-          <TouchableOpacity
-            style={[
-              styles.settingItem,
-              {
-                backgroundColor: theme.cardBackground,
-                borderColor: theme.primary + '40',
-              },
-            ]}
-            onPress={handleTestPremiumToggle}
-          >
-            <View style={[styles.iconContainer, { backgroundColor: theme.warning + '20' }]}>
-              <Ionicons name="flask-outline" size={24} color={theme.warning} />
-            </View>
-            <Text style={[styles.settingText, { color: theme.text }]}>
-              {t("settings.testPremium")} ({isPremium ? t("settings.on") : t("settings.off")})
-            </Text>
-            <Ionicons name="chevron-forward" size={20} color={theme.text} />
-          </TouchableOpacity>
-        </View>
+        {/* Test Mode Toggle (development only) */}
+        {__DEV__ && (
+          <View style={styles.section}>
+            <TouchableOpacity
+              style={[
+                styles.settingItem,
+                {
+                  backgroundColor: theme.cardBackground,
+                  borderColor: withOpacity(theme.primary, overlayOpacity.medium),
+                },
+              ]}
+              onPress={handleTestPremiumToggle}
+            >
+              <View style={[styles.iconContainer, { backgroundColor: withOpacity(theme.warning, overlayOpacity.subtle) }]}>
+                <Ionicons name="flask-outline" size={24} color={theme.warning} />
+              </View>
+              <Text style={[styles.settingText, { color: theme.text }]}>
+                {t("settings.testPremium")} ({isPremium ? t("settings.on") : t("settings.off")})
+              </Text>
+              <Ionicons name="chevron-forward" size={20} color={theme.text} />
+            </TouchableOpacity>
+          </View>
+        )}
 
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, preciseType.sectionLabel, { color: theme.text }]}>
