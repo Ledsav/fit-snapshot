@@ -22,6 +22,9 @@ interface TranslationKeys {
     consistency: string;
     last12Weeks: string;
     last10Weeks: string;
+    thisWeek: string;
+    pro: string;
+    streakBest: string;
   };
   camera: {
     title: string;
@@ -87,7 +90,6 @@ interface TranslationKeys {
     modeSideBySide: string;
     modeGif: string;
     modeGrid: string;
-    modeSelect: string;
     modePair: string;
     view: string;
     change: string;
@@ -303,6 +305,9 @@ export const translations: Translations = {
       consistency: "Consistency Tracker",
       last12Weeks: "Last 12 weeks",
       last10Weeks: "Last 10 weeks",
+      thisWeek: "This Week",
+      pro: "Pro",
+      streakBest: "Best",
     },
     camera: {
       title: "Camera",
@@ -369,7 +374,6 @@ export const translations: Translations = {
       modePair: "Pair",
       modeGif: "GIF",
       modeGrid: "Grid",
-      modeSelect: "Select photos",
       view: "View",
       change: "Change",
       syncedZoomSwap: "Swap",
@@ -611,6 +615,9 @@ export const translations: Translations = {
       consistency: "Rastreador de Consistencia",
       last12Weeks: "Últimas 12 semanas",
       last10Weeks: "Últimas 10 semanas",
+      thisWeek: "Esta Semana",
+      pro: "Pro",
+      streakBest: "Mejor",
     },
     camera: {
       title: "Cámara",
@@ -678,7 +685,6 @@ export const translations: Translations = {
       modePair: "Par",
       modeGif: "GIF",
       modeGrid: "Cuadrícula",
-      modeSelect: "Seleccionar fotos",
       view: "Vista",
       change: "Cambiar",
       syncedZoomSwap: "Intercambiar",
@@ -920,6 +926,9 @@ export const translations: Translations = {
       consistency: "Tracciatore di Costanza",
       last12Weeks: "Ultime 12 settimane",
       last10Weeks: "Ultime 10 settimane",
+      thisWeek: "Questa Settimana",
+      pro: "Pro",
+      streakBest: "Migliore",
     },
     camera: {
       title: "Fotocamera",
@@ -987,7 +996,6 @@ export const translations: Translations = {
       modePair: "Coppia",
       modeGif: "GIF",
       modeGrid: "Griglia",
-      modeSelect: "Seleziona foto",
       view: "Vista",
       change: "Cambia",
       syncedZoomSwap: "Scambia",
@@ -1228,6 +1236,9 @@ export const translations: Translations = {
       consistency: "Konsistenz-Tracker",
       last12Weeks: "Letzte 12 Wochen",
       last10Weeks: "Letzte 10 Wochen",
+      thisWeek: "Diese Woche",
+      pro: "Pro",
+      streakBest: "Beste",
     },
     camera: {
       title: "Kamera",
@@ -1296,7 +1307,6 @@ export const translations: Translations = {
       modePair: "Paar",
       modeGif: "GIF",
       modeGrid: "Raster",
-      modeSelect: "Fotos auswählen",
       view: "Ansicht",
       change: "Ändern",
       syncedZoomSwap: "Tauschen",
@@ -1538,6 +1548,9 @@ export const translations: Translations = {
       consistency: "Suivi de Constance",
       last12Weeks: "12 dernières semaines",
       last10Weeks: "10 dernières semaines",
+      thisWeek: "Cette Semaine",
+      pro: "Pro",
+      streakBest: "Record",
     },
     camera: {
       title: "Appareil Photo",
@@ -1606,7 +1619,6 @@ export const translations: Translations = {
       modePair: "Paire",
       modeGif: "GIF",
       modeGrid: "Grille",
-      modeSelect: "Sélectionner des photos",
       view: "Vue",
       change: "Changer",
       syncedZoomSwap: "Inverser",

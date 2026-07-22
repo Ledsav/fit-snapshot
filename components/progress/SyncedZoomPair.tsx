@@ -1,4 +1,6 @@
-import Colors from "@/constants/Colors";
+import Colors, { overlayOpacity, withOpacity } from "@/constants/Colors";
+import { borderRadius, fontFamily, preciseType } from "@/constants/DesignSystem";
+import { Button } from "@/components/ui";
 import { useTheme } from "@/context/ThemeContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { Ionicons } from "@expo/vector-icons";
@@ -7,7 +9,6 @@ import {
   Dimensions,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
@@ -111,42 +112,52 @@ export const SyncedZoomPair: React.FC<SyncedZoomPairProps> = ({ photoA, photoB }
   return (
     <View style={styles.container}>
       <View style={styles.actionsRow}>
-        <TouchableOpacity
-          style={[styles.actionButton, { backgroundColor: theme.cardBackground }]}
+        <Button
+          title={t("progress.syncedZoomSwap")}
           onPress={() => setSwapped((prev) => !prev)}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="swap-horizontal" size={16} color={theme.text} />
-          <Text style={[styles.actionButtonText, { color: theme.text }]}>
-            {t("progress.syncedZoomSwap")}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.actionButton, { backgroundColor: theme.cardBackground }]}
+          variant="ghost"
+          size="small"
+          icon={<Ionicons name="swap-horizontal-outline" size={16} color={theme.text} />}
+        />
+        <Button
+          title={t("progress.syncedZoomReset")}
           onPress={resetZoom}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="scan-outline" size={16} color={theme.text} />
-          <Text style={[styles.actionButtonText, { color: theme.text }]}>
-            {t("progress.syncedZoomReset")}
-          </Text>
-        </TouchableOpacity>
+          variant="ghost"
+          size="small"
+          icon={<Ionicons name="scan-outline" size={16} color={theme.text} />}
+        />
       </View>
       <GestureDetector gesture={composedGesture}>
         <View style={styles.pairRow}>
-          <View style={[styles.photoWrapper, { borderColor: theme.primary }]}>
+          <View
+            style={[
+              styles.photoWrapper,
+              { borderColor: withOpacity(theme.secondary, overlayOpacity.light) },
+            ]}
+          >
             <Animated.Image source={{ uri: left.uri }} style={[styles.photo, animatedStyle]} />
           </View>
-          <View style={[styles.photoWrapper, { borderColor: theme.primary }]}>
+          <View
+            style={[
+              styles.photoWrapper,
+              { borderColor: withOpacity(theme.secondary, overlayOpacity.light) },
+            ]}
+          >
             <Animated.Image source={{ uri: right.uri }} style={[styles.photo, animatedStyle]} />
           </View>
         </View>
       </GestureDetector>
       <View style={styles.captionsRow}>
-        <Text style={[styles.captionText, { color: theme.text }]} numberOfLines={1}>
+        <Text
+          style={[styles.captionText, preciseType.caption, { color: theme.secondary, fontFamily: fontFamily.mono }]}
+          numberOfLines={1}
+        >
           {left.label}
         </Text>
-        <Text style={[styles.captionText, { color: theme.text }]} numberOfLines={1}>
+        <Text
+          style={[styles.captionText, preciseType.caption, { color: theme.secondary, fontFamily: fontFamily.mono }]}
+          numberOfLines={1}
+        >
           {right.label}
         </Text>
       </View>
@@ -164,18 +175,6 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 12,
   },
-  actionButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-  },
-  actionButtonText: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
   pairRow: {
     flexDirection: "row",
     gap: PAIR_GAP,
@@ -183,9 +182,9 @@ const styles = StyleSheet.create({
   photoWrapper: {
     flex: 1,
     aspectRatio: 3 / 4,
-    borderRadius: 15,
+    borderRadius: borderRadius.sm,
     overflow: "hidden",
-    borderWidth: 2,
+    borderWidth: 1,
   },
   photo: {
     width: "100%",
@@ -200,9 +199,6 @@ const styles = StyleSheet.create({
   captionText: {
     flex: 1,
     textAlign: "center",
-    fontSize: 12,
-    fontWeight: "600",
-    opacity: 0.8,
   },
 });
 
