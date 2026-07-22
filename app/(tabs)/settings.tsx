@@ -192,7 +192,7 @@ export default function SettingsScreen() {
 
         {/* Account Section */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>
+          <Text style={[styles.sectionTitle, preciseType.sectionLabel, { color: theme.text }]}>
             Account
           </Text>
           {user ? (
@@ -331,21 +331,21 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>
+          <Text style={[styles.sectionTitle, preciseType.sectionLabel, { color: theme.text }]}>
             {t("settings.reminders")}
           </Text>
           <DailyReminder />
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>
+          <Text style={[styles.sectionTitle, preciseType.sectionLabel, { color: theme.text }]}>
             {t("settings.storage")}
           </Text>
           <StorageManager />
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>
+          <Text style={[styles.sectionTitle, preciseType.sectionLabel, { color: theme.text }]}>
             {t("settings.support")}
           </Text>
           <SettingItem
@@ -363,7 +363,7 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>
+          <Text style={[styles.sectionTitle, preciseType.sectionLabel, { color: theme.text }]}>
             {t("settings.appearance")}
           </Text>
           <SettingItem
@@ -376,7 +376,7 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>
+          <Text style={[styles.sectionTitle, preciseType.sectionLabel, { color: theme.text }]}>
             {t("settings.language")}
           </Text>
           <SettingItem
@@ -436,10 +436,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontFamily: fontFamily.mono,
-    fontSize: 11,
     marginBottom: spacing.md,
     textTransform: "uppercase",
-    letterSpacing: 1.5,
     opacity: designOpacity.secondary,
   },
   settingItem: {
