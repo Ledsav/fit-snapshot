@@ -4,6 +4,7 @@ import {
   borderRadius,
   opacity as designOpacity,
   elevation,
+  fontFamily,
   iconSize,
   spacing,
   touchTarget,
@@ -414,7 +415,7 @@ export default function CameraScreen() {
               { color: overlay === type ? theme.background : theme.text },
             ]}
           >
-            {t(`camera.${type}`)}
+            {t(`camera.${type}`).toUpperCase()}
           </Text>
         </TouchableOpacity>
       ))}
@@ -774,17 +775,20 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   overlayButton: {
-    padding: spacing.md,
-    marginRight: spacing.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    marginRight: spacing.sm,
     backgroundColor: withOpacity('#000000', overlayOpacity.medium),
-    borderRadius: borderRadius.xl,
+    borderRadius: borderRadius.round,
   },
   activeOverlayButton: {
     backgroundColor: withOpacity('#ffffff', overlayOpacity.light),
   },
   overlayButtonText: {
     color: "white",
-    ...typography.captionBold,
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    letterSpacing: 1,
   },
   overlayText: {
     position: "absolute",
