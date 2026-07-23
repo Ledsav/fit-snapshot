@@ -9,19 +9,21 @@
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Privacy Policy — FitSnapshot" />
   <meta property="og:description" content="How FitSnapshot handles your data: private, local-first, no ads, no selling." />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23F7F6F3'/%3E%3Crect x='1.5' y='1.5' width='29' height='29' rx='6' fill='none' stroke='%23E7E4DE'/%3E%3Cpath d='M11 22V10h9M11 16h6' fill='none' stroke='%23167A54' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23F7F6F3'/%3E%3Crect x='1.5' y='1.5' width='29' height='29' rx='6' fill='none' stroke='%23E4E2DD'/%3E%3Cpath d='M14 8h-4a2.5 2.5 0 0 0-2.5 2.5v11A2.5 2.5 0 0 0 10 24h4' fill='none' stroke='%23C9C9C7' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M18 8h4a2.5 2.5 0 0 1 2.5 2.5v11A2.5 2.5 0 0 1 22 24h-4' fill='none' stroke='%23CEA247' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
   <style>
     :root {
-      --bg: #F7F6F3;          /* warm bone canvas */
-      --surface: #FFFFFF;     /* card surface      */
-      --ink: #1F2421;         /* warm charcoal     */
-      --muted: #6B6F6A;       /* warm gray         */
-      --accent: #167A54;      /* restrained green  */
-      --accent-ink: #0F5B3E;  /* darker on hover   */
-      --border: #E7E4DE;      /* warm hairline     */
-      --code-bg: #F1EFEA;     /* warm inline bg    */
-      --pale-green-bg: #EDF3EC;
-      --pale-green-ink: #346538;
+      --bg: #F7F6F2;          /* warm bone canvas          */
+      --surface: #FFFFFF;     /* card surface              */
+      --ink: #242220;         /* warm charcoal             */
+      --muted: #6E6A63;       /* warm gray                 */
+      --brand-gold: #CEA247;  /* logo gold (decorative)    */
+      --brand-silver: #E1E1E0;/* logo silver               */
+      --accent: #8A6A1F;      /* accessible gold (text)    */
+      --accent-ink: #6E521A;  /* darker on hover           */
+      --border: #E6E3DC;      /* warm hairline             */
+      --code-bg: #F3EFE6;     /* warm inline bg            */
+      --callout-bg: #FBF5E6;  /* pale gold callout         */
+      --callout-ink: #6E521A; /* callout accent text       */
 
       --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
       --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
@@ -122,7 +124,7 @@
       color: var(--accent);
       text-decoration: none;
       font-weight: 600;
-      border-bottom: 1px solid rgba(22, 122, 84, 0.28);
+      border-bottom: 1px solid rgba(138, 106, 31, 0.30);
       transition: color 160ms ease, border-color 160ms ease;
     }
     a:hover { color: var(--accent-ink); border-bottom-color: var(--accent-ink); }
@@ -142,16 +144,15 @@
 
     /* ---- Summary callout ---- */
     .summary {
-      background: var(--pale-green-bg);
-      border: 1px solid rgba(52, 101, 56, 0.14);
+      background: var(--callout-bg);
+      border: 1px solid rgba(138, 106, 31, 0.18);
+      border-left: 3px solid var(--brand-gold);
       border-radius: 10px;
       padding: 20px 24px;
       margin: 18px 0;
     }
     .summary ul { margin: 0; }
-    .summary li { color: var(--pale-green-ink); }
-    .summary strong { color: var(--pale-green-ink); }
-    .summary li::marker { color: rgba(52, 101, 56, 0.5); }
+    .summary li::marker { color: rgba(138, 106, 31, 0.55); }
 
     /* ---- Table ---- */
     table {

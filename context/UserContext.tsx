@@ -11,8 +11,19 @@ import {
     SubscriptionTier,
     UserSubscriptionStatus,
 } from '@/constants/Features';
+import { useAuth } from '@/context/AuthContext';
 import featureFlagService from '@/services/featureFlagService';
+import {
+    addStatusListener,
+    configurePurchases,
+    fetchStatus,
+    identify,
+    resetIdentity,
+    restorePurchases as rcRestore,
+} from '@/services/purchaseService';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+
+const RC_ANDROID_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY ?? '';
 
 interface UserContextType {
   
@@ -37,10 +48,13 @@ interface UserContextType {
   incrementExportCount: () => Promise<void>;
   refreshSubscriptionStatus: () => Promise<void>;
 
-  
+
   setTestPremiumStatus: (isPremium: boolean) => Promise<void>;
 
-  
+
+  restorePurchases: () => Promise<{ isPremium: boolean }>;
+
+
   isLoading: boolean;
 }
 
@@ -64,8 +78,10 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   });
   const [storageUsagePercentage, setStorageUsagePercentage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isConfigured, setIsConfigured] = useState(false);
+  const { user } = useAuth();
 
-  
+
   useEffect(() => {
     initializeUserContext();
   }, []);
@@ -73,14 +89,55 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const initializeUserContext = async () => {
     setIsLoading(true);
     try {
+      // 1. Load cached status first (instant, offline-safe).
       await featureFlagService.initialize();
       await refreshSubscriptionStatus();
+
+      // 2. Configure RevenueCat and adopt the real status.
+      if (RC_ANDROID_KEY) {
+        configurePurchases(RC_ANDROID_KEY);
+        setIsConfigured(true);
+        try {
+          const status = await fetchStatus();
+          await featureFlagService.syncFromRevenueCat(status);
+          await refreshSubscriptionStatus();
+        } catch (e) {
+          console.warn('RevenueCat fetch failed, using cached status', e);
+        }
+      }
     } catch (error) {
       console.error('Error initializing user context:', error);
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!RC_ANDROID_KEY || !isConfigured) return;
+    let unsubscribe: (() => void) | undefined;
+    try {
+      unsubscribe = addStatusListener(async (status) => {
+        await featureFlagService.syncFromRevenueCat(status);
+        await refreshSubscriptionStatus();
+      });
+    } catch (e) {
+      console.warn('RevenueCat status listener registration failed', e);
+    }
+    return unsubscribe;
+  }, [isConfigured]);
+
+  useEffect(() => {
+    if (!RC_ANDROID_KEY || !isConfigured) return;
+    (async () => {
+      try {
+        const status = user?.uid ? await identify(user.uid) : await resetIdentity();
+        await featureFlagService.syncFromRevenueCat(status);
+        await refreshSubscriptionStatus();
+      } catch (e) {
+        console.warn('RevenueCat identity sync failed', e);
+      }
+    })();
+  }, [user?.uid, isConfigured]);
 
   const refreshSubscriptionStatus = async () => {
     try {
@@ -137,6 +194,13 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     await refreshSubscriptionStatus();
   };
 
+  const restorePurchases = async (): Promise<{ isPremium: boolean }> => {
+    const status = await rcRestore();
+    await featureFlagService.syncFromRevenueCat(status);
+    await refreshSubscriptionStatus();
+    return { isPremium: status.isPremium };
+  };
+
   const value: UserContextType = {
     subscriptionStatus,
     isPremium: subscriptionStatus.isPremium,
@@ -153,6 +217,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     incrementExportCount,
     refreshSubscriptionStatus,
     setTestPremiumStatus,
+    restorePurchases,
     isLoading,
   };
 
