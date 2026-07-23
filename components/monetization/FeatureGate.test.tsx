@@ -16,7 +16,14 @@ jest.mock("@/context/LocalizationContext", () => ({
   useLocalization: () => ({ t: (k: string) => k }),
 }));
 jest.mock("@/context/UserContext", () => ({
-  useUser: () => ({ hasFeatureAccess: () => mockHasAccess }),
+  useUser: () => ({ hasFeatureAccess: () => mockHasAccess, restorePurchases: jest.fn() }),
+}));
+// FeatureGate statically imports PaywallModal, which now pulls in the real
+// RevenueCat SDK via purchaseService — stub it so this test doesn't need a
+// native module / ESM-dependent transform.
+jest.mock("@/services/purchaseService", () => ({
+  getDefaultOffering: jest.fn().mockResolvedValue(null),
+  purchasePackage: jest.fn(),
 }));
 
 import { FeatureGate } from "./FeatureGate";

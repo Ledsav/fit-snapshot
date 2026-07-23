@@ -6,12 +6,14 @@
  */
 
 import Colors, { withOpacity, overlayOpacity } from '@/constants/Colors';
-import { Feature, getPremiumBenefits, PRICING } from '@/constants/Features';
+import { Feature, getPremiumBenefits } from '@/constants/Features';
 import { useLocalization } from '@/context/LocalizationContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useUser } from '@/context/UserContext';
+import { getDefaultOffering, purchasePackage } from '@/services/purchaseService';
+import type { PurchasesOffering, PurchasesPackage } from 'react-native-purchases';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Dimensions,
     Modal,
@@ -39,11 +41,9 @@ import { Button } from '@/components/ui';
 interface PaywallModalProps {
   visible: boolean;
   onClose: () => void;
-  source?: string; 
-  feature?: Feature; 
+  source?: string;
+  feature?: Feature;
 }
-
-type PricingPlan = 'monthly' | 'annual' | 'lifetime';
 
 const { width, height } = Dimensions.get('window');
 
@@ -55,59 +55,70 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
 }) => {
   const { effectiveColorScheme } = useTheme();
   const theme = Colors[effectiveColorScheme];
-  const { setTestPremiumStatus } = useUser();
+  const { restorePurchases } = useUser();
   const { t } = useLocalization();
-  const [selectedPlan, setSelectedPlan] = useState<PricingPlan>('annual');
+  const [offering, setOffering] = useState<PurchasesOffering | null>(null);
+  const [selectedPkg, setSelectedPkg] = useState<PurchasesPackage | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
+
+  useEffect(() => {
+    if (!visible) return;
+    getDefaultOffering().then((o) => {
+      setOffering(o);
+      setSelectedPkg(o?.annual ?? o?.availablePackages?.[0] ?? null);
+    });
+  }, [visible]);
+
+  const annualPkg = offering?.annual ?? null;
+  const lifetimePkg = offering?.lifetime ?? null;
 
   // Get translated premium benefits
   const premiumBenefits = getPremiumBenefits(t);
 
   const handlePurchase = async () => {
+    if (!selectedPkg) return;
     setIsProcessing(true);
-
     try {
-      
-      
-      console.log('Purchase initiated:', {
-        plan: selectedPlan,
-        source,
-        feature,
-        priceId: PRICING[selectedPlan].priceId,
-      });
-
-      
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      
-      await setTestPremiumStatus(true);
-
-      alert('Premium activated! (Testing mode)');
-      onClose();
-    } catch (error) {
-      console.error('Purchase error:', error);
-      alert('Purchase failed. Please try again.');
+      const result = await purchasePackage(selectedPkg);
+      if (result.userCancelled) return;
+      if (result.status?.isPremium) {
+        onClose(); // UserContext listener refreshes premium state automatically
+        return;
+      }
+      alert(result.error ?? t('paywall.purchaseError'));
     } finally {
       setIsProcessing(false);
     }
   };
 
+  const handleRestore = async () => {
+    setIsRestoring(true);
+    try {
+      const { isPremium } = await restorePurchases();
+      alert(isPremium ? t('paywall.restoreSuccess') : t('paywall.restoreNone'));
+      if (isPremium) onClose();
+    } catch {
+      alert(t('paywall.purchaseError'));
+    } finally {
+      setIsRestoring(false);
+    }
+  };
+
   const PricingCard = ({
-    plan,
-    price,
+    pkg,
     title,
     subtitle,
-    savings,
+    priceSuffix,
     isPopular,
   }: {
-    plan: PricingPlan;
-    price: string;
+    pkg: PurchasesPackage;
     title: string;
     subtitle: string;
-    savings?: string;
+    priceSuffix?: string;
     isPopular?: boolean;
   }) => {
-    const isSelected = selectedPlan === plan;
+    const isSelected = selectedPkg?.identifier === pkg.identifier;
 
     return (
       <TouchableOpacity
@@ -119,7 +130,7 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
             borderWidth: isSelected ? 2 : 1,
           },
         ]}
-        onPress={() => setSelectedPlan(plan)}
+        onPress={() => setSelectedPkg(pkg)}
         activeOpacity={0.8}
       >
         {isPopular && (
@@ -144,15 +155,8 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
         </View>
         <View style={styles.pricingBottom}>
           <Text style={[styles.pricingPrice, { color: theme.primary, fontFamily: fontFamily.mono }]}>
-            {t("paywall.currency")}{price}
+            {pkg.product.priceString}{priceSuffix ?? ''}
           </Text>
-          {savings && (
-            <View style={[styles.savingsBadge, { backgroundColor: withOpacity(theme.success, overlayOpacity.subtle) }]}>
-              <Text style={[styles.savingsText, { color: theme.success, fontFamily: fontFamily.mono }]}>
-                {t("paywall.save")} {savings}%
-              </Text>
-            </View>
-          )}
         </View>
       </TouchableOpacity>
     );
@@ -226,31 +230,25 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
           {/* Pricing Options */}
           <View style={styles.pricingContainer}>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              {t("paywall.choosePlan")}
+              {t('paywall.choosePlan')}
             </Text>
 
-            <PricingCard
-              plan="annual"
-              price={PRICING.annual.price.toFixed(2)}
-              title={t("paywall.annual")}
-              subtitle={`${t("paywall.currency")}${PRICING.annual.monthlyEquivalent}${t("paywall.perMonth")}`}
-              savings={PRICING.annual.savings.toString()}
-              isPopular
-            />
-
-            <PricingCard
-              plan="monthly"
-              price={PRICING.monthly.price.toFixed(2)}
-              title={t("paywall.monthly")}
-              subtitle={t("paywall.billedMonthly")}
-            />
-
-            <PricingCard
-              plan="lifetime"
-              price={PRICING.lifetime.price.toFixed(2)}
-              title={t("paywall.lifetime")}
-              subtitle={t("paywall.oneTimePayment")}
-            />
+            {annualPkg && (
+              <PricingCard
+                pkg={annualPkg}
+                title={t('paywall.annual')}
+                subtitle={t('paywall.freeTrial')}
+                priceSuffix={t('paywall.perYear')}
+                isPopular
+              />
+            )}
+            {lifetimePkg && (
+              <PricingCard
+                pkg={lifetimePkg}
+                title={t('paywall.lifetime')}
+                subtitle={t('paywall.oneTimePayment')}
+              />
+            )}
           </View>
 
           {/* Purchase Button */}
@@ -260,7 +258,7 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
             variant="primary"
             size="large"
             loading={isProcessing}
-            disabled={isProcessing}
+            disabled={isProcessing || !selectedPkg}
             icon={<Ionicons name="cart" size={iconSize.md} color={theme.background} />}
             iconPosition="left"
             style={styles.purchaseButton}
@@ -277,6 +275,11 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
             <Text style={[styles.footerText, { color: theme.secondary, fontFamily: fontFamily.body }]}>
               {t("paywall.termsAgreement")}
             </Text>
+            <TouchableOpacity onPress={handleRestore} disabled={isRestoring} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Text style={[styles.footerText, { color: theme.primary, fontFamily: fontFamily.body }]}>
+                {isRestoring ? t('paywall.restoring') : t('paywall.restore')}
+              </Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
         </SafeAreaView>

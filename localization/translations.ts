@@ -265,6 +265,13 @@ interface TranslationKeys {
     termsAgreement: string;
     perMonth: string;
     currency: string;
+    freeTrial: string;
+    perYear: string;
+    restore: string;
+    restoring: string;
+    restoreSuccess: string;
+    restoreNone: string;
+    purchaseError: string;
   };
   featureGate: {
     premiumFeature: string;
@@ -589,6 +596,13 @@ export const translations: Translations = {
       termsAgreement: "By continuing, you agree to our Terms & Privacy Policy",
       perMonth: "/month",
       currency: "$",
+      freeTrial: "7-day free trial",
+      perYear: "/yr",
+      restore: "Restore Purchases",
+      restoring: "Restoring…",
+      restoreSuccess: "Purchases restored!",
+      restoreNone: "No purchases to restore.",
+      purchaseError: "Purchase failed. Please try again.",
     },
     featureGate: {
       premiumFeature: "Premium Feature",
@@ -909,6 +923,13 @@ export const translations: Translations = {
       termsAgreement: "Al continuar, aceptas nuestros Términos y Política de Privacidad",
       perMonth: "/mes",
       currency: "€",
+      freeTrial: "Prueba gratis de 7 días",
+      perYear: "/año",
+      restore: "Restaurar compras",
+      restoring: "Restaurando…",
+      restoreSuccess: "¡Compras restauradas!",
+      restoreNone: "No hay compras que restaurar.",
+      purchaseError: "La compra falló. Inténtalo de nuevo.",
     },
     featureGate: {
       premiumFeature: "Función Premium",
@@ -1229,6 +1250,13 @@ export const translations: Translations = {
       termsAgreement: "Continuando, accetti i nostri Termini e la Politica sulla Privacy",
       perMonth: "/mese",
       currency: "€",
+      freeTrial: "7 giorni di prova gratuita",
+      perYear: "/anno",
+      restore: "Ripristina acquisti",
+      restoring: "Ripristino…",
+      restoreSuccess: "Acquisti ripristinati!",
+      restoreNone: "Nessun acquisto da ripristinare.",
+      purchaseError: "Acquisto non riuscito. Riprova.",
     },
     featureGate: {
       premiumFeature: "Funzione Premium",
@@ -1550,6 +1578,13 @@ export const translations: Translations = {
       termsAgreement: "Indem Sie fortfahren, stimmen Sie unseren Bedingungen und Datenschutzrichtlinien zu",
       perMonth: "/Monat",
       currency: "€",
+      freeTrial: "7 Tage kostenlos testen",
+      perYear: "/Jahr",
+      restore: "Käufe wiederherstellen",
+      restoring: "Wird wiederhergestellt…",
+      restoreSuccess: "Käufe wiederhergestellt!",
+      restoreNone: "Keine Käufe zum Wiederherstellen.",
+      purchaseError: "Kauf fehlgeschlagen. Bitte erneut versuchen.",
     },
     featureGate: {
       premiumFeature: "Premium-Funktion",
@@ -1870,6 +1905,13 @@ export const translations: Translations = {
       termsAgreement: "En continuant, vous acceptez nos Conditions et notre Politique de Confidentialité",
       perMonth: "/mois",
       currency: "€",
+      freeTrial: "Essai gratuit de 7 jours",
+      perYear: "/an",
+      restore: "Restaurer les achats",
+      restoring: "Restauration…",
+      restoreSuccess: "Achats restaurés !",
+      restoreNone: "Aucun achat à restaurer.",
+      purchaseError: "Échec de l'achat. Veuillez réessayer.",
     },
     featureGate: {
       premiumFeature: "Fonctionnalité Premium",
