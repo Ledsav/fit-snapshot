@@ -201,18 +201,5 @@
       "enabled": true,
       "betaOnly": false
     }
-  },
-  "limits": {
-    "free": {
-      "maxPhotos": 50,
-      "maxComparisonsPerDay": 5,
-      "maxExportsPerMonth": 2
-    },
-    "premium": {
-      "maxPhotos": -1,
-      "maxComparisonsPerDay": -1,
-      "maxExportsPerMonth": -1,
-      "maxGifGenerationsPerMonth": 1
-    }
   }
 }
