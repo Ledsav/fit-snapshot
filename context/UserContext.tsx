@@ -78,6 +78,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   });
   const [storageUsagePercentage, setStorageUsagePercentage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isConfigured, setIsConfigured] = useState(false);
   const { user } = useAuth();
 
 
@@ -95,6 +96,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       // 2. Configure RevenueCat and adopt the real status.
       if (RC_ANDROID_KEY) {
         configurePurchases(RC_ANDROID_KEY);
+        setIsConfigured(true);
         try {
           const status = await fetchStatus();
           await featureFlagService.syncFromRevenueCat(status);
@@ -111,16 +113,21 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    if (!RC_ANDROID_KEY) return;
-    const unsubscribe = addStatusListener(async (status) => {
-      await featureFlagService.syncFromRevenueCat(status);
-      await refreshSubscriptionStatus();
-    });
+    if (!RC_ANDROID_KEY || !isConfigured) return;
+    let unsubscribe: (() => void) | undefined;
+    try {
+      unsubscribe = addStatusListener(async (status) => {
+        await featureFlagService.syncFromRevenueCat(status);
+        await refreshSubscriptionStatus();
+      });
+    } catch (e) {
+      console.warn('RevenueCat status listener registration failed', e);
+    }
     return unsubscribe;
-  }, []);
+  }, [isConfigured]);
 
   useEffect(() => {
-    if (!RC_ANDROID_KEY) return;
+    if (!RC_ANDROID_KEY || !isConfigured) return;
     (async () => {
       try {
         const status = user?.uid ? await identify(user.uid) : await resetIdentity();
@@ -130,7 +137,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         console.warn('RevenueCat identity sync failed', e);
       }
     })();
-  }, [user?.uid]);
+  }, [user?.uid, isConfigured]);
 
   const refreshSubscriptionStatus = async () => {
     try {

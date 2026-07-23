@@ -64,10 +64,13 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
 
   useEffect(() => {
     if (!visible) return;
-    getDefaultOffering().then((o) => {
-      setOffering(o);
-      setSelectedPkg(o?.annual ?? o?.availablePackages?.[0] ?? null);
-    });
+    if (!process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY) return;
+    getDefaultOffering()
+      .then((o) => {
+        setOffering(o);
+        setSelectedPkg(o?.annual ?? o?.availablePackages?.[0] ?? null);
+      })
+      .catch(() => setOffering(null));
   }, [visible]);
 
   const annualPkg = offering?.annual ?? null;
@@ -424,15 +427,6 @@ const styles = StyleSheet.create({
   },
   pricingPrice: {
     ...typography.h2,
-  },
-  savingsBadge: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.sm,
-  },
-  savingsText: {
-    ...typography.small,
-    fontWeight: '600',
   },
   purchaseButton: {
     marginHorizontal: spacing.xl,
