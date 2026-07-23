@@ -1,4 +1,22 @@
-import { mapCustomerInfoToStatus } from './purchaseService';
+jest.mock('react-native-purchases', () => ({
+  __esModule: true,
+  default: {
+    configure: jest.fn(),
+    setLogLevel: jest.fn(),
+    getOfferings: jest.fn(),
+    purchasePackage: jest.fn(),
+    restorePurchases: jest.fn(),
+    getCustomerInfo: jest.fn(),
+    logIn: jest.fn(),
+    logOut: jest.fn(),
+    addCustomerInfoUpdateListener: jest.fn(),
+    removeCustomerInfoUpdateListener: jest.fn(),
+  },
+  LOG_LEVEL: { DEBUG: 'DEBUG' },
+}));
+
+import Purchases from 'react-native-purchases';
+import { mapCustomerInfoToStatus, purchasePackage, restorePurchases } from './purchaseService';
 import { SubscriptionTier } from '@/constants/Features';
 
 // Minimal CustomerInfo factory — only the fields the mapper reads.
@@ -30,5 +48,41 @@ describe('mapCustomerInfoToStatus', () => {
     expect(s.isLifetime).toBe(true);
     expect(s.tier).toBe(SubscriptionTier.LIFETIME);
     expect(s.expiresAt).toBeUndefined();
+  });
+});
+
+const activeSubInfo = {
+  entitlements: { active: { premium: { expirationDate: '2027-01-01T00:00:00Z', willRenew: true, originalPurchaseDate: '2026-01-01T00:00:00Z' } } },
+} as any;
+
+describe('purchasePackage', () => {
+  it('returns mapped status on success', async () => {
+    (Purchases.purchasePackage as jest.Mock).mockResolvedValueOnce({ customerInfo: activeSubInfo });
+    const r = await purchasePackage({} as any);
+    expect(r.userCancelled).toBe(false);
+    expect(r.status?.isPremium).toBe(true);
+  });
+
+  it('flags user cancellation without an error', async () => {
+    (Purchases.purchasePackage as jest.Mock).mockRejectedValueOnce({ userCancelled: true });
+    const r = await purchasePackage({} as any);
+    expect(r.userCancelled).toBe(true);
+    expect(r.status).toBeNull();
+    expect(r.error).toBeUndefined();
+  });
+
+  it('returns an error message on failure', async () => {
+    (Purchases.purchasePackage as jest.Mock).mockRejectedValueOnce({ message: 'boom' });
+    const r = await purchasePackage({} as any);
+    expect(r.userCancelled).toBe(false);
+    expect(r.error).toBe('boom');
+  });
+});
+
+describe('restorePurchases', () => {
+  it('maps restored customerInfo to status', async () => {
+    (Purchases.restorePurchases as jest.Mock).mockResolvedValueOnce(activeSubInfo);
+    const s = await restorePurchases();
+    expect(s.isPremium).toBe(true);
   });
 });
