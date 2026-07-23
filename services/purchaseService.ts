@@ -73,6 +73,11 @@ export async function identify(uid: string): Promise<UserSubscriptionStatus> {
 }
 
 export async function resetIdentity(): Promise<UserSubscriptionStatus> {
+  // RevenueCat throws if logOut is called while already anonymous (the common
+  // case on a signed-out cold start). Only log out a genuinely identified user.
+  if (await Purchases.isAnonymous()) {
+    return fetchStatus();
+  }
   const info = await Purchases.logOut();
   return mapCustomerInfoToStatus(info);
 }

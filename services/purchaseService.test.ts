@@ -9,6 +9,7 @@ jest.mock('react-native-purchases', () => ({
     getCustomerInfo: jest.fn(),
     logIn: jest.fn(),
     logOut: jest.fn(),
+    isAnonymous: jest.fn(),
     addCustomerInfoUpdateListener: jest.fn(),
     removeCustomerInfoUpdateListener: jest.fn(),
   },
@@ -16,7 +17,7 @@ jest.mock('react-native-purchases', () => ({
 }));
 
 import Purchases from 'react-native-purchases';
-import { mapCustomerInfoToStatus, purchasePackage, restorePurchases } from './purchaseService';
+import { mapCustomerInfoToStatus, purchasePackage, restorePurchases, resetIdentity } from './purchaseService';
 import { SubscriptionTier } from '@/constants/Features';
 
 // Minimal CustomerInfo factory — only the fields the mapper reads.
@@ -84,5 +85,23 @@ describe('restorePurchases', () => {
     (Purchases.restorePurchases as jest.Mock).mockResolvedValueOnce(activeSubInfo);
     const s = await restorePurchases();
     expect(s.isPremium).toBe(true);
+  });
+});
+
+describe('resetIdentity', () => {
+  it('does NOT call logOut when the user is already anonymous', async () => {
+    (Purchases.isAnonymous as jest.Mock).mockResolvedValueOnce(true);
+    (Purchases.getCustomerInfo as jest.Mock).mockResolvedValueOnce(makeInfo(null));
+    const s = await resetIdentity();
+    expect(Purchases.logOut).not.toHaveBeenCalled();
+    expect(s.isPremium).toBe(false);
+  });
+
+  it('calls logOut when the user is identified', async () => {
+    (Purchases.isAnonymous as jest.Mock).mockResolvedValueOnce(false);
+    (Purchases.logOut as jest.Mock).mockResolvedValueOnce(makeInfo(null));
+    const s = await resetIdentity();
+    expect(Purchases.logOut).toHaveBeenCalled();
+    expect(s.isPremium).toBe(false);
   });
 });
