@@ -225,6 +225,15 @@ class FeatureFlagService {
   }
 
   /**
+   * Adopt the subscription status resolved by RevenueCat (the source of truth)
+   * and persist it as an offline cache.
+   */
+  async syncFromRevenueCat(status: UserSubscriptionStatus): Promise<void> {
+    this.subscriptionStatus = status;
+    await this.saveSubscriptionStatus();
+  }
+
+  /**
    * Check if user has premium access
    */
   isPremiumUser(): boolean {
