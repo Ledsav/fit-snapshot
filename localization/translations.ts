@@ -153,6 +153,7 @@ interface TranslationKeys {
     photos: string;
     limit: string;
     manageSubscription: string;
+    restorePurchases: string;
     upgradeToPremium: string;
     unlimitedPhotosAnalytics: string;
     photosUsed: string;
@@ -452,6 +453,7 @@ export const translations: Translations = {
       photos: "Photos",
       limit: "Limit",
       manageSubscription: "Manage Subscription",
+      restorePurchases: "Restore Purchases",
       upgradeToPremium: "Upgrade to Premium",
       unlimitedPhotosAnalytics: "Unlimited photos, analytics & more",
       photosUsed: "photos used",
@@ -779,6 +781,7 @@ export const translations: Translations = {
       photos: "Fotos",
       limit: "Límite",
       manageSubscription: "Administrar Suscripción",
+      restorePurchases: "Restaurar compras",
       upgradeToPremium: "Actualizar a Premium",
       unlimitedPhotosAnalytics: "Fotos ilimitadas, análisis y más",
       photosUsed: "fotos usadas",
@@ -1106,6 +1109,7 @@ export const translations: Translations = {
       photos: "Foto",
       limit: "Limite",
       manageSubscription: "Gestisci Abbonamento",
+      restorePurchases: "Ripristina acquisti",
       upgradeToPremium: "Passa a Premium",
       unlimitedPhotosAnalytics: "Foto illimitate, analisi e altro",
       photosUsed: "foto utilizzate",
@@ -1433,6 +1437,7 @@ export const translations: Translations = {
       photos: "Fotos",
       limit: "Limit",
       manageSubscription: "Abonnement Verwalten",
+      restorePurchases: "Käufe wiederherstellen",
       upgradeToPremium: "Auf Premium Upgraden",
       unlimitedPhotosAnalytics: "Unbegrenzte Fotos, Analysen & mehr",
       photosUsed: "Fotos verwendet",
@@ -1761,6 +1766,7 @@ export const translations: Translations = {
       photos: "Photos",
       limit: "Limite",
       manageSubscription: "Gérer l'Abonnement",
+      restorePurchases: "Restaurer les achats",
       upgradeToPremium: "Passer à Premium",
       unlimitedPhotosAnalytics: "Photos illimitées, analyses & plus",
       photosUsed: "photos utilisées",

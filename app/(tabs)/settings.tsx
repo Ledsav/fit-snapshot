@@ -26,6 +26,7 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
+  Linking,
   Modal,
   SafeAreaView,
   ScrollView,
@@ -68,7 +69,7 @@ export default function SettingsScreen() {
   const { effectiveColorScheme, themeMode } = useTheme();
   const theme = Colors[effectiveColorScheme];
   const { t, locale } = useLocalization();
-  const { isPremium, subscriptionStatus, featureUsage, setTestPremiumStatus } = useUser();
+  const { isPremium, subscriptionStatus, featureUsage, setTestPremiumStatus, restorePurchases } = useUser();
   const { user, userInfo, signIn, signOut: handleSignOut } = useAuth();
   const router = useRouter();
   const [isLanguageSelectorVisible, setIsLanguageSelectorVisible] =
@@ -99,11 +100,21 @@ export default function SettingsScreen() {
   };
 
   const handleManageSubscription = () => {
-    Alert.alert(
-      "Manage Subscription",
-      "You can manage your subscription in the App Store or Google Play.",
-      [{ text: "OK" }]
+    Linking.openURL('https://play.google.com/store/account/subscriptions').catch(() =>
+      Alert.alert(t('settings.manageSubscription'), 'Open Google Play to manage your subscription.')
     );
+  };
+
+  const handleRestorePress = async () => {
+    try {
+      const { isPremium: restored } = await restorePurchases();
+      Alert.alert(
+        t('settings.restorePurchases'),
+        restored ? t('paywall.restoreSuccess') : t('paywall.restoreNone')
+      );
+    } catch {
+      Alert.alert(t('settings.restorePurchases'), t('paywall.purchaseError'));
+    }
   };
 
   const handleTestPremiumToggle = () => {
@@ -306,6 +317,19 @@ export default function SettingsScreen() {
               </View>
             </TouchableOpacity>
           )}
+        </View>
+
+        <View style={styles.section}>
+          <TouchableOpacity
+            style={[styles.settingItem, { backgroundColor: theme.cardBackground, borderColor: withOpacity(theme.secondary, overlayOpacity.light) }]}
+            onPress={handleRestorePress}
+          >
+            <View style={[styles.iconContainer, { backgroundColor: withOpacity(theme.primary, overlayOpacity.subtle) }]}>
+              <Ionicons name="refresh-outline" size={24} color={theme.primary} />
+            </View>
+            <Text style={[styles.settingText, { color: theme.text }]}>{t('settings.restorePurchases')}</Text>
+            <Ionicons name="chevron-forward" size={20} color={theme.text} />
+          </TouchableOpacity>
         </View>
 
         {/* Test Mode Toggle (development only) */}
