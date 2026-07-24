@@ -19,6 +19,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { useUser } from "@/context/UserContext";
 import { PhotoType } from "@/enums/Photos";
 import { LightingBaselineStore } from "@/services/lightingBaselineStore";
+import { PendingCropResult } from "@/services/pendingCropStore";
 import { useLightingIndicator } from "@/hooks/useLightingIndicator";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -279,22 +280,30 @@ export default function CameraScreen() {
 
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [3, 4],
         quality: 1,
         exif: true,
       });
 
       if (!result.canceled && result.assets[0]) {
         const selectedAsset = result.assets[0];
-        setIsImported(true);
-        setCapturedImage(selectedAsset.uri);
+        const exifDate = selectedAsset.exif?.DateTimeOriginal ?? null;
 
-        if (selectedAsset.exif?.DateTimeOriginal) {
-          setImportedPhotoDate(selectedAsset.exif.DateTimeOriginal);
-        } else {
-          setImportedPhotoDate(null);
-        }
+        PendingCropResult.setResolver((croppedUri) => {
+          setIsImported(true);
+          setCapturedImage(croppedUri);
+          setImportedPhotoDate(exifDate);
+        });
+
+        router.push({
+          pathname: "/photo-crop",
+          params: {
+            uri: selectedAsset.uri,
+            width: String(selectedAsset.width),
+            height: String(selectedAsset.height),
+            type: overlay,
+            date: exifDate ?? "",
+          },
+        });
       }
     } catch (error) {
       console.error("Error picking image:", error);
