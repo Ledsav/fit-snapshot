@@ -67,13 +67,16 @@ export function computeCropRect(params: {
   const cropWidth = frameWidth / scale;
   const cropHeight = frameHeight / scale;
 
-  const originX = clampNum(-offsetX / scale, 0, imageWidth - cropWidth);
-  const originY = clampNum(-offsetY / scale, 0, imageHeight - cropHeight);
+  const originXExact = clampNum(-offsetX / scale, 0, imageWidth - cropWidth);
+  const originYExact = clampNum(-offsetY / scale, 0, imageHeight - cropHeight);
+
+  const originX = Math.round(originXExact);
+  const originY = Math.round(originYExact);
 
   return {
-    originX: Math.round(originX),
-    originY: Math.round(originY),
-    width: Math.round(cropWidth),
-    height: Math.round(cropHeight),
+    originX,
+    originY,
+    width: Math.round(originXExact + cropWidth) - originX,
+    height: Math.round(originYExact + cropHeight) - originY,
   };
 }
