@@ -42,7 +42,8 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import TorsoSilhouette from "../../images/TorsoSilhouette";
+import AlignmentOverlay from "@/components/camera/AlignmentOverlay";
+import { GhostOverlayStore } from "@/services/ghostOverlayStore";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const aspectRatio = 4 / 3;
@@ -60,13 +61,14 @@ export default function CameraScreen() {
   const [isImported, setIsImported] = useState(false);
   const [overlay, setOverlay] = useState<PhotoType>(PhotoType.front);
   const [override, setOverride] = useState<number | null>(null);
+  const [ghostModeEnabled, setGhostModeEnabled] = useState(false);
   const { hasPermission, requestPermission } = useCameraPermission();
   const device = useCameraDevice(facing);
   const [importedPhotoDate, setImportedPhotoDate] = useState<string | null>(null);
   const router = useRouter();
   const { effectiveColorScheme } = useTheme();
   const theme = Colors[effectiveColorScheme];
-  const { photos, addPhoto } = usePhotos();
+  const { photos, addPhoto, getPhotosByType } = usePhotos();
   const { t } = useLocalization();
   const { canAddPhoto, featureUsage, isPremium } = useUser();
 
@@ -103,6 +105,16 @@ export default function CameraScreen() {
       cancelled = true;
     };
   }, [overlay]);
+
+  useEffect(() => {
+    let cancelled = false;
+    GhostOverlayStore.getEnabled().then((value) => {
+      if (!cancelled) setGhostModeEnabled(value);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Release the camera on blur, reacquire on focus (vision-camera `isActive`).
   useFocusEffect(
@@ -159,6 +171,12 @@ export default function CameraScreen() {
   const handleRecalibrate = async () => {
     await LightingBaselineStore.setOverride(overlay, currentLuma);
     setOverride(currentLuma);
+  };
+
+  const toggleGhostMode = () => {
+    const next = !ghostModeEnabled;
+    setGhostModeEnabled(next);
+    GhostOverlayStore.setEnabled(next);
   };
 
   const takePicture = async () => {
@@ -284,11 +302,14 @@ export default function CameraScreen() {
     }
   };
 
-  const renderSilhouette = () => (
-    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      <TorsoSilhouette type={overlay} />
-    </View>
-  );
+  const renderSilhouette = () => {
+    const ghostPhoto = ghostModeEnabled ? getPhotosByType(overlay)[0] : undefined;
+    return (
+      <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+        <AlignmentOverlay type={overlay} ghostPhoto={ghostPhoto} />
+      </View>
+    );
+  };
 
   const renderOverlaySelector = () => (
     <View style={styles.overlaySelector}>
@@ -315,6 +336,22 @@ export default function CameraScreen() {
           </Text>
         </TouchableOpacity>
       ))}
+      <TouchableOpacity
+        style={[
+          styles.overlayButton,
+          ghostModeEnabled && [
+            styles.activeOverlayButton,
+            { backgroundColor: theme.primary },
+          ],
+        ]}
+        onPress={toggleGhostMode}
+      >
+        <Ionicons
+          name={ghostModeEnabled ? "person" : "person-outline"}
+          size={16}
+          color={ghostModeEnabled ? theme.background : theme.text}
+        />
+      </TouchableOpacity>
     </View>
   );
 
