@@ -409,8 +409,9 @@ export default function GalleryScreen() {
       setPendingImageWidth(null);
       setPendingImageHeight(null);
       setPendingImageDate(null);
-      setIsTypeSelectionVisible(false);
     });
+
+    setIsTypeSelectionVisible(false);
 
     router.push({
       pathname: "/photo-crop",
@@ -426,6 +427,8 @@ export default function GalleryScreen() {
 
   const cancelTypeSelection = () => {
     setPendingImageUri(null);
+    setPendingImageWidth(null);
+    setPendingImageHeight(null);
     setPendingImageDate(null);
     setIsTypeSelectionVisible(false);
   };
