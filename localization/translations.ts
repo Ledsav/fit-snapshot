@@ -48,6 +48,7 @@ interface TranslationKeys {
     lightingNone: string;
     recalibrateLighting: string;
     cropHint: string;
+    cameraUnavailableMessage: string;
   };
   gallery: {
     title: string;
@@ -349,6 +350,7 @@ export const translations: Translations = {
       lightingNone: "This shot sets your baseline",
       recalibrateLighting: "Set as baseline",
       cropHint: "Pinch and drag to align with the guide, then confirm",
+      cameraUnavailableMessage: "Camera unavailable. It may be disabled by a device or work profile policy — check your device settings, then try again.",
     },
     gallery: {
       title: "Gallery",
@@ -677,6 +679,7 @@ export const translations: Translations = {
       lightingNone: "Esta foto establece tu referencia",
       recalibrateLighting: "Establecer como referencia",
       cropHint: "Pellizca y arrastra para alinear con la guía y luego confirma",
+      cameraUnavailableMessage: "Cámara no disponible. Puede estar deshabilitada por una política del dispositivo o del perfil de trabajo; revisa la configuración del dispositivo e inténtalo de nuevo.",
     },
     gallery: {
       title: "Galería",
@@ -1007,6 +1010,7 @@ export const translations: Translations = {
       lightingNone: "Questo scatto imposta la tua base di riferimento",
       recalibrateLighting: "Imposta come riferimento",
       cropHint: "Pizzica e trascina per allineare con la guida, poi conferma",
+      cameraUnavailableMessage: "Fotocamera non disponibile. Potrebbe essere disabilitata da un criterio del dispositivo o del profilo di lavoro: controlla le impostazioni del dispositivo e riprova.",
     },
     gallery: {
       title: "Galleria",
@@ -1335,6 +1339,7 @@ export const translations: Translations = {
       lightingNone: "Diese Aufnahme legt deine Referenz fest",
       recalibrateLighting: "Als Referenz festlegen",
       cropHint: "Zum Ausrichten an der Führungslinie zoomen und ziehen, dann bestätigen",
+      cameraUnavailableMessage: "Kamera nicht verfügbar. Sie könnte durch eine Geräte- oder Arbeitsprofilrichtlinie deaktiviert sein — überprüfe die Geräteeinstellungen und versuche es erneut.",
     },
     gallery: {
       title: "Galerie",
@@ -1665,6 +1670,7 @@ export const translations: Translations = {
       lightingNone: "Cette photo définit votre référence",
       recalibrateLighting: "Définir comme référence",
       cropHint: "Pincez et faites glisser pour aligner sur le repère, puis confirmez",
+      cameraUnavailableMessage: "Caméra indisponible. Elle est peut-être désactivée par une politique de l'appareil ou du profil professionnel — vérifiez les paramètres de l'appareil, puis réessayez.",
     },
     gallery: {
       title: "Galerie",

@@ -63,6 +63,8 @@ export default function CameraScreen() {
   const [overlay, setOverlay] = useState<PhotoType>(PhotoType.front);
   const [override, setOverride] = useState<number | null>(null);
   const [ghostModeEnabled, setGhostModeEnabled] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [cameraRetryKey, setCameraRetryKey] = useState(0);
   const { hasPermission, requestPermission } = useCameraPermission();
   const device = useCameraDevice(facing);
   const [importedPhotoDate, setImportedPhotoDate] = useState<string | null>(null);
@@ -154,6 +156,26 @@ export default function CameraScreen() {
         <Button
           title={t("camera.grantPermission")}
           onPress={requestPermission}
+          variant="primary"
+          size="large"
+        />
+      </View>
+    );
+  }
+
+  if (cameraError) {
+    return (
+      <View style={[styles.container, styles.permissionContainer, { backgroundColor: theme.background }]}>
+        <Ionicons name="videocam-off-outline" size={48} color={theme.error} />
+        <Text style={[styles.message, { color: theme.text }]}>
+          {t("camera.cameraUnavailableMessage")}
+        </Text>
+        <Button
+          title={t("common.retry")}
+          onPress={() => {
+            setCameraError(null);
+            setCameraRetryKey((key) => key + 1);
+          }}
           variant="primary"
           size="large"
         />
@@ -430,6 +452,7 @@ export default function CameraScreen() {
         {device != null && (
           <>
             <Camera
+              key={cameraRetryKey}
               style={StyleSheet.absoluteFill}
               device={device}
               isActive={isFocused}
@@ -437,6 +460,11 @@ export default function CameraScreen() {
               enableNativeZoomGesture={true}
               onPreviewStarted={() => setIsCameraReady(true)}
               onPreviewStopped={() => setIsCameraReady(false)}
+              onError={(error) => {
+                console.error("Camera session error:", error);
+                setIsCameraReady(false);
+                setCameraError(error.message);
+              }}
             />
             {renderSilhouette()}
             {!isCameraReady && (
