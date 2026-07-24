@@ -47,42 +47,65 @@ No changes to `PhotoContext`/`photoStorage` — existing `getPhotosByType` is su
 
 ## 2. In-app crop screen for imports
 
-**`pickImage()` in `camera.tsx` (currently lines 248-285) changes:**
+Two independent screens currently import from the gallery, with different flows around the picker:
 
-- Drop `allowsEditing: true, aspect: [3, 4]` from the `launchImageLibraryAsync` call — this now returns the full, uncropped image (still `quality: 1, exif: true` for the date metadata).
-- Instead of setting `capturedImage` directly, push a new route `/photo-crop` with params: the picked image's `uri`, its native `width`/`height` (from the picker result asset), the current `overlay` (`PhotoType`), and the EXIF date if present.
+- **`app/(tabs)/camera.tsx`** (`pickImage()`, lines 248-285): the pose `type` is already known (the `overlay` state, selected via the front/side/back buttons) *before* picking. After picking, it goes straight to the existing local-state `capturedImage` confirm/review step (retake/confirm), same as a live capture.
+- **`app/(tabs)/gallery.tsx`** (`pickImage()` / `handleTypeSelection()`, lines 260-412): the pose `type` is *not* known before picking — the user picks an image first, then a type-selection modal (`isTypeSelectionVisible`) asks which pose it is, and `handleTypeSelection` currently calls `addPhoto` directly with no review step.
 
-**New screen:** `app/photo-crop.tsx` — a modal-style stack route. Renders `components/camera/PhotoCropStage.tsx` plus confirm/cancel buttons, following the same `Button`/`Ionicons` conventions as the existing confirm screen in `camera.tsx`.
+Because both screens need the same crop+overlay UI but at different points in otherwise-different flows, the crop stage is a **shared route** (`app/photo-crop.tsx`), pushed by whichever screen has just learned the `type` — immediately after picking for camera, immediately after the type-selection modal for gallery.
+
+**Returning the result:** expo-router has no built-in way to return a value from a pushed screen. New module **`services/pendingCropStore.ts`** — in-memory only (not persisted), a one-shot callback registry:
+
+```ts
+export const PendingCropResult = {
+  setResolver(fn: (uri: string) => void): void { ... },
+  resolve(uri: string): void { ... }, // calls the registered fn, then clears it
+  clear(): void { ... },
+};
+```
+
+Each caller calls `PendingCropResult.setResolver(...)` with its own follow-up logic immediately before `router.push('/photo-crop', ...)`. `app/photo-crop.tsx` calls `PendingCropResult.resolve(croppedUri)` on confirm (or `.clear()` on cancel), then `router.back()` — control returns to the exact same caller instance with its existing local state intact.
+
+**`pickImage()` in `camera.tsx` changes:**
+
+- Drop `allowsEditing: true, aspect: [3, 4]` from the `launchImageLibraryAsync` call — this now returns the full, uncropped image (still `quality: 1, exif: true` for the date metadata) plus its native `width`/`height`.
+- Before pushing, call `PendingCropResult.setResolver((croppedUri) => { setIsImported(true); setCapturedImage(croppedUri); setImportedPhotoDate(exifDateOrNull); })` — this is exactly what `pickImage()` does today after picking, just deferred until after cropping.
+- `router.push({ pathname: "/photo-crop", params: { uri, width: String(width), height: String(height), type: overlay, date: exifDateOrEmptyString } })`.
+
+**`pickImage()` / `handleTypeSelection()` in `gallery.tsx` changes:**
+
+- `pickImage()`: drop `allowsEditing: true, aspect: [3, 4]`; store the picked asset's `width`/`height` alongside the existing `pendingImageUri`/`pendingImageDate` state (new state `pendingImageWidth`/`pendingImageHeight`). Everything else in `pickImage()` (EXIF/date-fallback resolution, `setIsTypeSelectionVisible(true)`) is unchanged.
+- `handleTypeSelection(type)`: instead of building `newPhoto` and calling `addPhoto` directly, call `PendingCropResult.setResolver((croppedUri) => { addPhoto({ id: Date.now().toString(), uri: croppedUri, date: photoDate, type }); setPendingImageUri(null); setPendingImageDate(null); setIsTypeSelectionVisible(false); })`, then `router.push({ pathname: "/photo-crop", params: { uri: pendingImageUri, width: String(pendingImageWidth), height: String(pendingImageHeight), type, date: pendingImageDate ?? "" } })`. The existing date-parsing logic that produces `photoDate` stays in `handleTypeSelection`, computed before the resolver closure captures it.
+
+**New screen:** `app/photo-crop.tsx` — registered as a `Stack.Screen` in `app/_layout.tsx` (`presentation: "fullScreenModal"`, alongside the existing `modal` screen entry). Reads `{ uri, width, height, type, date }` via `useLocalSearchParams`. Renders `components/camera/PhotoCropStage.tsx` plus a hint line and Cancel/Confirm buttons, following the same `Button`/`Ionicons` conventions as the existing confirm screen in `camera.tsx`. Looks up its own `ghostModeEnabled` (`GhostOverlayStore.getEnabled()`) and `ghostPhoto` (`getPhotosByType(type)[0]` from `PhotoContext`, when enabled) — same logic as `camera.tsx`, so the overlay mirrors whichever mode is currently active regardless of which screen navigated here.
 
 **New component:** `components/camera/PhotoCropStage.tsx`
 
-- Gesture logic modeled directly on `components/progress/SyncedZoomPair.tsx`'s pinch+pan pattern: `useSharedValue` for `scale`/`translateX`/`translateY` (+ their `saved*` counterparts), `Gesture.Simultaneous(Gesture.Pinch(), Gesture.Pan())`, `useAnimatedStyle` applied to an `Animated.Image` rendering the full picked photo.
-- A fixed 3:4 crop frame, sized from screen width (matching the app's standard photo aspect ratio used everywhere else — `BeforeAfterSlider`, `PhotoMorph`, `SyncedZoomPair`, the camera viewfinder box). Area outside the frame is dimmed via four absolutely-positioned semi-opaque panels (no SVG masking needed).
-- Pan/pinch clamped (same `clamp()` worklet pattern as `SyncedZoomPair`) so the image can never be scaled/panned to leave a gap inside the frame — i.e., the frame is always fully covered by image content.
-- `AlignmentOverlay` drawn on top of the frame, `pointerEvents="none"`, fed the same `type` param and a `ghostPhoto` looked up the same way as in `camera.tsx` (`ghostModeEnabled` read from `GhostOverlayStore`, `getPhotosByType(type)[0]` from `PhotoContext`) — so the import screen mirrors whichever mode is currently active in the camera.
-- Confirm button: converts the final `scale`/`translateX`/`translateY` + known frame size + the image's native `width`/`height` (passed via params) into an `originX/originY/width/height` crop rectangle in original-image pixel space, then calls:
-  ```ts
-  manipulateAsync(uri, [{ crop: { originX, originY, width, height } }], { format: SaveFormat.JPEG })
-  ```
-  (`expo-image-manipulator`, `manipulateAsync`/`SaveFormat` already imported elsewhere in `camera.tsx`).
-- On success: navigate back to `camera.tsx`, calling the same `setIsImported(true)` / `setCapturedImage(croppedUri)` / `setImportedPhotoDate(...)` it already calls today after picking — the rest of the confirm/save pipeline (`capturedImage` branch, `confirmPicture`, `addPhoto`) is untouched.
-- Cancel button: navigate back to camera without setting `capturedImage`.
+- A `forwardRef` component exposing `{ getCropRect(): CropRect }` via `useImperativeHandle`, so the confirm button (owned by `app/photo-crop.tsx`) can pull the final crop rectangle after the user finishes gesturing.
+- Gesture logic modeled directly on `components/progress/SyncedZoomPair.tsx`'s pinch+pan pattern: `useSharedValue` for `scale`/`translateX`/`translateY` (+ their `saved*` counterparts), `Gesture.Simultaneous(Gesture.Pinch(), Gesture.Pan())`, `useAnimatedStyle` applied to an `Animated.Image` rendering the full picked photo, sized so it fully covers a fixed 3:4 frame at rest (cover-fit baseline) and clamped so pinch/pan can never leave a gap inside the frame.
+- New pure-math module **`utils/cropMath.ts`**: `computeBaseScale`, `computeMaxTranslate` (both `"worklet"`-marked, called from gesture callbacks), and `computeCropRect` (plain JS, called once on confirm) — the only part of this feature with meaningful branching logic, and the only part covered by automated tests (gesture-handler/reanimated components have no existing test-harness precedent in this repo, per `SyncedZoomPair` having none either).
+- The frame is screen-width-based (matching the app's standard 3:4 photo aspect used everywhere else). The full image plus a full-screen `AlignmentOverlay` render underneath four absolutely-positioned dim panels (covering everything outside the frame) and a frame border — so the overlay is visible at full size/position inside the frame (matching the live camera 1:1) and dimmed-over outside it, without needing to rescale the overlay to the frame's smaller box.
+- Confirm rect computed via `computeCropRect({ imageWidth, imageHeight, frameWidth, frameHeight, userScale: scale.value, translateX: translateX.value, translateY: translateY.value })`.
+
+`app/photo-crop.tsx`'s confirm handler calls `manipulateAsync(uri, [{ crop: stageRef.current.getCropRect() }], { format: SaveFormat.JPEG })`, then `PendingCropResult.resolve(result.uri)` and `router.back()`.
 
 ## Error handling
 
-- If `manipulateAsync` throws (corrupt image, invalid crop rect from a math edge case), show the existing `alert(t("camera.imagePickerError"))` pattern and return to the image picker rather than leaving the user stuck on a broken crop screen.
-- If the user backgrounds/cancels mid-crop, no partial state is persisted — `capturedImage` is only set on successful crop confirmation.
+- If `manipulateAsync` throws (corrupt image, invalid crop rect from a math edge case), `console.error` and `router.back()` without resolving — the caller's resolver is left registered but never invoked (harmless: it's overwritten by `setResolver` the next time an import starts, or ignored), and the user lands back wherever they started the import, able to retry.
+- If the user cancels, `PendingCropResult.clear()` runs before `router.back()`, so no stale resolver fires later.
 
 ## Out of scope
 
 - No change to the live-capture path (`capturePicture`) — ghost overlay applies there too via `AlignmentOverlay`, but no other behavior changes.
 - No change to `PhotoContext`/`photoStorage` data model.
 - Per-type ghost toggle (the toggle is one global on/off switch, not per front/side/back) — not requested.
-- Automated tests: no existing RN UI test harness covers the camera/gallery screens; verification is manual (see below).
+- `gallery.tsx`'s existing type-selection modal UI/copy is unchanged — only what happens after a type is chosen changes.
+- Automated tests: no existing RN UI test harness covers the camera/gallery screens or gesture-handler components (`SyncedZoomPair` has none); verification for `camera.tsx`, `gallery.tsx`, `app/photo-crop.tsx`, and `PhotoCropStage` is manual (see below). `cropMath.ts`, `ghostOverlayStore.ts`, and `AlignmentOverlay.tsx` get automated tests since they're pure/presentational and match existing tested precedents (`lightingBaselineStore.ts`, `ContactSheetFrame.tsx`).
 
 ## Testing notes
 
 Manual verification after implementation, covering:
 - Ghost toggle: on/off, persists across app restart, correct fallback to generic silhouette when no first photo exists yet for the selected type.
-- Import crop: portrait and landscape source images, pan/pinch clamping at frame edges, confirm produces a correctly-cropped 3:4 image, cancel returns cleanly to camera.
-- Import crop mirrors camera's current ghost-mode state (on and off).
+- Import crop from the camera screen: portrait and landscape source images, pan/pinch clamping at frame edges, confirm produces a correctly-cropped 3:4 image landing in the existing retake/confirm review step, cancel returns cleanly to the camera.
+- Import crop from the gallery screen: same as above, but confirm should save the photo directly (no review step, matching gallery's existing behavior) under the type chosen in the type-selection modal.
+- Import crop mirrors camera's current ghost-mode state (on and off), from both entry points.
