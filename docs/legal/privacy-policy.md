@@ -90,8 +90,20 @@ These providers process data under their own privacy policies. We do not sell da
 ## 6. Data retention and deletion
 
 - **Photos and progress data:** retained locally until you delete them in the App or uninstall the App. You are in control.
-- **Account data:** retained while your account is active. To delete your account and associated authentication records, contact us at **fitsnapshot.help@gmail.com** and we will action the request. _[Google Play now requires an account-deletion path; a link/route for this is recommended — see the launch checklist.]_
+- **Account data:** retained while your account is active. See "How to delete your account" below.
 - **Purchase records:** retained as required for accounting, tax, and to honor active subscriptions.
+
+### 6.1 How to delete your FitSnapshot account and data
+
+To request deletion of your FitSnapshot account and the associated data held by Alberto Valdes Rey (the Developer), follow these steps:
+
+1. Email **fitsnapshot.help@gmail.com** with the subject line **"Delete My Account"**.
+2. Include the Google account email address you used to sign in to FitSnapshot, so we can locate your account.
+3. We will process your request and confirm by email within **30 days**.
+
+**What gets deleted:** your Firebase authentication account and associated email/identifier, and your subscription-identity record held by our subscription-management provider (RevenueCat).
+
+**What is retained, and why:** purchase/transaction records may be retained for a limited additional period after deletion, where required for accounting, tax, and legal-compliance purposes. Your progress photos are never stored on our servers in the first place — they exist only on your device, so there is nothing for us to delete on our end; uninstalling the App or deleting photos within it removes them immediately and completely.
 
 ---
 
