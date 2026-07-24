@@ -47,6 +47,7 @@ interface TranslationKeys {
     lightingOff: string;
     lightingNone: string;
     recalibrateLighting: string;
+    cropHint: string;
   };
   gallery: {
     title: string;
@@ -347,6 +348,7 @@ export const translations: Translations = {
       lightingOff: "Lighting off",
       lightingNone: "This shot sets your baseline",
       recalibrateLighting: "Set as baseline",
+      cropHint: "Pinch and drag to align with the guide, then confirm",
     },
     gallery: {
       title: "Gallery",
@@ -674,6 +676,7 @@ export const translations: Translations = {
       lightingOff: "Iluminación desajustada",
       lightingNone: "Esta foto establece tu referencia",
       recalibrateLighting: "Establecer como referencia",
+      cropHint: "Pellizca y arrastra para alinear con la guía y luego confirma",
     },
     gallery: {
       title: "Galería",
@@ -1003,6 +1006,7 @@ export const translations: Translations = {
       lightingOff: "Illuminazione non corrispondente",
       lightingNone: "Questo scatto imposta la tua base di riferimento",
       recalibrateLighting: "Imposta come riferimento",
+      cropHint: "Pizzica e trascina per allineare con la guida, poi conferma",
     },
     gallery: {
       title: "Galleria",
@@ -1330,6 +1334,7 @@ export const translations: Translations = {
       lightingOff: "Beleuchtung passt nicht",
       lightingNone: "Diese Aufnahme legt deine Referenz fest",
       recalibrateLighting: "Als Referenz festlegen",
+      cropHint: "Zum Ausrichten an der Führungslinie zoomen und ziehen, dann bestätigen",
     },
     gallery: {
       title: "Galerie",
@@ -1659,6 +1664,7 @@ export const translations: Translations = {
       lightingOff: "Éclairage non correspondant",
       lightingNone: "Cette photo définit votre référence",
       recalibrateLighting: "Définir comme référence",
+      cropHint: "Pincez et faites glisser pour aligner sur le repère, puis confirmez",
     },
     gallery: {
       title: "Galerie",
