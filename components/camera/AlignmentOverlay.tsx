@@ -2,10 +2,8 @@ import { overlayOpacity } from "@/constants/Colors";
 import { PhotoType } from "@/enums/Photos";
 import { Photo } from "@/services/photoStorage";
 import React from "react";
-import { Dimensions, Image, View } from "react-native";
+import { Image, View } from "react-native";
 import TorsoSilhouette from "@/images/TorsoSilhouette";
-
-const { width, height } = Dimensions.get("window");
 
 interface AlignmentOverlayProps {
   type: PhotoType;
@@ -22,24 +20,14 @@ const AlignmentOverlay: React.FC<AlignmentOverlayProps> = ({ type, ghostPhoto })
   }
 
   return (
-    <View
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
+    <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}>
       <Image
         source={{ uri: ghostPhoto.uri }}
         style={{
-          width: width * 0.8,
-          height: height * 0.6,
+          width: "100%",
+          height: "100%",
           opacity: overlayOpacity.subtle,
-          resizeMode: "contain",
+          resizeMode: "cover",
         }}
       />
     </View>
