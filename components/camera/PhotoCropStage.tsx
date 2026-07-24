@@ -113,13 +113,13 @@ export const PhotoCropStage = forwardRef<PhotoCropStageHandle, PhotoCropStagePro
           <View style={styles.imageCenterer} pointerEvents="none">
             <Animated.Image source={{ uri: imageUri }} style={animatedStyle} resizeMode="cover" />
           </View>
-          <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-            <AlignmentOverlay type={type} ghostPhoto={ghostPhoto} />
-          </View>
           <View pointerEvents="none" style={[styles.mask, { top: 0, left: 0, right: 0, height: FRAME_TOP, backgroundColor: maskColor }]} />
           <View pointerEvents="none" style={[styles.mask, { bottom: 0, left: 0, right: 0, height: screenHeight - FRAME_TOP - FRAME_HEIGHT, backgroundColor: maskColor }]} />
           <View pointerEvents="none" style={[styles.mask, { top: FRAME_TOP, left: 0, width: FRAME_LEFT, height: FRAME_HEIGHT, backgroundColor: maskColor }]} />
           <View pointerEvents="none" style={[styles.mask, { top: FRAME_TOP, right: 0, width: screenWidth - FRAME_LEFT - FRAME_WIDTH, height: FRAME_HEIGHT, backgroundColor: maskColor }]} />
+          <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+            <AlignmentOverlay type={type} ghostPhoto={ghostPhoto} />
+          </View>
           <View
             pointerEvents="none"
             style={[styles.frameBorder, { top: FRAME_TOP, left: FRAME_LEFT, width: FRAME_WIDTH, height: FRAME_HEIGHT, borderColor: theme.primary }]}
