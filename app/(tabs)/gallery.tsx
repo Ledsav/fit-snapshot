@@ -24,11 +24,12 @@ import { useUser } from "@/context/UserContext";
 import { PhotoType } from "@/enums/Photos";
 import { GeneratedGif } from "@/services/gifStorage";
 import { Photo } from "@/services/photoStorage";
+import { PendingCropResult } from "@/services/pendingCropStore";
 import { Ionicons } from "@expo/vector-icons";
 import * as FileSystem from 'expo-file-system/legacy';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library/legacy';
-import { usePathname } from "expo-router";
+import { usePathname, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -69,6 +70,8 @@ export default function GalleryScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isTypeSelectionVisible, setIsTypeSelectionVisible] = useState(false);
   const [pendingImageUri, setPendingImageUri] = useState<string | null>(null);
+  const [pendingImageWidth, setPendingImageWidth] = useState<number | null>(null);
+  const [pendingImageHeight, setPendingImageHeight] = useState<number | null>(null);
   const [pendingImageDate, setPendingImageDate] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('grouped');
   const [selectionMode, setSelectionMode] = useState(false);
@@ -77,6 +80,7 @@ export default function GalleryScreen() {
   const [isGifsExpanded, setIsGifsExpanded] = useState(true);
   const [isAddChooserVisible, setIsAddChooserVisible] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const { effectiveColorScheme } = useTheme();
   const theme = Colors[effectiveColorScheme];
   const {
@@ -275,8 +279,6 @@ export default function GalleryScreen() {
 
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [3, 4],
         quality: 1,
         exif: true,
       });
@@ -284,8 +286,10 @@ export default function GalleryScreen() {
       if (!result.canceled && result.assets[0]) {
         const selectedAsset = result.assets[0];
         setPendingImageUri(selectedAsset.uri);
+        setPendingImageWidth(selectedAsset.width);
+        setPendingImageHeight(selectedAsset.height);
 
-        
+
         console.log('Selected asset EXIF data:', selectedAsset.exif);
         console.log('Selected asset full data:', selectedAsset);
 
@@ -359,21 +363,21 @@ export default function GalleryScreen() {
   };
 
   const handleTypeSelection = async (type: PhotoType) => {
-    if (!pendingImageUri) return;
+    if (!pendingImageUri || !pendingImageWidth || !pendingImageHeight) return;
 
-    
+
     let photoDate = new Date().toISOString();
 
     if (pendingImageDate) {
       try {
         console.log('Processing pending image date:', pendingImageDate);
 
-        
+
         if (pendingImageDate.includes('T') && pendingImageDate.includes('Z')) {
           photoDate = pendingImageDate;
           console.log('Using ISO date directly:', photoDate);
         } else {
-          
+
           const dateStr = pendingImageDate.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3');
           const parsedDate = new Date(dateStr);
           if (!isNaN(parsedDate.getTime())) {
@@ -390,19 +394,34 @@ export default function GalleryScreen() {
       console.log('No pending image date, using current date');
     }
 
-    const newPhoto = {
-      id: Date.now().toString(),
-      uri: pendingImageUri,
-      date: photoDate,
-      type: type,
-    };
+    const uri = pendingImageUri;
+    const width = pendingImageWidth;
+    const height = pendingImageHeight;
 
-    await addPhoto(newPhoto);
+    PendingCropResult.setResolver((croppedUri) => {
+      addPhoto({
+        id: Date.now().toString(),
+        uri: croppedUri,
+        date: photoDate,
+        type,
+      });
+      setPendingImageUri(null);
+      setPendingImageWidth(null);
+      setPendingImageHeight(null);
+      setPendingImageDate(null);
+      setIsTypeSelectionVisible(false);
+    });
 
-    
-    setPendingImageUri(null);
-    setPendingImageDate(null);
-    setIsTypeSelectionVisible(false);
+    router.push({
+      pathname: "/photo-crop",
+      params: {
+        uri,
+        width: String(width),
+        height: String(height),
+        type,
+        date: pendingImageDate ?? "",
+      },
+    });
   };
 
   const cancelTypeSelection = () => {
