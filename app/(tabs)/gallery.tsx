@@ -26,9 +26,8 @@ import { GeneratedGif } from "@/services/gifStorage";
 import { Photo } from "@/services/photoStorage";
 import { PendingCropResult } from "@/services/pendingCropStore";
 import { Ionicons } from "@expo/vector-icons";
-import * as FileSystem from 'expo-file-system/legacy';
 import * as ImagePicker from 'expo-image-picker';
-import * as MediaLibrary from 'expo-media-library/legacy';
+import { extractPhotoDate } from "@/utils/photoDate";
 import { usePathname, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -289,71 +288,9 @@ export default function GalleryScreen() {
         setPendingImageWidth(selectedAsset.width);
         setPendingImageHeight(selectedAsset.height);
 
+        const isoDate = await extractPhotoDate(selectedAsset);
+        setPendingImageDate(isoDate);
 
-        console.log('Selected asset EXIF data:', selectedAsset.exif);
-        console.log('Selected asset full data:', selectedAsset);
-
-        
-        let dateFromExif = null;
-        if (selectedAsset.exif) {
-          dateFromExif = selectedAsset.exif.DateTimeOriginal ||
-                         selectedAsset.exif.DateTime ||
-                         selectedAsset.exif.DateTimeDigitized;
-        }
-
-        if (dateFromExif) {
-          console.log('Found EXIF date:', dateFromExif);
-          setPendingImageDate(dateFromExif);
-        } else {
-          
-          let fileDate = null;
-
-          try {
-            
-            const fileInfo = await FileSystem.getInfoAsync(selectedAsset.uri);
-            console.log('File info:', fileInfo);
-
-            if (fileInfo.exists && fileInfo.modificationTime) {
-              fileDate = new Date(fileInfo.modificationTime * 1000).toISOString();
-              console.log('Using file modification time:', fileDate);
-            }
-          } catch (error) {
-            console.log('Could not get file info:', error);
-          }
-
-          
-          if (fileDate) {
-            setPendingImageDate(fileDate);
-          } else {
-            try {
-              
-              const assets = await MediaLibrary.getAssetsAsync({
-                first: 1000,
-                sortBy: MediaLibrary.SortBy.creationTime,
-              });
-
-              
-              const matchedAsset = assets.assets.find(asset =>
-                selectedAsset.uri.includes(asset.filename) ||
-                asset.uri === selectedAsset.uri
-              );
-
-              if (matchedAsset && matchedAsset.creationTime) {
-                const creationDate = new Date(matchedAsset.creationTime).toISOString();
-                console.log('Found asset in MediaLibrary with creation time:', creationDate);
-                setPendingImageDate(creationDate);
-              } else {
-                console.log('No date metadata found, will use current date');
-                setPendingImageDate(null);
-              }
-            } catch (error) {
-              console.log('Could not access MediaLibrary:', error);
-              setPendingImageDate(null);
-            }
-          }
-        }
-
-        
         setIsTypeSelectionVisible(true);
       }
     } catch (error) {
@@ -365,44 +302,16 @@ export default function GalleryScreen() {
   const handleTypeSelection = async (type: PhotoType) => {
     if (!pendingImageUri || !pendingImageWidth || !pendingImageHeight) return;
 
-
-    let photoDate = new Date().toISOString();
-
-    if (pendingImageDate) {
-      try {
-        console.log('Processing pending image date:', pendingImageDate);
-
-
-        if (pendingImageDate.includes('T') && pendingImageDate.includes('Z')) {
-          photoDate = pendingImageDate;
-          console.log('Using ISO date directly:', photoDate);
-        } else {
-
-          const dateStr = pendingImageDate.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3');
-          const parsedDate = new Date(dateStr);
-          if (!isNaN(parsedDate.getTime())) {
-            photoDate = parsedDate.toISOString();
-            console.log('Parsed EXIF date to:', photoDate);
-          } else {
-            console.error('Failed to parse date:', dateStr);
-          }
-        }
-      } catch (error) {
-        console.error("Error parsing imported photo date:", error);
-      }
-    } else {
-      console.log('No pending image date, using current date');
-    }
-
     const uri = pendingImageUri;
     const width = pendingImageWidth;
     const height = pendingImageHeight;
+    const initialDate = pendingImageDate;
 
-    PendingCropResult.setResolver((croppedUri) => {
+    PendingCropResult.setResolver((croppedUri, date) => {
       addPhoto({
         id: Date.now().toString(),
         uri: croppedUri,
-        date: photoDate,
+        date,
         type,
       });
       setPendingImageUri(null);
@@ -420,7 +329,7 @@ export default function GalleryScreen() {
         width: String(width),
         height: String(height),
         type,
-        date: pendingImageDate ?? "",
+        date: initialDate ?? "",
       },
     });
   };
