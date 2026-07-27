@@ -18,9 +18,9 @@ export async function extractPhotoDate(
   asset: ImagePicker.ImagePickerAsset
 ): Promise<string | null> {
   const exifDate =
-    asset.exif?.DateTimeOriginal ??
-    asset.exif?.DateTime ??
-    asset.exif?.DateTimeDigitized ??
+    asset.exif?.DateTimeOriginal ||
+    asset.exif?.DateTime ||
+    asset.exif?.DateTimeDigitized ||
     null;
 
   if (exifDate) {

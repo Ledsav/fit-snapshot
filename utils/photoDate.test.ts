@@ -77,6 +77,13 @@ describe("extractPhotoDate", () => {
     expect(result).toBe(parsePhotoDateString("2022:06:01 09:00:00").toISOString());
   });
 
+  it("falls back to EXIF DateTime when DateTimeOriginal is an empty string", async () => {
+    const asset = makeAsset({ exif: { DateTimeOriginal: "", DateTime: "2023:05:10 14:00:00" } });
+    const result = await extractPhotoDate(asset as any);
+    expect(result).toBe(parsePhotoDateString("2023:05:10 14:00:00").toISOString());
+    expect(FileSystem.getInfoAsync).not.toHaveBeenCalled();
+  });
+
   it("falls back to EXIF DateTimeDigitized when the others are absent", async () => {
     const asset = makeAsset({ exif: { DateTimeDigitized: "2021:12:25 00:00:00" } });
     const result = await extractPhotoDate(asset as any);
