@@ -22,9 +22,9 @@ export async function extractPhotoDate(asset: ImagePicker.ImagePickerAsset): Pro
 
 - `parsePhotoDateString` — pure, synchronous. Accepts either an already-ISO string or raw EXIF `"YYYY:MM:DD HH:MM:SS"` format (converts the date portion's `:` to `-` before parsing, matching the existing regex used in both `camera.tsx` and `gallery.tsx` today). Returns `new Date()` when `raw` is missing, empty, or fails to parse.
 - `extractPhotoDate` — async orchestration, replacing the fallback chain currently only implemented in `gallery.tsx`'s `pickImage`:
-  1. EXIF `DateTimeOriginal` → `DateTime` → `DateTimeDigitized`, first one present, parsed via `parsePhotoDateString`.
-  2. If none present: `FileSystem.getInfoAsync(asset.uri)` — use `modificationTime` if available.
-  3. If still nothing: `MediaLibrary.getAssetsAsync({ first: 1000, sortBy: MediaLibrary.SortBy.creationTime })`, find the asset matching by filename/uri, use its `creationTime`.
+  1. EXIF `DateTimeOriginal` → `DateTime` → `DateTimeDigitized`, first non-empty one present, parsed via `parsePhotoDateString`.
+  2. If none present and `asset.assetId` is available: `MediaLibrary.getAssetInfoAsync(asset.assetId)` — use `creationTime` if present. (Revised after real-device testing: `gallery.tsx`'s original fallback used the *picked file's* modification time and a filename-matched `MediaLibrary.getAssetsAsync` search, but `expo-image-picker` copies the picked photo into the app's cache before returning it, so the file's mtime reflects "now," not the photo's real date, and the cache copy's filename doesn't match the original library entry's filename — so neither of those fallbacks actually worked once EXIF was stripped, which is common for photos shared via messaging apps. `assetId` ties directly to the real media-library entry, so this lookup is authoritative rather than a heuristic.)
+  3. If still nothing (no `assetId`, e.g. the photo was picked via a file browser rather than the gallery): `FileSystem.getInfoAsync(asset.uri)` — use `modificationTime` if available, as a last-resort, best-effort guess.
   4. Otherwise `null`.
   - Returns an **ISO string** (already normalized) or `null` — never a raw EXIF-format string. Each fallback step is wrapped in try/catch, collapsing to `null` on failure (matches existing behavior — this is a best-effort read, never a user-facing error).
 
