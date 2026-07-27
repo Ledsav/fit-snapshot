@@ -1,4 +1,4 @@
-type CropResolver = (uri: string) => void;
+type CropResolver = (uri: string, date: string) => void;
 
 let resolver: CropResolver | null = null;
 
@@ -10,10 +10,10 @@ export const PendingCropResult = {
     resolver = fn;
   },
 
-  resolve(uri: string): void {
+  resolve(uri: string, date: string): void {
     const fn = resolver;
     resolver = null;
-    fn?.(uri);
+    fn?.(uri, date);
   },
 
   clear(): void {
