@@ -20,6 +20,7 @@ import { useUser } from "@/context/UserContext";
 import { PhotoType } from "@/enums/Photos";
 import { LightingBaselineStore } from "@/services/lightingBaselineStore";
 import { PendingCropResult } from "@/services/pendingCropStore";
+import { extractPhotoDate } from "@/utils/photoDate";
 import { useLightingIndicator } from "@/hooks/useLightingIndicator";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -252,19 +253,7 @@ export default function CameraScreen() {
 
   const confirmPicture = async () => {
     if (capturedImage) {
-      let photoDate = new Date().toISOString();
-
-      if (importedPhotoDate) {
-        try {
-          const dateStr = importedPhotoDate.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3');
-          const parsedDate = new Date(dateStr);
-          if (!isNaN(parsedDate.getTime())) {
-            photoDate = parsedDate.toISOString();
-          }
-        } catch (error) {
-          console.error("Error parsing imported photo date:", error);
-        }
-      }
+      const photoDate = importedPhotoDate ?? new Date().toISOString();
 
       const newPhoto = {
         id: Date.now().toString(),
@@ -308,12 +297,12 @@ export default function CameraScreen() {
 
       if (!result.canceled && result.assets[0]) {
         const selectedAsset = result.assets[0];
-        const exifDate = selectedAsset.exif?.DateTimeOriginal ?? null;
+        const isoDate = await extractPhotoDate(selectedAsset);
 
-        PendingCropResult.setResolver((croppedUri) => {
+        PendingCropResult.setResolver((croppedUri, date) => {
           setIsImported(true);
           setCapturedImage(croppedUri);
-          setImportedPhotoDate(exifDate);
+          setImportedPhotoDate(date);
         });
 
         router.push({
@@ -323,7 +312,7 @@ export default function CameraScreen() {
             width: String(selectedAsset.width),
             height: String(selectedAsset.height),
             type: overlay,
-            date: exifDate ?? "",
+            date: isoDate ?? "",
           },
         });
       }
