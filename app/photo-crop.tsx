@@ -1,18 +1,29 @@
 import { PhotoCropStage, PhotoCropStageHandle } from "@/components/camera/PhotoCropStage";
 import { Button } from "@/components/ui";
 import Colors from "@/constants/Colors";
-import { spacing } from "@/constants/DesignSystem";
+import { borderRadius, spacing } from "@/constants/DesignSystem";
 import { useLocalization } from "@/context/LocalizationContext";
 import { usePhotos } from "@/context/PhotoContext";
 import { useTheme } from "@/context/ThemeContext";
 import { PhotoType } from "@/enums/Photos";
 import { GhostOverlayStore } from "@/services/ghostOverlayStore";
 import { PendingCropResult } from "@/services/pendingCropStore";
+import { parsePhotoDateString } from "@/utils/photoDate";
 import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker, {
+  DateTimePickerChangeEvent,
+} from "@react-native-community/datetimepicker";
 import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
-import { SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+
+const formatDate = (date: Date) =>
+  date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 
 export default function PhotoCropScreen() {
   const params = useLocalSearchParams<{
@@ -30,6 +41,8 @@ export default function PhotoCropScreen() {
   const stageRef = useRef<PhotoCropStageHandle>(null);
   const [ghostModeEnabled, setGhostModeEnabled] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [date, setDate] = useState(() => parsePhotoDateString(params.date));
+  const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
 
   const type = params.type as PhotoType;
   const imageWidth = Number(params.width);
@@ -52,6 +65,19 @@ export default function PhotoCropScreen() {
     router.back();
   };
 
+  const handleDateChange = (_event: DateTimePickerChangeEvent, selectedDate: Date) => {
+    setIsDatePickerVisible(false);
+    setDate((prev) => {
+      const merged = new Date(prev);
+      merged.setFullYear(
+        selectedDate.getFullYear(),
+        selectedDate.getMonth(),
+        selectedDate.getDate()
+      );
+      return merged;
+    });
+  };
+
   const handleConfirm = async () => {
     if (!stageRef.current || isProcessing) return;
     setIsProcessing(true);
@@ -62,7 +88,7 @@ export default function PhotoCropScreen() {
         [{ crop: cropRect }],
         { format: SaveFormat.JPEG }
       );
-      PendingCropResult.resolve(result.uri);
+      PendingCropResult.resolve(result.uri, date.toISOString());
       router.back();
     } catch (error) {
       console.error("Error cropping image:", error);
@@ -83,6 +109,13 @@ export default function PhotoCropScreen() {
         ghostPhoto={ghostPhoto}
       />
       <View style={styles.footer}>
+        <TouchableOpacity
+          style={styles.dateRow}
+          onPress={() => setIsDatePickerVisible(true)}
+        >
+          <Ionicons name="calendar-outline" size={16} color="white" />
+          <Text style={styles.dateText}>{formatDate(date)}</Text>
+        </TouchableOpacity>
         <Text style={styles.hint}>{t("camera.cropHint")}</Text>
         <View style={styles.buttonsRow}>
           <Button
@@ -102,6 +135,16 @@ export default function PhotoCropScreen() {
           />
         </View>
       </View>
+      {isDatePickerVisible && (
+        <DateTimePicker
+          value={date}
+          mode="date"
+          display="default"
+          maximumDate={new Date()}
+          onValueChange={handleDateChange}
+          onDismiss={() => setIsDatePickerVisible(false)}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -117,6 +160,20 @@ const styles = StyleSheet.create({
     right: 0,
     padding: spacing.xl,
     alignItems: "center",
+  },
+  dateRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    borderRadius: borderRadius.round,
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
+  },
+  dateText: {
+    color: "white",
+    fontWeight: "600",
   },
   hint: {
     color: "white",
