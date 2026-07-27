@@ -27,6 +27,20 @@ export async function extractPhotoDate(
     return parsePhotoDateString(exifDate).toISOString();
   }
 
+  // `asset.uri` is a cache copy expo-image-picker just created, so its file
+  // mtime reflects "now," not the photo's real date — assetId ties directly
+  // to the original media-library entry and is far more reliable.
+  if (asset.assetId) {
+    try {
+      const assetInfo = await MediaLibrary.getAssetInfoAsync(asset.assetId);
+      if (assetInfo.creationTime) {
+        return new Date(assetInfo.creationTime).toISOString();
+      }
+    } catch (error) {
+      console.log("extractPhotoDate: could not read MediaLibrary asset info", error);
+    }
+  }
+
   try {
     const fileInfo = await FileSystem.getInfoAsync(asset.uri);
     if (fileInfo.exists && fileInfo.modificationTime) {
@@ -34,21 +48,6 @@ export async function extractPhotoDate(
     }
   } catch (error) {
     console.log("extractPhotoDate: could not read file info", error);
-  }
-
-  try {
-    const assets = await MediaLibrary.getAssetsAsync({
-      first: 1000,
-      sortBy: MediaLibrary.SortBy.creationTime,
-    });
-    const matchedAsset = assets.assets.find(
-      (a) => asset.uri.includes(a.filename) || a.uri === asset.uri
-    );
-    if (matchedAsset && matchedAsset.creationTime) {
-      return new Date(matchedAsset.creationTime).toISOString();
-    }
-  } catch (error) {
-    console.log("extractPhotoDate: could not query MediaLibrary", error);
   }
 
   return null;
