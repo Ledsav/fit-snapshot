@@ -6,15 +6,27 @@ import {
   computeCompositeLayout,
 } from "@/utils/compositeImage";
 import * as FileSystem from "expo-file-system/legacy";
-import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import React, { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { View } from "react-native";
+import { PixelRatio, View } from "react-native";
 import Svg, { ClipPath, Defs, Image as SvgImage, Rect, Text as SvgText } from "react-native-svg";
 
 // canvasWidth/canvasHeight/photoHeight/captionHeight never vary with slider
 // position (only dividerX/beforeClipWidth do) — used for the idle/static
 // render so this component never needs the live slider value as a prop.
 const STATIC_CANVAS_HEIGHT = COMPOSITE_PHOTO_HEIGHT + COMPOSITE_CAPTION_HEIGHT;
+
+// The <Svg> below is sized in dp, but Android's toDataURL() rasterizes at
+// the view's actual (density-scaled) pixel size, not its dp size — so a
+// naive width={1080} renders at ~1080*density device pixels (e.g. ~3240px
+// on a 3x-density phone), producing a bitmap many times larger than
+// intended and slow enough to encode/bridge that it reads as a hang.
+// Shrinking the component's own dp size by the device's density, while
+// keeping a viewBox in the original 1080x1536 coordinate space for all
+// children, makes the actual rendered pixel size come out to exactly
+// COMPOSITE_CANVAS_WIDTH x STATIC_CANVAS_HEIGHT on any device.
+const DENSITY = PixelRatio.get();
+const SVG_WIDTH_DP = COMPOSITE_CANVAS_WIDTH / DENSITY;
+const SVG_HEIGHT_DP = STATIC_CANVAS_HEIGHT / DENSITY;
 
 // Colors are fixed (not theme-derived) so a saved/shared image looks the
 // same regardless of the viewer's or exporter's app theme. Mirrors
@@ -104,26 +116,20 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
             reject(new Error("CompositeExporter: Svg ref is not attached."));
             return;
           }
-          // No {width, height} options here: on Android, Svg.toDataURL(w, h)
-          // creates the output Bitmap at exactly those raw pixel dimensions,
-          // but draws the SVG's content using the native view's actual
-          // (density-scaled) pixel size — with no options, that already
-          // matches, so the drawing isn't scaled and doesn't get cropped.
-          // Passing dp-sized options instead produced an undersized canvas
-          // that only fit the content's top-left corner.
+          // No {width, height} options: passing them makes Android size the
+          // output Bitmap at exactly those raw pixels while still drawing
+          // content scaled to the view's actual (larger) pixel size, which
+          // crops to the top-left corner. With no options, toDataURL uses
+          // the view's real pixel size directly — already exactly
+          // COMPOSITE_CANVAS_WIDTH x STATIC_CANVAS_HEIGHT thanks to the
+          // dp/density adjustment above, so this is correctly-sized and
+          // fast with no extra resize step needed.
           svgRef.current.toDataURL((base64Png) => {
-            const rawUri = `${FileSystem.cacheDirectory}composite_raw_${Date.now()}.png`;
-            FileSystem.writeAsStringAsync(rawUri, base64Png, {
+            const fileUri = `${FileSystem.cacheDirectory}composite_${Date.now()}.png`;
+            FileSystem.writeAsStringAsync(fileUri, base64Png, {
               encoding: FileSystem.EncodingType.Base64,
             })
-              .then(() =>
-                // Normalizes the device-pixel-density-dependent raw bitmap
-                // down to the fixed export width the design calls for.
-                manipulateAsync(rawUri, [{ resize: { width: COMPOSITE_CANVAS_WIDTH } }], {
-                  format: SaveFormat.PNG,
-                })
-              )
-              .then((resized) => resolve(resized.uri))
+              .then(() => resolve(fileUri))
               .catch(reject);
           });
         });
@@ -133,9 +139,14 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
     return (
       <View
         pointerEvents="none"
-        style={{ position: "absolute", left: -9999, top: 0, width: COMPOSITE_CANVAS_WIDTH, height: STATIC_CANVAS_HEIGHT }}
+        style={{ position: "absolute", left: -9999, top: 0, width: SVG_WIDTH_DP, height: SVG_HEIGHT_DP }}
       >
-        <Svg ref={svgRef} width={COMPOSITE_CANVAS_WIDTH} height={STATIC_CANVAS_HEIGHT}>
+        <Svg
+          ref={svgRef}
+          width={SVG_WIDTH_DP}
+          height={SVG_HEIGHT_DP}
+          viewBox={`0 0 ${COMPOSITE_CANVAS_WIDTH} ${STATIC_CANVAS_HEIGHT}`}
+        >
           <Defs>
             <ClipPath id="beforeClip">
               <Rect x={0} y={0} width={exportState?.beforeClipWidth ?? 0} height={COMPOSITE_PHOTO_HEIGHT} />
