@@ -12,7 +12,6 @@ import { PhotoType } from "@/enums/Photos";
 import { Photo } from "@/services/photoStorage";
 import { getTimeDifference } from "@/utils/dateUtils";
 import { Ionicons } from "@expo/vector-icons";
-import * as MediaLibrary from "expo-media-library/legacy";
 import React, { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -416,14 +415,11 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
                   } else {
                     setGifUrl(result.gifUri);
 
-                    try {
-                      const { status } = await MediaLibrary.requestPermissionsAsync();
-                      if (status === 'granted') {
-                        await MediaLibrary.saveToLibraryAsync(result.gifUri);
-                        setGifSaved(true);
-                      }
-                    } catch (saveError) {
-                      console.error('Error auto-saving GIF:', saveError);
+                    const autoSaveResult = await saveFileToGallery(result.gifUri);
+                    if (autoSaveResult.status === 'saved') {
+                      setGifSaved(true);
+                    } else if (autoSaveResult.status === 'error') {
+                      console.error('Error auto-saving GIF:', autoSaveResult.error);
                     }
 
                     try {
@@ -499,23 +495,36 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
               <Button
                 title={gifSaved ? 'Save Again' : 'Download'}
                 onPress={async () => {
-                  try {
-                    const { status } = await MediaLibrary.requestPermissionsAsync();
-                    if (status !== 'granted') {
-                      Alert.alert(t("permissions.title"), t("permissions.photoSaveMessage"));
-                      return;
-                    }
-
-                    await MediaLibrary.saveToLibraryAsync(gifUrl);
+                  const result = await saveFileToGallery(gifUrl);
+                  if (result.status === 'permission_denied') {
+                    Alert.alert(t("permissions.title"), t("permissions.photoSaveMessage"));
+                  } else if (result.status === 'error') {
+                    Alert.alert(t("common.error"), 'Failed to save GIF');
+                  } else {
                     setGifSaved(true);
                     Alert.alert(t("common.success"), 'GIF saved to gallery');
-                  } catch (error) {
-                    Alert.alert(t("common.error"), 'Failed to save GIF');
                   }
                 }}
                 variant="primary"
                 icon={<Ionicons name="download-outline" size={20} color={theme.onAccent} />}
                 style={styles.gifDownloadButton}
+              />
+              <Button
+                title={t("progress.gifShareButton")}
+                onPress={async () => {
+                  setIsSharingGif(true);
+                  const result = await shareFile(gifUrl, 'image/gif', t("progress.gifShareButton"));
+                  if (result.status === 'unavailable') {
+                    Alert.alert(t("common.error"), t("progress.sharingUnavailableMessage"));
+                  } else if (result.status === 'error') {
+                    Alert.alert(t("common.error"), t("progress.gifShareErrorMessage"));
+                  }
+                  setIsSharingGif(false);
+                }}
+                variant="secondary"
+                loading={isSharingGif}
+                icon={<Ionicons name="share-social-outline" size={20} color={theme.text} />}
+                style={styles.gifShareButton}
               />
               <Button
                 title="Clear"
@@ -1024,6 +1033,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   gifDownloadButton: {},
+  gifShareButton: {},
   gifClearButton: {},
 });
 
