@@ -67,26 +67,31 @@ interface ExportState {
   callId: number;
 }
 
+// After setting the new export state, wait for a real commit+paint (two
+// animation frames) plus this safety margin for the native <Image>'s data
+// URI decode to finish, before rasterizing. Not used: waiting on the
+// SvgImage onLoad event — on Android, re-decoding byte-identical data URI
+// content (the same source photos) into a freshly mounted view does not
+// reliably re-fire onLoad (looks like an image-loader cache hit that
+// bypasses the event), which hung every export() call after the first.
+const IMAGE_DECODE_SAFETY_MARGIN_MS = 300;
+
+function waitTwoFrames(): Promise<void> {
+  return new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeExporterProps>(
   ({ beforeUri, afterUri, getAfterness, caption, beforeLabel, afterLabel }, ref) => {
     const svgRef = useRef<Svg>(null);
     const [exportState, setExportState] = useState<ExportState | null>(null);
-    const loadedCountRef = useRef(0);
-    const readyResolveRef = useRef<(() => void) | null>(null);
     const exportCallIdRef = useRef(0);
-
-    const handleImageLoad = (which: string) => {
-      loadedCountRef.current += 1;
-      console.log(`[CompositeExporter] onLoad fired for ${which}, loadedCount=${loadedCountRef.current}`);
-      if (loadedCountRef.current >= 2 && readyResolveRef.current) {
-        readyResolveRef.current();
-        readyResolveRef.current = null;
-      }
-    };
 
     useImperativeHandle(ref, () => ({
       export: async () => {
-        loadedCountRef.current = 0;
         exportCallIdRef.current += 1;
         const callId = exportCallIdRef.current;
         console.log(`[CompositeExporter] export() call #${callId}: start`);
@@ -102,9 +107,6 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
         ]);
         console.log(`[CompositeExporter] export() call #${callId}: photos read as base64`);
 
-        const ready = new Promise<void>((resolve) => {
-          readyResolveRef.current = resolve;
-        });
         setExportState({
           before: `data:image/jpeg;base64,${beforeBase64}`,
           after: `data:image/jpeg;base64,${afterBase64}`,
@@ -112,9 +114,10 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
           beforeClipWidth,
           callId,
         });
-        console.log(`[CompositeExporter] export() call #${callId}: setExportState done, awaiting onLoad x2`);
-        await ready;
-        console.log(`[CompositeExporter] export() call #${callId}: both onLoad fired, ready`);
+        console.log(`[CompositeExporter] export() call #${callId}: setExportState done, waiting for paint + decode margin`);
+        await waitTwoFrames();
+        await delay(IMAGE_DECODE_SAFETY_MARGIN_MS);
+        console.log(`[CompositeExporter] export() call #${callId}: wait done, ready`);
 
         return new Promise<string>((resolve, reject) => {
           if (!svgRef.current) {
@@ -191,7 +194,6 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
                 height={COMPOSITE_PHOTO_HEIGHT}
                 href={exportState.after}
                 preserveAspectRatio="xMidYMid slice"
-                onLoad={() => handleImageLoad("after")}
               />
               <SvgImage
                 x={0}
@@ -201,7 +203,6 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
                 href={exportState.before}
                 preserveAspectRatio="xMidYMid slice"
                 clipPath="url(#beforeClip)"
-                onLoad={() => handleImageLoad("before")}
               />
               <Rect
                 x={exportState.dividerX - DIVIDER_WIDTH / 2}
