@@ -1,9 +1,20 @@
 import { fontFamily } from "@/constants/DesignSystem";
-import { computeCompositeLayout } from "@/utils/compositeImage";
+import {
+  COMPOSITE_CANVAS_WIDTH,
+  COMPOSITE_CAPTION_HEIGHT,
+  COMPOSITE_PHOTO_HEIGHT,
+  computeCompositeLayout,
+} from "@/utils/compositeImage";
 import * as FileSystem from "expo-file-system/legacy";
+import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import React, { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { View } from "react-native";
 import Svg, { ClipPath, Defs, Image as SvgImage, Rect, Text as SvgText } from "react-native-svg";
+
+// canvasWidth/canvasHeight/photoHeight/captionHeight never vary with slider
+// position (only dividerX/beforeClipWidth do) — used for the idle/static
+// render so this component never needs the live slider value as a prop.
+const STATIC_CANVAS_HEIGHT = COMPOSITE_PHOTO_HEIGHT + COMPOSITE_CAPTION_HEIGHT;
 
 // Colors are fixed (not theme-derived) so a saved/shared image looks the
 // same regardless of the viewer's or exporter's app theme. Mirrors
@@ -26,23 +37,31 @@ export interface CompositeExporterHandle {
 interface CompositeExporterProps {
   beforeUri: string;
   afterUri: string;
-  afterness: number;
+  // A getter rather than a live number: reading it only at export() call
+  // time means this component never re-renders while the slider is being
+  // dragged (it's off-screen and invisible until Save/Share is tapped, so
+  // there's nothing to show reactively anyway).
+  getAfterness: () => number;
   caption: string;
   beforeLabel: string;
   afterLabel: string;
 }
 
+interface ExportState {
+  before: string;
+  after: string;
+  dividerX: number;
+  beforeClipWidth: number;
+  callId: number;
+}
+
 export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeExporterProps>(
-  ({ beforeUri, afterUri, afterness, caption, beforeLabel, afterLabel }, ref) => {
+  ({ beforeUri, afterUri, getAfterness, caption, beforeLabel, afterLabel }, ref) => {
     const svgRef = useRef<Svg>(null);
-    const [dataUris, setDataUris] = useState<{ before: string; after: string; callId: number } | null>(
-      null
-    );
+    const [exportState, setExportState] = useState<ExportState | null>(null);
     const loadedCountRef = useRef(0);
     const readyResolveRef = useRef<(() => void) | null>(null);
     const exportCallIdRef = useRef(0);
-
-    const layout = computeCompositeLayout(afterness);
 
     const handleImageLoad = () => {
       loadedCountRef.current += 1;
@@ -57,6 +76,7 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
         loadedCountRef.current = 0;
         exportCallIdRef.current += 1;
         const callId = exportCallIdRef.current;
+        const { dividerX, beforeClipWidth } = computeCompositeLayout(getAfterness());
 
         // Embed both photos as data URIs before mounting the SVG <Image>
         // elements — the pixel data is inline in the tree at render time
@@ -70,9 +90,11 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
         const ready = new Promise<void>((resolve) => {
           readyResolveRef.current = resolve;
         });
-        setDataUris({
+        setExportState({
           before: `data:image/jpeg;base64,${beforeBase64}`,
           after: `data:image/jpeg;base64,${afterBase64}`,
+          dividerX,
+          beforeClipWidth,
           callId,
         });
         await ready;
@@ -82,17 +104,28 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
             reject(new Error("CompositeExporter: Svg ref is not attached."));
             return;
           }
-          svgRef.current.toDataURL(
-            (base64Png) => {
-              const fileUri = `${FileSystem.cacheDirectory}composite_${Date.now()}.png`;
-              FileSystem.writeAsStringAsync(fileUri, base64Png, {
-                encoding: FileSystem.EncodingType.Base64,
-              })
-                .then(() => resolve(fileUri))
-                .catch(reject);
-            },
-            { width: layout.canvasWidth, height: layout.canvasHeight }
-          );
+          // No {width, height} options here: on Android, Svg.toDataURL(w, h)
+          // creates the output Bitmap at exactly those raw pixel dimensions,
+          // but draws the SVG's content using the native view's actual
+          // (density-scaled) pixel size — with no options, that already
+          // matches, so the drawing isn't scaled and doesn't get cropped.
+          // Passing dp-sized options instead produced an undersized canvas
+          // that only fit the content's top-left corner.
+          svgRef.current.toDataURL((base64Png) => {
+            const rawUri = `${FileSystem.cacheDirectory}composite_raw_${Date.now()}.png`;
+            FileSystem.writeAsStringAsync(rawUri, base64Png, {
+              encoding: FileSystem.EncodingType.Base64,
+            })
+              .then(() =>
+                // Normalizes the device-pixel-density-dependent raw bitmap
+                // down to the fixed export width the design calls for.
+                manipulateAsync(rawUri, [{ resize: { width: COMPOSITE_CANVAS_WIDTH } }], {
+                  format: SaveFormat.PNG,
+                })
+              )
+              .then((resized) => resolve(resized.uri))
+              .catch(reject);
+          });
         });
       },
     }));
@@ -100,45 +133,45 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
     return (
       <View
         pointerEvents="none"
-        style={{ position: "absolute", left: -9999, top: 0, width: layout.canvasWidth, height: layout.canvasHeight }}
+        style={{ position: "absolute", left: -9999, top: 0, width: COMPOSITE_CANVAS_WIDTH, height: STATIC_CANVAS_HEIGHT }}
       >
-        <Svg ref={svgRef} width={layout.canvasWidth} height={layout.canvasHeight}>
+        <Svg ref={svgRef} width={COMPOSITE_CANVAS_WIDTH} height={STATIC_CANVAS_HEIGHT}>
           <Defs>
             <ClipPath id="beforeClip">
-              <Rect x={0} y={0} width={layout.beforeClipWidth} height={layout.photoHeight} />
+              <Rect x={0} y={0} width={exportState?.beforeClipWidth ?? 0} height={COMPOSITE_PHOTO_HEIGHT} />
             </ClipPath>
           </Defs>
           {/* Fills the whole canvas — doubles as the caption strip's
               background since the photo images only cover 0..photoHeight. */}
-          <Rect x={0} y={0} width={layout.canvasWidth} height={layout.canvasHeight} fill={INK} />
-          {dataUris && (
+          <Rect x={0} y={0} width={COMPOSITE_CANVAS_WIDTH} height={STATIC_CANVAS_HEIGHT} fill={INK} />
+          {exportState && (
             <>
               <SvgImage
-                key={`after-${dataUris.callId}`}
+                key={`after-${exportState.callId}`}
                 x={0}
                 y={0}
-                width={layout.canvasWidth}
-                height={layout.photoHeight}
-                href={dataUris.after}
+                width={COMPOSITE_CANVAS_WIDTH}
+                height={COMPOSITE_PHOTO_HEIGHT}
+                href={exportState.after}
                 preserveAspectRatio="xMidYMid slice"
                 onLoad={handleImageLoad}
               />
               <SvgImage
-                key={`before-${dataUris.callId}`}
+                key={`before-${exportState.callId}`}
                 x={0}
                 y={0}
-                width={layout.canvasWidth}
-                height={layout.photoHeight}
-                href={dataUris.before}
+                width={COMPOSITE_CANVAS_WIDTH}
+                height={COMPOSITE_PHOTO_HEIGHT}
+                href={exportState.before}
                 preserveAspectRatio="xMidYMid slice"
                 clipPath="url(#beforeClip)"
                 onLoad={handleImageLoad}
               />
               <Rect
-                x={layout.dividerX - DIVIDER_WIDTH / 2}
+                x={exportState.dividerX - DIVIDER_WIDTH / 2}
                 y={0}
                 width={DIVIDER_WIDTH}
-                height={layout.photoHeight}
+                height={COMPOSITE_PHOTO_HEIGHT}
                 fill={BRASS}
               />
               <Rect
@@ -161,7 +194,7 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
                 {beforeLabel.toUpperCase()}
               </SvgText>
               <Rect
-                x={layout.canvasWidth - LABEL_MARGIN - LABEL_PILL_WIDTH}
+                x={COMPOSITE_CANVAS_WIDTH - LABEL_MARGIN - LABEL_PILL_WIDTH}
                 y={LABEL_MARGIN}
                 width={LABEL_PILL_WIDTH}
                 height={LABEL_PILL_HEIGHT}
@@ -170,7 +203,7 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
                 fillOpacity={0.6}
               />
               <SvgText
-                x={layout.canvasWidth - LABEL_MARGIN - LABEL_PILL_WIDTH / 2}
+                x={COMPOSITE_CANVAS_WIDTH - LABEL_MARGIN - LABEL_PILL_WIDTH / 2}
                 y={LABEL_MARGIN + LABEL_PILL_HEIGHT / 2 + LABEL_FONT_SIZE * 0.35}
                 fontSize={LABEL_FONT_SIZE}
                 fontFamily={fontFamily.monoSemiBold}
@@ -180,8 +213,8 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
                 {afterLabel.toUpperCase()}
               </SvgText>
               <SvgText
-                x={layout.canvasWidth / 2}
-                y={layout.photoHeight + layout.captionHeight / 2 + CAPTION_FONT_SIZE * 0.35}
+                x={COMPOSITE_CANVAS_WIDTH / 2}
+                y={COMPOSITE_PHOTO_HEIGHT + COMPOSITE_CAPTION_HEIGHT / 2 + CAPTION_FONT_SIZE * 0.35}
                 fontSize={CAPTION_FONT_SIZE}
                 fontFamily={fontFamily.mono}
                 fill={PAPER}

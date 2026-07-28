@@ -45,7 +45,11 @@ import { Button } from "@/components/ui";
 
 
 const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
-  const [sliderValue, setSliderValue] = useState(50);
+  // Not React state: feeding this into a render would re-render the whole
+  // slider stage (including the off-screen CompositeExporter) on every drag
+  // tick. It's only ever needed at Save/Share time, so a ref read there is
+  // enough — see CompositeExporter's getAfterness prop.
+  const sliderValueRef = useRef(50);
   const { effectiveColorScheme } = useTheme();
   const theme = Colors[effectiveColorScheme];
   const { getPhotosByType } = usePhotos();
@@ -552,7 +556,9 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
               afterUri={photo2.uri}
               beforeLabel={t("common.before")}
               afterLabel={t("common.after")}
-              onValueChange={setSliderValue}
+              onValueChange={(value) => {
+                sliderValueRef.current = value;
+              }}
             />
             <TouchableOpacity
               style={[styles.compositeActionButton, styles.compositeSaveButton, { backgroundColor: theme.primary }]}
@@ -582,7 +588,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
               ref={compositeExporterRef}
               beforeUri={photo1.uri}
               afterUri={photo2.uri}
-              afterness={sliderValue}
+              getAfterness={() => sliderValueRef.current}
               caption={sliderCaption}
               beforeLabel={t("common.before")}
               afterLabel={t("common.after")}
