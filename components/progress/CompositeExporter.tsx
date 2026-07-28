@@ -35,9 +35,12 @@ interface CompositeExporterProps {
 export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeExporterProps>(
   ({ beforeUri, afterUri, afterness, caption, beforeLabel, afterLabel }, ref) => {
     const svgRef = useRef<Svg>(null);
-    const [dataUris, setDataUris] = useState<{ before: string; after: string } | null>(null);
+    const [dataUris, setDataUris] = useState<{ before: string; after: string; callId: number } | null>(
+      null
+    );
     const loadedCountRef = useRef(0);
     const readyResolveRef = useRef<(() => void) | null>(null);
+    const exportCallIdRef = useRef(0);
 
     const layout = computeCompositeLayout(afterness);
 
@@ -52,6 +55,8 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
     useImperativeHandle(ref, () => ({
       export: async () => {
         loadedCountRef.current = 0;
+        exportCallIdRef.current += 1;
+        const callId = exportCallIdRef.current;
 
         // Embed both photos as data URIs before mounting the SVG <Image>
         // elements — the pixel data is inline in the tree at render time
@@ -68,11 +73,16 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
         setDataUris({
           before: `data:image/jpeg;base64,${beforeBase64}`,
           after: `data:image/jpeg;base64,${afterBase64}`,
+          callId,
         });
         await ready;
 
         return new Promise<string>((resolve, reject) => {
-          svgRef.current?.toDataURL(
+          if (!svgRef.current) {
+            reject(new Error("CompositeExporter: Svg ref is not attached."));
+            return;
+          }
+          svgRef.current.toDataURL(
             (base64Png) => {
               const fileUri = `${FileSystem.cacheDirectory}composite_${Date.now()}.png`;
               FileSystem.writeAsStringAsync(fileUri, base64Png, {
@@ -104,6 +114,7 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
           {dataUris && (
             <>
               <SvgImage
+                key={`after-${dataUris.callId}`}
                 x={0}
                 y={0}
                 width={layout.canvasWidth}
@@ -113,6 +124,7 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
                 onLoad={handleImageLoad}
               />
               <SvgImage
+                key={`before-${dataUris.callId}`}
                 x={0}
                 y={0}
                 width={layout.canvasWidth}
