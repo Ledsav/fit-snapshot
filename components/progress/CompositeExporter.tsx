@@ -75,8 +75,9 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
     const readyResolveRef = useRef<(() => void) | null>(null);
     const exportCallIdRef = useRef(0);
 
-    const handleImageLoad = () => {
+    const handleImageLoad = (which: string) => {
       loadedCountRef.current += 1;
+      console.log(`[CompositeExporter] onLoad fired for ${which}, loadedCount=${loadedCountRef.current}`);
       if (loadedCountRef.current >= 2 && readyResolveRef.current) {
         readyResolveRef.current();
         readyResolveRef.current = null;
@@ -88,6 +89,7 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
         loadedCountRef.current = 0;
         exportCallIdRef.current += 1;
         const callId = exportCallIdRef.current;
+        console.log(`[CompositeExporter] export() call #${callId}: start`);
         const { dividerX, beforeClipWidth } = computeCompositeLayout(getAfterness());
 
         // Embed both photos as data URIs before mounting the SVG <Image>
@@ -98,6 +100,7 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
           FileSystem.readAsStringAsync(beforeUri, { encoding: FileSystem.EncodingType.Base64 }),
           FileSystem.readAsStringAsync(afterUri, { encoding: FileSystem.EncodingType.Base64 }),
         ]);
+        console.log(`[CompositeExporter] export() call #${callId}: photos read as base64`);
 
         const ready = new Promise<void>((resolve) => {
           readyResolveRef.current = resolve;
@@ -109,13 +112,17 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
           beforeClipWidth,
           callId,
         });
+        console.log(`[CompositeExporter] export() call #${callId}: setExportState done, awaiting onLoad x2`);
         await ready;
+        console.log(`[CompositeExporter] export() call #${callId}: both onLoad fired, ready`);
 
         return new Promise<string>((resolve, reject) => {
           if (!svgRef.current) {
+            console.log(`[CompositeExporter] export() call #${callId}: svgRef.current is null!`);
             reject(new Error("CompositeExporter: Svg ref is not attached."));
             return;
           }
+          console.log(`[CompositeExporter] export() call #${callId}: calling toDataURL`);
           // No {width, height} options: passing them makes Android size the
           // output Bitmap at exactly those raw pixels while still drawing
           // content scaled to the view's actual (larger) pixel size, which
@@ -125,12 +132,19 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
           // dp/density adjustment above, so this is correctly-sized and
           // fast with no extra resize step needed.
           svgRef.current.toDataURL((base64Png) => {
+            console.log(`[CompositeExporter] export() call #${callId}: toDataURL callback fired, base64 length=${base64Png?.length}`);
             const fileUri = `${FileSystem.cacheDirectory}composite_${Date.now()}.png`;
             FileSystem.writeAsStringAsync(fileUri, base64Png, {
               encoding: FileSystem.EncodingType.Base64,
             })
-              .then(() => resolve(fileUri))
-              .catch(reject);
+              .then(() => {
+                console.log(`[CompositeExporter] export() call #${callId}: wrote file, done`);
+                resolve(fileUri);
+              })
+              .catch((error) => {
+                console.log(`[CompositeExporter] export() call #${callId}: write failed`, error);
+                reject(error);
+              });
           });
         });
       },
@@ -177,7 +191,7 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
                 height={COMPOSITE_PHOTO_HEIGHT}
                 href={exportState.after}
                 preserveAspectRatio="xMidYMid slice"
-                onLoad={handleImageLoad}
+                onLoad={() => handleImageLoad("after")}
               />
               <SvgImage
                 x={0}
@@ -187,7 +201,7 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
                 href={exportState.before}
                 preserveAspectRatio="xMidYMid slice"
                 clipPath="url(#beforeClip)"
-                onLoad={handleImageLoad}
+                onLoad={() => handleImageLoad("before")}
               />
               <Rect
                 x={exportState.dividerX - DIVIDER_WIDTH / 2}
