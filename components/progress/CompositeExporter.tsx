@@ -141,7 +141,20 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
         pointerEvents="none"
         style={{ position: "absolute", left: -9999, top: 0, width: SVG_WIDTH_DP, height: SVG_HEIGHT_DP }}
       >
+        {/*
+          Keyed on the export call id so the ENTIRE native Svg view — not
+          just its children — is torn down and recreated fresh on every
+          export() call. react-native-svg's Android SvgView caches
+          internal readiness state (mRendered/mBitmap) on the view
+          instance itself; reusing the same instance across repeated
+          toDataURL() calls left that state inconsistent and could hang
+          the second call indefinitely (waiting on a native onDraw pass
+          that was never guaranteed to fire again for an off-screen,
+          already-drawn-once view). A brand-new instance behaves exactly
+          like the reliable first call, every time.
+        */}
         <Svg
+          key={exportState?.callId ?? 0}
           ref={svgRef}
           width={SVG_WIDTH_DP}
           height={SVG_HEIGHT_DP}
@@ -158,7 +171,6 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
           {exportState && (
             <>
               <SvgImage
-                key={`after-${exportState.callId}`}
                 x={0}
                 y={0}
                 width={COMPOSITE_CANVAS_WIDTH}
@@ -168,7 +180,6 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
                 onLoad={handleImageLoad}
               />
               <SvgImage
-                key={`before-${exportState.callId}`}
                 x={0}
                 y={0}
                 width={COMPOSITE_CANVAS_WIDTH}
