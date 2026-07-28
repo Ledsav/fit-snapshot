@@ -14,7 +14,6 @@ import { getTimeDifference } from "@/utils/dateUtils";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useCallback, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Dimensions,
   Image,
@@ -549,52 +548,50 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   )}
       {/* Slider Mode */}
       {comparisonMode === 'slider' && (
-        <ContactSheetFrame caption={sliderCaption}>
-          <View style={styles.sliderStage}>
-            <BeforeAfterSlider
-              beforeUri={photo1.uri}
-              afterUri={photo2.uri}
-              beforeLabel={t("common.before")}
-              afterLabel={t("common.after")}
-              onValueChange={(value) => {
-                sliderValueRef.current = value;
-              }}
-            />
-            <TouchableOpacity
-              style={[styles.compositeActionButton, styles.compositeSaveButton, { backgroundColor: theme.primary }]}
+        <>
+          <ContactSheetFrame caption={sliderCaption}>
+            <View style={styles.sliderStage}>
+              <BeforeAfterSlider
+                beforeUri={photo1.uri}
+                afterUri={photo2.uri}
+                beforeLabel={t("common.before")}
+                afterLabel={t("common.after")}
+                onValueChange={(value) => {
+                  sliderValueRef.current = value;
+                }}
+              />
+              <CompositeExporter
+                ref={compositeExporterRef}
+                beforeUri={photo1.uri}
+                afterUri={photo2.uri}
+                getAfterness={() => sliderValueRef.current}
+                caption={sliderCaption}
+                beforeLabel={t("common.before")}
+                afterLabel={t("common.after")}
+              />
+            </View>
+          </ContactSheetFrame>
+          <View style={styles.compositeActionsRow}>
+            <Button
+              title="Save"
               onPress={handleSaveComposite}
-              disabled={isSavingComposite || isSharingComposite}
-              activeOpacity={0.8}
-            >
-              {isSavingComposite ? (
-                <ActivityIndicator size="small" color={theme.background} />
-              ) : (
-                <Ionicons name="download-outline" size={20} color={theme.background} />
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.compositeActionButton, styles.compositeShareButton, { backgroundColor: theme.primary }]}
+              variant="primary"
+              loading={isSavingComposite}
+              disabled={isSharingComposite}
+              icon={<Ionicons name="download-outline" size={20} color={theme.onAccent} />}
+              style={styles.compositeSaveButton}
+            />
+            <Button
+              title={t("progress.shareButton")}
               onPress={handleShareComposite}
-              disabled={isSavingComposite || isSharingComposite}
-              activeOpacity={0.8}
-            >
-              {isSharingComposite ? (
-                <ActivityIndicator size="small" color={theme.background} />
-              ) : (
-                <Ionicons name="share-social-outline" size={20} color={theme.background} />
-              )}
-            </TouchableOpacity>
-            <CompositeExporter
-              ref={compositeExporterRef}
-              beforeUri={photo1.uri}
-              afterUri={photo2.uri}
-              getAfterness={() => sliderValueRef.current}
-              caption={sliderCaption}
-              beforeLabel={t("common.before")}
-              afterLabel={t("common.after")}
+              variant="secondary"
+              loading={isSharingComposite}
+              disabled={isSavingComposite}
+              icon={<Ionicons name="share-social-outline" size={20} color={theme.text} />}
+              style={styles.compositeShareButton}
             />
           </View>
-        </ContactSheetFrame>
+        </>
       )}
 
       {/* Side by Side Mode */}
@@ -941,23 +938,15 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
-  compositeActionButton: {
-    position: "absolute",
-    bottom: 16,
-    borderRadius: 24,
-    padding: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+  compositeActionsRow: {
+    flexDirection: "row",
+    gap: spacing.md,
+    width: "100%",
+    justifyContent: "center",
+    marginTop: spacing.md,
   },
-  compositeSaveButton: {
-    right: 64,
-  },
-  compositeShareButton: {
-    right: 16,
-  },
+  compositeSaveButton: {},
+  compositeShareButton: {},
   // GIF-specific styles
   gifContainer: {
     width: "100%",
