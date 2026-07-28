@@ -13,8 +13,9 @@ import { Photo } from "@/services/photoStorage";
 import { getTimeDifference } from "@/utils/dateUtils";
 import { Ionicons } from "@expo/vector-icons";
 import * as MediaLibrary from "expo-media-library/legacy";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Dimensions,
   Image,
@@ -38,7 +39,9 @@ import { useRouter } from 'expo-router';
 import SyncedZoomPair from '@/components/progress/SyncedZoomPair';
 import { useGifs } from '@/context/GifContext';
 import { BeforeAfterSlider } from "@/components/progress/BeforeAfterSlider";
+import { CompositeExporter, CompositeExporterHandle } from "@/components/progress/CompositeExporter";
 import { ContactSheetFrame } from "@/components/home/ContactSheetFrame";
+import { saveFileToGallery, shareFile } from "@/services/mediaExportService";
 import { Button } from "@/components/ui";
 
 
@@ -62,35 +65,29 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   const [selectedPhoto1, setSelectedPhoto1] = useState<Photo | null>(null);
   const [selectedPhoto2, setSelectedPhoto2] = useState<Photo | null>(null);
   const [paywallVisible, setPaywallVisible] = useState(false);
+  const [isSavingComposite, setIsSavingComposite] = useState(false);
+  const [isSharingComposite, setIsSharingComposite] = useState(false);
+  const [isSharingGif, setIsSharingGif] = useState(false);
+  const compositeExporterRef = useRef<CompositeExporterHandle>(null);
 
   const hasSideBySideAccess = hasFeatureAccess(Feature.SIDE_BY_SIDE_COMPARISON);
   const hasGridViewAccess = hasFeatureAccess(Feature.GRID_VIEW_COMPARISON);
   const hasCustomSelectionAccess = hasFeatureAccess(Feature.CUSTOM_PHOTO_SELECTION);
   const hasGifAccess = hasFeatureAccess(Feature.GIF_GENERATION);
 
+  // Single-photo view only (no comparison possible with one photo) — the
+  // slider's own Save/Share, added below, replace this for the two-photo case.
   const extractPhoto = useCallback(async () => {
-    try {
-      const { status } = await MediaLibrary.requestPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert(t("permissions.title"), t("permissions.photoSaveMessage"));
-        return;
-      }
-
-      const photoToExtract =
-        photos.length > 1
-          ? sliderValue > 50
-            ? photos[photos.length - 1]
-            : photos[0]
-          : photos[0];
-      const asset = await MediaLibrary.createAssetAsync(photoToExtract.uri);
-      await MediaLibrary.createAlbumAsync("FitSnapshot", asset, false);
-
-      Alert.alert(t("common.success"), t("progress.photoSavedMessage"));
-    } catch (error) {
-      console.error("Error extracting photo:", error);
+    const result = await saveFileToGallery(photos[0].uri, "FitSnapshot");
+    if (result.status === "permission_denied") {
+      Alert.alert(t("permissions.title"), t("permissions.photoSaveMessage"));
+    } else if (result.status === "error") {
+      console.error("Error extracting photo:", result.error);
       Alert.alert(t("common.error"), t("progress.photoSaveErrorMessage"));
+    } else {
+      Alert.alert(t("common.success"), t("progress.photoSavedMessage"));
     }
-  }, [photos, sliderValue, t]);
+  }, [photos, t]);
 
   if (photos.length === 0) {
     return (
@@ -281,6 +278,50 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
 
   const oldestPhoto = photos[0];
   const newestPhoto = photos[photos.length - 1];
+
+  const sliderCaption = `${new Date(photo1.date).toLocaleDateString()} → ${new Date(photo2.date).toLocaleDateString()} · ${t(`camera.${type}`).toUpperCase()}`;
+
+  const handleSaveComposite = async () => {
+    if (isSavingComposite || isSharingComposite) return;
+    setIsSavingComposite(true);
+    try {
+      const fileUri = await compositeExporterRef.current?.export();
+      if (!fileUri) throw new Error("Composite export returned no file");
+      const result = await saveFileToGallery(fileUri, "FitSnapshot");
+      if (result.status === "permission_denied") {
+        Alert.alert(t("permissions.title"), t("permissions.photoSaveMessage"));
+      } else if (result.status === "error") {
+        Alert.alert(t("common.error"), t("progress.photoSaveErrorMessage"));
+      } else {
+        Alert.alert(t("common.success"), t("progress.photoSavedMessage"));
+      }
+    } catch (error) {
+      console.error("Error saving composite photo:", error);
+      Alert.alert(t("common.error"), t("progress.photoSaveErrorMessage"));
+    } finally {
+      setIsSavingComposite(false);
+    }
+  };
+
+  const handleShareComposite = async () => {
+    if (isSavingComposite || isSharingComposite) return;
+    setIsSharingComposite(true);
+    try {
+      const fileUri = await compositeExporterRef.current?.export();
+      if (!fileUri) throw new Error("Composite export returned no file");
+      const result = await shareFile(fileUri, "image/png", t("progress.shareButton"));
+      if (result.status === "unavailable") {
+        Alert.alert(t("common.error"), t("progress.sharingUnavailableMessage"));
+      } else if (result.status === "error") {
+        Alert.alert(t("common.error"), t("progress.shareErrorMessage"));
+      }
+    } catch (error) {
+      console.error("Error sharing composite photo:", error);
+      Alert.alert(t("common.error"), t("progress.shareErrorMessage"));
+    } finally {
+      setIsSharingComposite(false);
+    }
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.transparent }]}>
@@ -495,7 +536,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   )}
       {/* Slider Mode */}
       {comparisonMode === 'slider' && (
-        <ContactSheetFrame caption={`${new Date(photo1.date).toLocaleDateString()} → ${new Date(photo2.date).toLocaleDateString()} · ${t(`camera.${type}`).toUpperCase()}`}>
+        <ContactSheetFrame caption={sliderCaption}>
           <View style={styles.sliderStage}>
             <BeforeAfterSlider
               beforeUri={photo1.uri}
@@ -505,12 +546,38 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
               onValueChange={setSliderValue}
             />
             <TouchableOpacity
-              style={[styles.extractButton, { backgroundColor: theme.primary }]}
-              onPress={extractPhoto}
+              style={[styles.compositeActionButton, styles.compositeSaveButton, { backgroundColor: theme.primary }]}
+              onPress={handleSaveComposite}
+              disabled={isSavingComposite || isSharingComposite}
               activeOpacity={0.8}
             >
-              <Ionicons name="download-outline" size={20} color={theme.background} />
+              {isSavingComposite ? (
+                <ActivityIndicator size="small" color={theme.background} />
+              ) : (
+                <Ionicons name="download-outline" size={20} color={theme.background} />
+              )}
             </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.compositeActionButton, styles.compositeShareButton, { backgroundColor: theme.primary }]}
+              onPress={handleShareComposite}
+              disabled={isSavingComposite || isSharingComposite}
+              activeOpacity={0.8}
+            >
+              {isSharingComposite ? (
+                <ActivityIndicator size="small" color={theme.background} />
+              ) : (
+                <Ionicons name="share-social-outline" size={20} color={theme.background} />
+              )}
+            </TouchableOpacity>
+            <CompositeExporter
+              ref={compositeExporterRef}
+              beforeUri={photo1.uri}
+              afterUri={photo2.uri}
+              afterness={sliderValue}
+              caption={sliderCaption}
+              beforeLabel={t("common.before")}
+              afterLabel={t("common.after")}
+            />
           </View>
         </ContactSheetFrame>
       )}
@@ -858,6 +925,23 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 6,
+  },
+  compositeActionButton: {
+    position: "absolute",
+    bottom: 16,
+    borderRadius: 24,
+    padding: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  compositeSaveButton: {
+    right: 64,
+  },
+  compositeShareButton: {
+    right: 16,
   },
   // GIF-specific styles
   gifContainer: {
