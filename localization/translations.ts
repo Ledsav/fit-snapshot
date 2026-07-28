@@ -82,6 +82,11 @@ interface TranslationKeys {
     extractPhoto: string;
     photoSavedMessage: string;
     photoSaveErrorMessage: string;
+    shareButton: string;
+    shareErrorMessage: string;
+    gifShareButton: string;
+    gifShareErrorMessage: string;
+    sharingUnavailableMessage: string;
     selectPhotos: string;
     selectFirstPhoto: string;
     selectSecondPhoto: string;
@@ -384,6 +389,11 @@ export const translations: Translations = {
       extractPhoto: "Extract photo",
       photoSavedMessage: "Photo saved successfully",
       photoSaveErrorMessage: "Error saving photo",
+      shareButton: "Share",
+      shareErrorMessage: "Error sharing photo",
+      gifShareButton: "Share",
+      gifShareErrorMessage: "Error sharing GIF",
+      sharingUnavailableMessage: "Sharing isn't available on this device",
       selectPhotos: "Select Photos to Compare",
       selectFirstPhoto: "Select first photo",
       selectSecondPhoto: "Select second photo",
@@ -714,6 +724,11 @@ export const translations: Translations = {
       extractPhoto: "Extraer foto",
       photoSavedMessage: "Foto guardada con éxito",
       photoSaveErrorMessage: "Error al guardar foto",
+      shareButton: "Compartir",
+      shareErrorMessage: "Error al compartir foto",
+      gifShareButton: "Compartir",
+      gifShareErrorMessage: "Error al compartir GIF",
+      sharingUnavailableMessage: "Compartir no está disponible en este dispositivo",
       selectPhotos: "Seleccionar Fotos para Comparar",
       selectFirstPhoto: "Seleccionar primera foto",
       selectSecondPhoto: "Seleccionar segunda foto",
@@ -1044,6 +1059,11 @@ export const translations: Translations = {
       extractPhoto: "Estrai foto",
       photoSavedMessage: "Foto salvata con successo",
       photoSaveErrorMessage: "Errore nel salvare la foto",
+      shareButton: "Condividi",
+      shareErrorMessage: "Errore nella condivisione della foto",
+      gifShareButton: "Condividi",
+      gifShareErrorMessage: "Errore nella condivisione della GIF",
+      sharingUnavailableMessage: "La condivisione non è disponibile su questo dispositivo",
       selectPhotos: "Seleziona Foto da Confrontare",
       selectFirstPhoto: "Seleziona prima foto",
       selectSecondPhoto: "Seleziona seconda foto",
@@ -1374,6 +1394,11 @@ export const translations: Translations = {
       extractPhoto: "Foto extrahieren",
       photoSavedMessage: "Foto erfolgreich gespeichert",
       photoSaveErrorMessage: "Fehler beim Speichern des Fotos",
+      shareButton: "Teilen",
+      shareErrorMessage: "Fehler beim Teilen des Fotos",
+      gifShareButton: "Teilen",
+      gifShareErrorMessage: "Fehler beim Teilen des GIFs",
+      sharingUnavailableMessage: "Teilen ist auf diesem Gerät nicht verfügbar",
       selectPhotos: "Fotos zum Vergleichen Auswählen",
       selectFirstPhoto: "Erstes Foto auswählen",
       selectSecondPhoto: "Zweites Foto auswählen",
@@ -1705,6 +1730,11 @@ export const translations: Translations = {
       extractPhoto: "Extraire la photo",
       photoSavedMessage: "Photo enregistrée avec succès",
       photoSaveErrorMessage: "Erreur lors de l'enregistrement de la photo",
+      shareButton: "Partager",
+      shareErrorMessage: "Erreur lors du partage de la photo",
+      gifShareButton: "Partager",
+      gifShareErrorMessage: "Erreur lors du partage du GIF",
+      sharingUnavailableMessage: "Le partage n'est pas disponible sur cet appareil",
       selectPhotos: "Sélectionner des Photos à Comparer",
       selectFirstPhoto: "Sélectionner la première photo",
       selectSecondPhoto: "Sélectionner la deuxième photo",
