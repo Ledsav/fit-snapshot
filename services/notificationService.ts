@@ -1,5 +1,5 @@
 import * as Notifications from "expo-notifications";
-import { Platform } from "react-native";
+import { Alert, Platform } from "react-native";
 
 export class NotificationService {
   static async scheduleReminder(
@@ -43,7 +43,10 @@ export class NotificationService {
       finalStatus = status;
     }
     if (finalStatus !== "granted") {
-      alert("Failed to get push token for push notification!");
+      // Not global `alert()` — that's a web-only API with no polyfill in
+      // React Native and would throw a ReferenceError here instead of
+      // showing anything.
+      Alert.alert("Permission Required", "Failed to get permission for notifications.");
       return false;
     }
     return true;

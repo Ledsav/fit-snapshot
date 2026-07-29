@@ -21,6 +21,7 @@ import { PhotoType } from "@/enums/Photos";
 import { LightingBaselineStore } from "@/services/lightingBaselineStore";
 import { PendingCropResult } from "@/services/pendingCropStore";
 import { extractPhotoDate } from "@/utils/photoDate";
+import { showPermissionDeniedAlert } from "@/utils/permissionAlerts";
 import { useLightingIndicator } from "@/hooks/useLightingIndicator";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -33,11 +34,13 @@ import { FlipType, manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Dimensions,
   Image,
+  Linking,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -47,7 +50,7 @@ import {
 import AlignmentOverlay from "@/components/camera/AlignmentOverlay";
 import { GhostOverlayStore } from "@/services/ghostOverlayStore";
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+const { width: screenWidth } = Dimensions.get("window");
 const aspectRatio = 4 / 3;
 const cameraHeight = screenWidth * aspectRatio;
 
@@ -66,7 +69,7 @@ export default function CameraScreen() {
   const [ghostModeEnabled, setGhostModeEnabled] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [cameraRetryKey, setCameraRetryKey] = useState(0);
-  const { hasPermission, requestPermission } = useCameraPermission();
+  const { hasPermission, requestPermission, canRequestPermission } = useCameraPermission();
   const device = useCameraDevice(facing);
   const [importedPhotoDate, setImportedPhotoDate] = useState<string | null>(null);
   const router = useRouter();
@@ -155,8 +158,11 @@ export default function CameraScreen() {
           {t("camera.permissionMessage")}
         </Text>
         <Button
-          title={t("camera.grantPermission")}
-          onPress={requestPermission}
+          // requestPermission() silently no-ops once the OS permission is
+          // permanently denied (canRequestPermission stays false forever) —
+          // route to the system Settings page instead of a dead button.
+          title={canRequestPermission ? t("camera.grantPermission") : t("permissions.openSettingsButton")}
+          onPress={canRequestPermission ? requestPermission : () => Linking.openSettings()}
           variant="primary"
           size="large"
         />
@@ -277,15 +283,22 @@ export default function CameraScreen() {
 
   const pickImage = async () => {
     if (isPhotoLimitReached) {
-      alert(photoLimitStatus.reason || t("camera.photoLimitReached") || "Photo limit reached. Delete photos or upgrade to Premium.");
+      Alert.alert(t("common.error"), photoLimitStatus.reason || t("camera.photoLimitReached") || "Photo limit reached. Delete photos or upgrade to Premium.");
       return;
     }
 
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const { status, canAskAgain } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (status !== 'granted') {
-        alert(t("camera.galleryPermissionDenied") || 'Sorry, we need media library permissions to import images!');
+        showPermissionDeniedAlert(
+          t("permissions.title"),
+          canAskAgain,
+          t("camera.galleryPermissionDenied"),
+          t("camera.galleryPermissionPermanentlyDeniedMessage"),
+          t("common.cancel"),
+          t("permissions.openSettingsButton")
+        );
         return;
       }
 
@@ -318,7 +331,7 @@ export default function CameraScreen() {
       }
     } catch (error) {
       console.error("Error picking image:", error);
-      alert(t("camera.imagePickerError") || 'Error selecting image. Please try again.');
+      Alert.alert(t("common.error"), t("camera.imagePickerError") || 'Error selecting image. Please try again.');
     }
   };
 

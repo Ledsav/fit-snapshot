@@ -15,7 +15,7 @@ import type { PurchasesOffering, PurchasesPackage } from 'react-native-purchases
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
-    Dimensions,
+    Alert,
     Modal,
     Platform,
     ScrollView,
@@ -29,7 +29,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   spacing,
   borderRadius,
-  elevation,
   fontFamily,
   preciseType,
   typography,
@@ -44,8 +43,6 @@ interface PaywallModalProps {
   source?: string;
   feature?: Feature;
 }
-
-const { width, height } = Dimensions.get('window');
 
 const PaywallModal: React.FC<PaywallModalProps> = ({
   visible,
@@ -89,7 +86,7 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
         onClose(); // UserContext listener refreshes premium state automatically
         return;
       }
-      alert(result.error ?? t('paywall.purchaseError'));
+      Alert.alert(t('common.error'), result.error ?? t('paywall.purchaseError'));
     } finally {
       setIsProcessing(false);
     }
@@ -99,10 +96,10 @@ const PaywallModal: React.FC<PaywallModalProps> = ({
     setIsRestoring(true);
     try {
       const { isPremium } = await restorePurchases();
-      alert(isPremium ? t('paywall.restoreSuccess') : t('paywall.restoreNone'));
+      Alert.alert(t('settings.restorePurchases'), isPremium ? t('paywall.restoreSuccess') : t('paywall.restoreNone'));
       if (isPremium) onClose();
     } catch {
-      alert(t('paywall.purchaseError'));
+      Alert.alert(t('settings.restorePurchases'), t('paywall.purchaseError'));
     } finally {
       setIsRestoring(false);
     }

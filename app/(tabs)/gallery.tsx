@@ -15,7 +15,6 @@ import {
   opacity as designOpacity,
   touchTarget,
 } from "@/constants/DesignSystem";
-import { IconButton, Button } from "@/components/ui";
 import { useGifs } from "@/context/GifContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { usePhotos } from "@/context/PhotoContext";
@@ -28,6 +27,7 @@ import { PendingCropResult } from "@/services/pendingCropStore";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from 'expo-image-picker';
 import { extractPhotoDate } from "@/utils/photoDate";
+import { showPermissionDeniedAlert } from "@/utils/permissionAlerts";
 import { usePathname, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -269,10 +269,17 @@ export default function GalleryScreen() {
     }
 
     try {
-      const { status} = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const { status, canAskAgain } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (status !== 'granted') {
-        alert(t("camera.galleryPermissionDenied") || 'Sorry, we need media library permissions to import images!');
+        showPermissionDeniedAlert(
+          t("permissions.title"),
+          canAskAgain,
+          t("camera.galleryPermissionDenied"),
+          t("camera.galleryPermissionPermanentlyDeniedMessage"),
+          t("common.cancel"),
+          t("permissions.openSettingsButton")
+        );
         return;
       }
 
@@ -295,7 +302,7 @@ export default function GalleryScreen() {
       }
     } catch (error) {
       console.error("Error picking image:", error);
-      alert(t("camera.imagePickerError") || 'Error selecting image. Please try again.');
+      Alert.alert(t("common.error"), t("camera.imagePickerError") || 'Error selecting image. Please try again.');
     }
   };
 
@@ -344,10 +351,17 @@ export default function GalleryScreen() {
 
   const pickGif = async () => {
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const { status, canAskAgain } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (status !== 'granted') {
-        alert(t("camera.galleryPermissionDenied") || 'Sorry, we need media library permissions to import images!');
+        showPermissionDeniedAlert(
+          t("permissions.title"),
+          canAskAgain,
+          t("camera.galleryPermissionDenied"),
+          t("camera.galleryPermissionPermanentlyDeniedMessage"),
+          t("common.cancel"),
+          t("permissions.openSettingsButton")
+        );
         return;
       }
 
@@ -381,7 +395,7 @@ export default function GalleryScreen() {
       }
     } catch (error) {
       console.error("Error picking GIF:", error);
-      alert(t("camera.imagePickerError") || 'Error selecting GIF. Please try again.');
+      Alert.alert(t("common.error"), t("camera.imagePickerError") || 'Error selecting GIF. Please try again.');
     }
   };
 
