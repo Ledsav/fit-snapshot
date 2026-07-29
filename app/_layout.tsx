@@ -20,6 +20,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import * as Sentry from "@sentry/react-native";
 
 import { AuthProvider } from "@/context/AuthContext";
 import { GifProvider } from "@/context/GifContext";
@@ -39,7 +40,15 @@ export const unstable_settings = {
 
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+// No-op (and silent) until EXPO_PUBLIC_SENTRY_DSN is set — lets the app run
+// normally in local dev/CI before a Sentry project exists.
+Sentry.init({
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+  enabled: !!process.env.EXPO_PUBLIC_SENTRY_DSN,
+  debug: __DEV__,
+});
+
+function RootLayout() {
   const [loaded, error] = useFonts({
     Fraunces_500Medium,
     Fraunces_500Medium_Italic,
@@ -66,6 +75,8 @@ export default function RootLayout() {
 
   return <RootLayoutNav />;
 }
+
+export default Sentry.wrap(RootLayout);
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
