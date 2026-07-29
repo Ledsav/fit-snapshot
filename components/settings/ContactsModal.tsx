@@ -30,10 +30,6 @@ const ContactsModal: React.FC<ContactsModalProps> = ({
     Linking.openURL("mailto:alberto.valdes.rey.official@gmail.com");
   };
 
-  const handlePhonePress = () => {
-    Linking.openURL("tel:+1234567890");
-  };
-
   const handleWebsitePress = () => {
     Linking.openURL("https://ledsav.github.io/");
   };

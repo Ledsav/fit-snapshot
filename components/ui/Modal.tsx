@@ -28,13 +28,12 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/context/ThemeContext';
-import Colors, { withOpacity, overlayOpacity } from '@/constants/Colors';
+import Colors from '@/constants/Colors';
 import {
   borderRadius,
   spacing,
   typography,
   elevation,
-  zIndex,
   iconSize,
 } from '@/constants/DesignSystem';
 import { IconButton } from './IconButton';

@@ -22,9 +22,7 @@ export const WeeklyProgressChart: React.FC<WeeklyProgressChartProps> = ({ photos
   const theme = Colors[effectiveColorScheme];
   const { t } = useLocalization();
 
-  
   const now = new Date();
-  const fourWeeksAgo = new Date(now.getTime() - 28 * 24 * 60 * 60 * 1000);
 
   const weeks = Array.from({ length: 4 }, (_, i) => {
     const weekEnd = new Date(now.getTime() - i * 7 * 24 * 60 * 60 * 1000);

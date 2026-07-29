@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  ScrollView,
   Modal,
   ViewStyle,
   TextStyle,

@@ -17,7 +17,6 @@ import {
   borderRadius,
   spacing,
   typography,
-  opacity,
 } from '@/constants/DesignSystem';
 
 interface BadgeProps {

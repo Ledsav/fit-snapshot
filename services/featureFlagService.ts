@@ -14,7 +14,6 @@ import {
   UserSubscriptionStatus,
   FeatureUsage,
   FREE_TIER_LIMITS,
-  PREMIUM_TIER_LIMITS,
 } from '@/constants/Features';
 import featureConfigData from '@/config/features.json';
 

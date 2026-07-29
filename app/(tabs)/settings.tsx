@@ -22,7 +22,6 @@ import { useLocalization } from "@/context/LocalizationContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useUser } from "@/context/UserContext";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
@@ -69,9 +68,8 @@ export default function SettingsScreen() {
   const { effectiveColorScheme, themeMode } = useTheme();
   const theme = Colors[effectiveColorScheme];
   const { t, locale } = useLocalization();
-  const { isPremium, subscriptionStatus, featureUsage, setTestPremiumStatus, restorePurchases } = useUser();
+  const { isPremium, featureUsage, setTestPremiumStatus, restorePurchases } = useUser();
   const { user, userInfo, signIn, signOut: handleSignOut } = useAuth();
-  const router = useRouter();
   const [isLanguageSelectorVisible, setIsLanguageSelectorVisible] =
     useState(false);
   const [isThemeSelectorVisible, setIsThemeSelectorVisible] = useState(false);
