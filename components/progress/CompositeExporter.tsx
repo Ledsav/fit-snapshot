@@ -89,13 +89,22 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
     const svgRef = useRef<Svg>(null);
     const [exportState, setExportState] = useState<ExportState | null>(null);
     const exportCallIdRef = useRef(0);
+    // The file from the previous export() call, cleaned up lazily at the
+    // start of the next call rather than right after use: PhotoMorph's
+    // isSaving/isSharingComposite guard blocks starting a new export until
+    // the prior save/share has fully resolved, so by the time we get here
+    // the previous file is guaranteed to no longer be needed.
+    const previousFileUriRef = useRef<string | null>(null);
 
     useImperativeHandle(ref, () => ({
       export: async () => {
         exportCallIdRef.current += 1;
         const callId = exportCallIdRef.current;
-        console.log(`[CompositeExporter] export() call #${callId}: start`);
         const { dividerX, beforeClipWidth } = computeCompositeLayout(getAfterness());
+
+        if (previousFileUriRef.current) {
+          FileSystem.deleteAsync(previousFileUriRef.current, { idempotent: true }).catch(() => {});
+        }
 
         // Embed both photos as data URIs before mounting the SVG <Image>
         // elements — the pixel data is inline in the tree at render time
@@ -105,7 +114,6 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
           FileSystem.readAsStringAsync(beforeUri, { encoding: FileSystem.EncodingType.Base64 }),
           FileSystem.readAsStringAsync(afterUri, { encoding: FileSystem.EncodingType.Base64 }),
         ]);
-        console.log(`[CompositeExporter] export() call #${callId}: photos read as base64`);
 
         setExportState({
           before: `data:image/jpeg;base64,${beforeBase64}`,
@@ -114,18 +122,14 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
           beforeClipWidth,
           callId,
         });
-        console.log(`[CompositeExporter] export() call #${callId}: setExportState done, waiting for paint + decode margin`);
         await waitTwoFrames();
         await delay(IMAGE_DECODE_SAFETY_MARGIN_MS);
-        console.log(`[CompositeExporter] export() call #${callId}: wait done, ready`);
 
         return new Promise<string>((resolve, reject) => {
           if (!svgRef.current) {
-            console.log(`[CompositeExporter] export() call #${callId}: svgRef.current is null!`);
             reject(new Error("CompositeExporter: Svg ref is not attached."));
             return;
           }
-          console.log(`[CompositeExporter] export() call #${callId}: calling toDataURL`);
           // No {width, height} options: passing them makes Android size the
           // output Bitmap at exactly those raw pixels while still drawing
           // content scaled to the view's actual (larger) pixel size, which
@@ -135,19 +139,15 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
           // dp/density adjustment above, so this is correctly-sized and
           // fast with no extra resize step needed.
           svgRef.current.toDataURL((base64Png) => {
-            console.log(`[CompositeExporter] export() call #${callId}: toDataURL callback fired, base64 length=${base64Png?.length}`);
             const fileUri = `${FileSystem.cacheDirectory}composite_${Date.now()}.png`;
             FileSystem.writeAsStringAsync(fileUri, base64Png, {
               encoding: FileSystem.EncodingType.Base64,
             })
               .then(() => {
-                console.log(`[CompositeExporter] export() call #${callId}: wrote file, done`);
+                previousFileUriRef.current = fileUri;
                 resolve(fileUri);
               })
-              .catch((error) => {
-                console.log(`[CompositeExporter] export() call #${callId}: write failed`, error);
-                reject(error);
-              });
+              .catch(reject);
           });
         });
       },

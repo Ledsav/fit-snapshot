@@ -87,6 +87,8 @@ interface TranslationKeys {
     gifShareButton: string;
     gifShareErrorMessage: string;
     sharingUnavailableMessage: string;
+    gifSavedMessage: string;
+    gifSaveErrorMessage: string;
     selectPhotos: string;
     selectFirstPhoto: string;
     selectSecondPhoto: string;
@@ -394,6 +396,8 @@ export const translations: Translations = {
       gifShareButton: "Share",
       gifShareErrorMessage: "Error sharing GIF",
       sharingUnavailableMessage: "Sharing isn't available on this device",
+      gifSavedMessage: "GIF saved to gallery",
+      gifSaveErrorMessage: "Failed to save GIF",
       selectPhotos: "Select Photos to Compare",
       selectFirstPhoto: "Select first photo",
       selectSecondPhoto: "Select second photo",
@@ -729,6 +733,8 @@ export const translations: Translations = {
       gifShareButton: "Compartir",
       gifShareErrorMessage: "Error al compartir GIF",
       sharingUnavailableMessage: "Compartir no está disponible en este dispositivo",
+      gifSavedMessage: "GIF guardado en la galería",
+      gifSaveErrorMessage: "Error al guardar el GIF",
       selectPhotos: "Seleccionar Fotos para Comparar",
       selectFirstPhoto: "Seleccionar primera foto",
       selectSecondPhoto: "Seleccionar segunda foto",
@@ -1064,6 +1070,8 @@ export const translations: Translations = {
       gifShareButton: "Condividi",
       gifShareErrorMessage: "Errore nella condivisione della GIF",
       sharingUnavailableMessage: "La condivisione non è disponibile su questo dispositivo",
+      gifSavedMessage: "GIF salvata nella galleria",
+      gifSaveErrorMessage: "Impossibile salvare la GIF",
       selectPhotos: "Seleziona Foto da Confrontare",
       selectFirstPhoto: "Seleziona prima foto",
       selectSecondPhoto: "Seleziona seconda foto",
@@ -1399,6 +1407,8 @@ export const translations: Translations = {
       gifShareButton: "Teilen",
       gifShareErrorMessage: "Fehler beim Teilen des GIFs",
       sharingUnavailableMessage: "Teilen ist auf diesem Gerät nicht verfügbar",
+      gifSavedMessage: "GIF in der Galerie gespeichert",
+      gifSaveErrorMessage: "GIF konnte nicht gespeichert werden",
       selectPhotos: "Fotos zum Vergleichen Auswählen",
       selectFirstPhoto: "Erstes Foto auswählen",
       selectSecondPhoto: "Zweites Foto auswählen",
@@ -1735,6 +1745,8 @@ export const translations: Translations = {
       gifShareButton: "Partager",
       gifShareErrorMessage: "Erreur lors du partage du GIF",
       sharingUnavailableMessage: "Le partage n'est pas disponible sur cet appareil",
+      gifSavedMessage: "GIF enregistré dans la galerie",
+      gifSaveErrorMessage: "Échec de l'enregistrement du GIF",
       selectPhotos: "Sélectionner des Photos à Comparer",
       selectFirstPhoto: "Sélectionner la première photo",
       selectSecondPhoto: "Sélectionner la deuxième photo",

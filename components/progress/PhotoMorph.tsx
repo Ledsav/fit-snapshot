@@ -278,25 +278,15 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
     );
   }
 
-  const oldestPhoto = photos[0];
-  const newestPhoto = photos[photos.length - 1];
-
   const sliderCaption = `${new Date(photo1.date).toLocaleDateString()} → ${new Date(photo2.date).toLocaleDateString()} · ${t(`camera.${type}`).toUpperCase()}`;
 
   const handleSaveComposite = async () => {
-    console.log("[PhotoMorph] handleSaveComposite tapped", { isSavingComposite, isSharingComposite });
-    if (isSavingComposite || isSharingComposite) {
-      console.log("[PhotoMorph] handleSaveComposite blocked by guard");
-      return;
-    }
+    if (isSavingComposite || isSharingComposite) return;
     setIsSavingComposite(true);
     try {
-      console.log("[PhotoMorph] handleSaveComposite: calling export()");
       const fileUri = await compositeExporterRef.current?.export();
-      console.log("[PhotoMorph] handleSaveComposite: export() returned", fileUri);
       if (!fileUri) throw new Error("Composite export returned no file");
       const result = await saveFileToGallery(fileUri, "FitSnapshot");
-      console.log("[PhotoMorph] handleSaveComposite: saveFileToGallery result", result);
       if (result.status === "permission_denied") {
         Alert.alert(t("permissions.title"), t("permissions.photoSaveMessage"));
       } else if (result.status === "error") {
@@ -308,25 +298,17 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
       console.error("Error saving composite photo:", error);
       Alert.alert(t("common.error"), t("progress.photoSaveErrorMessage"));
     } finally {
-      console.log("[PhotoMorph] handleSaveComposite: finally, resetting isSavingComposite");
       setIsSavingComposite(false);
     }
   };
 
   const handleShareComposite = async () => {
-    console.log("[PhotoMorph] handleShareComposite tapped", { isSavingComposite, isSharingComposite });
-    if (isSavingComposite || isSharingComposite) {
-      console.log("[PhotoMorph] handleShareComposite blocked by guard");
-      return;
-    }
+    if (isSavingComposite || isSharingComposite) return;
     setIsSharingComposite(true);
     try {
-      console.log("[PhotoMorph] handleShareComposite: calling export()");
       const fileUri = await compositeExporterRef.current?.export();
-      console.log("[PhotoMorph] handleShareComposite: export() returned", fileUri);
       if (!fileUri) throw new Error("Composite export returned no file");
       const result = await shareFile(fileUri, "image/png", t("progress.shareButton"));
-      console.log("[PhotoMorph] handleShareComposite: shareFile result", result);
       if (result.status === "unavailable") {
         Alert.alert(t("common.error"), t("progress.sharingUnavailableMessage"));
       } else if (result.status === "error") {
@@ -336,7 +318,6 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
       console.error("Error sharing composite photo:", error);
       Alert.alert(t("common.error"), t("progress.shareErrorMessage"));
     } finally {
-      console.log("[PhotoMorph] handleShareComposite: finally, resetting isSharingComposite");
       setIsSharingComposite(false);
     }
   };
@@ -518,10 +499,10 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
                   if (result.status === 'permission_denied') {
                     Alert.alert(t("permissions.title"), t("permissions.photoSaveMessage"));
                   } else if (result.status === 'error') {
-                    Alert.alert(t("common.error"), 'Failed to save GIF');
+                    Alert.alert(t("common.error"), t("progress.gifSaveErrorMessage"));
                   } else {
                     setGifSaved(true);
-                    Alert.alert(t("common.success"), 'GIF saved to gallery');
+                    Alert.alert(t("common.success"), t("progress.gifSavedMessage"));
                   }
                 }}
                 variant="primary"
