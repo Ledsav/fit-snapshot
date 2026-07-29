@@ -67,14 +67,26 @@ interface ExportState {
   callId: number;
 }
 
-// After setting the new export state, wait for a real commit+paint (two
-// animation frames) plus this safety margin for the native <Image>'s data
-// URI decode to finish, before rasterizing. Not used: waiting on the
-// SvgImage onLoad event — on Android, re-decoding byte-identical data URI
-// content (the same source photos) into a freshly mounted view does not
-// reliably re-fire onLoad (looks like an image-loader cache hit that
-// bypasses the event), which hung every export() call after the first.
-const IMAGE_DECODE_SAFETY_MARGIN_MS = 300;
+// Not used: waiting on the SvgImage onLoad event — on Android, re-decoding
+// byte-identical data URI content (the same source photos) into a freshly
+// mounted view does not reliably re-fire onLoad (looks like an image-loader
+// cache hit that bypasses the event), which hung every export() call after
+// the first. Also not used: a fixed post-paint delay before rasterizing —
+// that's a guess about decode time, not a check that decode finished, so
+// it's either too short on a slow device/large photo (producing a silently
+// blank/corrupt export) or wastes time padding every call on a fast one.
+//
+// Instead, toDataURL() is polled: it rasterizes whatever is currently
+// drawn and returns immediately, so a still-decoding frame (background +
+// text, no photos yet) produces a PNG that compresses to a few KB, while a
+// real two-photo composite is on the order of 1-2MB. Only a result at or
+// above MIN_VALID_COMPOSITE_BASE64_LENGTH is accepted; anything smaller is
+// retried after a short backoff. This verifies the actual output instead
+// of guessing how long decode takes, and still fails loudly (rather than
+// hanging) once RASTER_MAX_ATTEMPTS is exhausted.
+const MIN_VALID_COMPOSITE_BASE64_LENGTH = 100_000;
+const RASTER_MAX_ATTEMPTS = 20;
+const RASTER_RETRY_DELAY_MS = 150;
 
 function waitTwoFrames(): Promise<void> {
   return new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
@@ -82,6 +94,10 @@ function waitTwoFrames(): Promise<void> {
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function rasterizeOnce(svg: Svg): Promise<string> {
+  return new Promise((resolve) => svg.toDataURL((base64Png) => resolve(base64Png)));
 }
 
 export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeExporterProps>(
@@ -123,33 +139,37 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
           callId,
         });
         await waitTwoFrames();
-        await delay(IMAGE_DECODE_SAFETY_MARGIN_MS);
 
-        return new Promise<string>((resolve, reject) => {
+        // No {width, height} options to toDataURL: passing them makes
+        // Android size the output Bitmap at exactly those raw pixels while
+        // still drawing content scaled to the view's actual (larger) pixel
+        // size, which crops to the top-left corner. With no options,
+        // toDataURL uses the view's real pixel size directly — already
+        // exactly COMPOSITE_CANVAS_WIDTH x STATIC_CANVAS_HEIGHT thanks to
+        // the dp/density adjustment above, so this is correctly-sized and
+        // fast with no extra resize step needed.
+        let base64Png: string | null = null;
+        for (let attempt = 0; attempt < RASTER_MAX_ATTEMPTS; attempt++) {
           if (!svgRef.current) {
-            reject(new Error("CompositeExporter: Svg ref is not attached."));
-            return;
+            throw new Error("CompositeExporter: Svg ref is not attached.");
           }
-          // No {width, height} options: passing them makes Android size the
-          // output Bitmap at exactly those raw pixels while still drawing
-          // content scaled to the view's actual (larger) pixel size, which
-          // crops to the top-left corner. With no options, toDataURL uses
-          // the view's real pixel size directly — already exactly
-          // COMPOSITE_CANVAS_WIDTH x STATIC_CANVAS_HEIGHT thanks to the
-          // dp/density adjustment above, so this is correctly-sized and
-          // fast with no extra resize step needed.
-          svgRef.current.toDataURL((base64Png) => {
-            const fileUri = `${FileSystem.cacheDirectory}composite_${Date.now()}.png`;
-            FileSystem.writeAsStringAsync(fileUri, base64Png, {
-              encoding: FileSystem.EncodingType.Base64,
-            })
-              .then(() => {
-                previousFileUriRef.current = fileUri;
-                resolve(fileUri);
-              })
-              .catch(reject);
-          });
+          const candidate = await rasterizeOnce(svgRef.current);
+          if (candidate.length >= MIN_VALID_COMPOSITE_BASE64_LENGTH) {
+            base64Png = candidate;
+            break;
+          }
+          await delay(RASTER_RETRY_DELAY_MS);
+        }
+        if (!base64Png) {
+          throw new Error("CompositeExporter: timed out waiting for photos to decode.");
+        }
+
+        const fileUri = `${FileSystem.cacheDirectory}composite_${Date.now()}.png`;
+        await FileSystem.writeAsStringAsync(fileUri, base64Png, {
+          encoding: FileSystem.EncodingType.Base64,
         });
+        previousFileUriRef.current = fileUri;
+        return fileUri;
       },
     }));
 
