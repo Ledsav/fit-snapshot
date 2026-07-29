@@ -13,3 +13,4 @@ Tracks who's on the Play Console **Internal testing** testers list and/or **Lice
 | Mary | | | | |
 | Francesco Ventre | | | | |
 | Monica Spada | | | | |
+| Enrico Pili | | | | |

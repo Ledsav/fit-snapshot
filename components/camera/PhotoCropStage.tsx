@@ -117,7 +117,10 @@ export const PhotoCropStage = forwardRef<PhotoCropStageHandle, PhotoCropStagePro
           <View pointerEvents="none" style={[styles.mask, { bottom: 0, left: 0, right: 0, height: screenHeight - FRAME_TOP - FRAME_HEIGHT, backgroundColor: maskColor }]} />
           <View pointerEvents="none" style={[styles.mask, { top: FRAME_TOP, left: 0, width: FRAME_LEFT, height: FRAME_HEIGHT, backgroundColor: maskColor }]} />
           <View pointerEvents="none" style={[styles.mask, { top: FRAME_TOP, right: 0, width: screenWidth - FRAME_LEFT - FRAME_WIDTH, height: FRAME_HEIGHT, backgroundColor: maskColor }]} />
-          <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+          <View
+            pointerEvents="none"
+            style={[styles.mask, { top: FRAME_TOP, left: FRAME_LEFT, width: FRAME_WIDTH, height: FRAME_HEIGHT, backgroundColor: "transparent" }]}
+          >
             <AlignmentOverlay type={type} ghostPhoto={ghostPhoto} />
           </View>
           <View

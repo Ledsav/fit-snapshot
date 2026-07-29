@@ -38,7 +38,8 @@ export async function signInWithGoogle(): Promise<User | null> {
     return userCredential.user;
   } catch (error: any) {
     console.error('Error signing in with Google:', error);
-    throw new Error(error.message || 'Failed to sign in with Google');
+    const detail = [error.code, error.message].filter(Boolean).join(': ');
+    throw new Error(detail || 'Failed to sign in with Google');
   }
 }
 
