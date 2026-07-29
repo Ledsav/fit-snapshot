@@ -23,9 +23,9 @@ module.exports = {
       package: "com.ledsav.fitsnapshot",
       versionCode: 2,
       // EAS Build injects this from the GOOGLE_SERVICES_JSON file-type env
-      // var; the local fallback path is for local/native builds where you've
-      // downloaded the file yourself to the project root (gitignored).
-      googleServicesFile: process.env.GOOGLE_SERVICES_JSON || "./google-services.json",
+      // var; the local fallback is for local/native builds, reading from the
+      // gitignored support/ folder where local credential files already live.
+      googleServicesFile: process.env.GOOGLE_SERVICES_JSON || "./support/google-services.json",
       permissions: [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
