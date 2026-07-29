@@ -9,6 +9,7 @@ A mobile application for tracking fitness progress through photo tracking.
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Useful Commands](#useful-commands)
 
 ## **Concept**
 
@@ -62,3 +63,39 @@ To install the application, follow these steps:
 1. Open the application on your mobile device
 2. Take a new photo using the camera functionality
 3. View your streaks and latest photos
+
+## **Useful Commands**
+
+### Local development
+
+| Command | Description |
+| --- | --- |
+| `npm start` | Start the Metro dev server (Expo dev client / Expo Go) |
+| `npm run android` | Start Metro and open on a connected Android device/emulator |
+| `npm run ios` | Start Metro and open on iOS simulator |
+| `npm run web` | Start Metro for the web target |
+| `npm test` | Run the Jest test suite in watch mode |
+| `npx jest` | Run the full Jest test suite once (no watch) |
+| `npx tsc --noEmit` | Type-check the whole project without emitting output |
+
+### EAS Build
+
+Builds are a real native rebuild — required any time a native dependency changes (new native module, `app.config.js`/plugin changes), not needed for pure JS changes (those go out via OTA/just re-running Metro).
+
+| Command | Description |
+| --- | --- |
+| `eas build --platform android --profile development` | Internal dev-client build (native modules included, connects to Metro) |
+| `eas build --platform android --profile preview` | Internal build for testing a release-like build without publishing |
+| `eas build --platform android --profile production` | Store-ready release build (auto-increments version code) |
+| `eas submit --platform android --profile production` | Submit the latest production build to the Play Store |
+
+### EAS environment variables & secrets
+
+Cloud EAS builds do **not** read your local `.env` — env vars/secrets must be uploaded to EAS separately per environment (`production` / `preview` / `development`).
+
+| Command | Description |
+| --- | --- |
+| `eas env:list production --scope project` | List env vars configured for the `production` environment |
+| `eas env:set production --name KEY --value VALUE --scope project` | Set/update a plain string env var |
+| `eas env:set production --name KEY --type file --value ./path/to/file --visibility plaintext --scope project` | Upload a file-type env var (e.g. `GOOGLE_SERVICES_JSON`) |
+| `eas whoami` | Check which EAS account the CLI is currently authenticated as |
