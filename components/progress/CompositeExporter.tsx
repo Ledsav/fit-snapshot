@@ -6,6 +6,7 @@ import {
   computeCompositeLayout,
 } from "@/utils/compositeImage";
 import * as FileSystem from "expo-file-system/legacy";
+import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import React, { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { PixelRatio, View } from "react-native";
 import Svg, { ClipPath, Defs, Image as SvgImage, Rect, Text as SvgText } from "react-native-svg";
@@ -122,14 +123,35 @@ export const CompositeExporter = forwardRef<CompositeExporterHandle, CompositeEx
           FileSystem.deleteAsync(previousFileUriRef.current, { idempotent: true }).catch(() => {});
         }
 
+        // Stored photos are full camera resolution (easily 3000x4000+), but
+        // the composite only ever renders them at COMPOSITE_CANVAS_WIDTH.
+        // Resizing down first, before base64-encoding, avoids building and
+        // bridging multi-MB data URI strings for pixels that get thrown away
+        // anyway — this is the actual reason decode was slow enough to need
+        // the polling above. The resize output is a transient temp file,
+        // never referenced again after being read below, so it's deleted
+        // immediately rather than tracked like the composite output file.
+        const [beforeResized, afterResized] = await Promise.all([
+          manipulateAsync(beforeUri, [{ resize: { width: COMPOSITE_CANVAS_WIDTH } }], {
+            format: SaveFormat.JPEG,
+            compress: 0.9,
+          }),
+          manipulateAsync(afterUri, [{ resize: { width: COMPOSITE_CANVAS_WIDTH } }], {
+            format: SaveFormat.JPEG,
+            compress: 0.9,
+          }),
+        ]);
+
         // Embed both photos as data URIs before mounting the SVG <Image>
         // elements — the pixel data is inline in the tree at render time
         // instead of being fetched after mount, which avoids racing
         // toDataURL against an async image load.
         const [beforeBase64, afterBase64] = await Promise.all([
-          FileSystem.readAsStringAsync(beforeUri, { encoding: FileSystem.EncodingType.Base64 }),
-          FileSystem.readAsStringAsync(afterUri, { encoding: FileSystem.EncodingType.Base64 }),
+          FileSystem.readAsStringAsync(beforeResized.uri, { encoding: FileSystem.EncodingType.Base64 }),
+          FileSystem.readAsStringAsync(afterResized.uri, { encoding: FileSystem.EncodingType.Base64 }),
         ]);
+        FileSystem.deleteAsync(beforeResized.uri, { idempotent: true }).catch(() => {});
+        FileSystem.deleteAsync(afterResized.uri, { idempotent: true }).catch(() => {});
 
         setExportState({
           before: `data:image/jpeg;base64,${beforeBase64}`,
