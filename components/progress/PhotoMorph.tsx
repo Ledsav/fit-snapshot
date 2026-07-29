@@ -11,13 +11,13 @@ import { useUser } from "@/context/UserContext";
 import { PhotoType } from "@/enums/Photos";
 import { Photo } from "@/services/photoStorage";
 import { getTimeDifference } from "@/utils/dateUtils";
+import { showPermissionDeniedAlert } from "@/utils/permissionAlerts";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useCallback, useRef, useState } from "react";
 import {
   Alert,
   Dimensions,
   Image,
-  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -78,19 +78,15 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   const hasCustomSelectionAccess = hasFeatureAccess(Feature.CUSTOM_PHOTO_SELECTION);
   const hasGifAccess = hasFeatureAccess(Feature.GIF_GENERATION);
 
-  // When the OS permission was permanently denied ("don't ask again"),
-  // requestPermissionsAsync() will keep silently returning denied forever —
-  // offer a way to the app's settings page instead of repeating a dead-end
-  // alert every time.
-  const showPermissionDeniedAlert = useCallback((canAskAgain: boolean) => {
-    if (canAskAgain) {
-      Alert.alert(t("permissions.title"), t("permissions.photoSaveMessage"));
-    } else {
-      Alert.alert(t("permissions.title"), t("permissions.photoSavePermanentlyDeniedMessage"), [
-        { text: t("common.cancel"), style: "cancel" },
-        { text: t("permissions.openSettingsButton"), onPress: () => Linking.openSettings() },
-      ]);
-    }
+  const showPhotoSavePermissionAlert = useCallback((canAskAgain: boolean) => {
+    showPermissionDeniedAlert(
+      t("permissions.title"),
+      canAskAgain,
+      t("permissions.photoSaveMessage"),
+      t("permissions.photoSavePermanentlyDeniedMessage"),
+      t("common.cancel"),
+      t("permissions.openSettingsButton")
+    );
   }, [t]);
 
   // Single-photo view only (no comparison possible with one photo) — the
@@ -98,14 +94,14 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
   const extractPhoto = useCallback(async () => {
     const result = await saveFileToGallery(photos[0].uri, "FitSnapshot");
     if (result.status === "permission_denied") {
-      showPermissionDeniedAlert(result.canAskAgain);
+      showPhotoSavePermissionAlert(result.canAskAgain);
     } else if (result.status === "error") {
       console.error("Error extracting photo:", result.error);
       Alert.alert(t("common.error"), t("progress.photoSaveErrorMessage"));
     } else {
       Alert.alert(t("common.success"), t("progress.photoSavedMessage"));
     }
-  }, [photos, t, showPermissionDeniedAlert]);
+  }, [photos, t, showPhotoSavePermissionAlert]);
 
   if (photos.length === 0) {
     return (
@@ -304,7 +300,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
       if (!fileUri) throw new Error("Composite export returned no file");
       const result = await saveFileToGallery(fileUri, "FitSnapshot");
       if (result.status === "permission_denied") {
-        showPermissionDeniedAlert(result.canAskAgain);
+        showPhotoSavePermissionAlert(result.canAskAgain);
       } else if (result.status === "error") {
         Alert.alert(t("common.error"), t("progress.photoSaveErrorMessage"));
       } else {
@@ -513,7 +509,7 @@ const PhotoMorph: React.FC<PhotoMorphProps> = ({ type }) => {
                 onPress={async () => {
                   const result = await saveFileToGallery(gifUrl);
                   if (result.status === 'permission_denied') {
-                    showPermissionDeniedAlert(result.canAskAgain);
+                    showPhotoSavePermissionAlert(result.canAskAgain);
                   } else if (result.status === 'error') {
                     Alert.alert(t("common.error"), t("progress.gifSaveErrorMessage"));
                   } else {

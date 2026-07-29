@@ -38,6 +38,7 @@ interface TranslationKeys {
     confirm: string;
     confirmHelper: string;
     galleryPermissionDenied: string;
+    galleryPermissionPermanentlyDeniedMessage: string;
     imagePickerError: string;
     photoLimitReached: string;
     photosUsed: string;
@@ -349,6 +350,7 @@ export const translations: Translations = {
       permissionMessage: "We need your permission to show the camera",
       grantPermission: "Grant permission",
       galleryPermissionDenied: "We need media library permissions to import images",
+      galleryPermissionPermanentlyDeniedMessage: "Gallery access is disabled for this app. Enable it in your device settings to import images.",
       imagePickerError: "Error selecting image. Please try again",
       photoLimitReached: "Photo Limit Reached",
       photosUsed: "photos",
@@ -688,6 +690,7 @@ export const translations: Translations = {
       permissionMessage: "Necesitamos tu permiso para mostrar la cámara",
       grantPermission: "Conceder permiso",
       galleryPermissionDenied: "Necesitamos permisos para acceder a la galería de fotos",
+      galleryPermissionPermanentlyDeniedMessage: "El acceso a la galería está desactivado para esta app. Actívalo en los ajustes de tu dispositivo para importar imágenes.",
       imagePickerError: "Error al seleccionar imagen. Por favor, inténtalo de nuevo",
       photoLimitReached: "Límite de Fotos Alcanzado",
       photosUsed: "fotos",
@@ -1029,6 +1032,7 @@ export const translations: Translations = {
         "Abbiamo bisogno del tuo permesso per mostrare la fotocamera",
       grantPermission: "Concedi permesso",
       galleryPermissionDenied: "Abbiamo bisogno del permesso per accedere alla galleria foto",
+      galleryPermissionPermanentlyDeniedMessage: "L'accesso alla galleria è disabilitato per questa app. Attivalo nelle impostazioni del dispositivo per importare immagini.",
       imagePickerError: "Errore durante la selezione dell'immagine. Riprova",
       photoLimitReached: "Limite Foto Raggiunto",
       photosUsed: "foto",
@@ -1368,6 +1372,7 @@ export const translations: Translations = {
         "Wir benötigen Ihre Erlaubnis, um die Kamera zu zeigen",
       grantPermission: "Erlaubnis erteilen",
       galleryPermissionDenied: "Wir benötigen die Berechtigung zum Zugriff auf die Fotogalerie",
+      galleryPermissionPermanentlyDeniedMessage: "Der Galeriezugriff ist für diese App deaktiviert. Aktiviere ihn in den Geräteeinstellungen, um Bilder zu importieren.",
       imagePickerError: "Fehler beim Auswählen des Bildes. Bitte versuchen Sie es erneut",
       photoLimitReached: "Fotolimit Erreicht",
       photosUsed: "Fotos",
@@ -1709,6 +1714,7 @@ export const translations: Translations = {
         "Nous avons besoin de votre permission pour afficher l'appareil photo",
       grantPermission: "Accorder la permission",
       galleryPermissionDenied: "Nous avons besoin de l'autorisation d'accéder à la galerie de photos",
+      galleryPermissionPermanentlyDeniedMessage: "L'accès à la galerie est désactivé pour cette application. Activez-le dans les paramètres de votre appareil pour importer des images.",
       imagePickerError: "Erreur lors de la sélection de l'image. Veuillez réessayer",
       photoLimitReached: "Limite de Photos Atteinte",
       photosUsed: "photos",
