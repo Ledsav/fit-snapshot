@@ -3,14 +3,14 @@ import * as Sharing from "expo-sharing";
 
 export type SaveResult =
   | { status: "saved" }
-  | { status: "permission_denied" }
+  | { status: "permission_denied"; canAskAgain: boolean }
   | { status: "error"; error: unknown };
 
 export async function saveFileToGallery(uri: string, albumName?: string): Promise<SaveResult> {
   try {
-    const { status } = await MediaLibrary.requestPermissionsAsync();
+    const { status, canAskAgain } = await MediaLibrary.requestPermissionsAsync();
     if (status !== "granted") {
-      return { status: "permission_denied" };
+      return { status: "permission_denied", canAskAgain };
     }
     if (albumName) {
       const asset = await MediaLibrary.createAssetAsync(uri);

@@ -255,6 +255,8 @@ interface TranslationKeys {
   permissions: {
     title: string;
     photoSaveMessage: string;
+    photoSavePermanentlyDeniedMessage: string;
+    openSettingsButton: string;
   };
   paywall: {
     upgradeTitle: string;
@@ -596,6 +598,9 @@ export const translations: Translations = {
       title: "Permission Required",
       photoSaveMessage:
         "We need your permission to save photos to your gallery.",
+      photoSavePermanentlyDeniedMessage:
+        "Photo saving is disabled for this app. Enable it in your device settings to save photos.",
+      openSettingsButton: "Open Settings",
     },
     paywall: {
       upgradeTitle: "Upgrade to Premium",
@@ -933,6 +938,9 @@ export const translations: Translations = {
       title: "Permiso Requerido",
       photoSaveMessage:
         "Necesitamos su permiso para guardar fotos en su galería.",
+      photoSavePermanentlyDeniedMessage:
+        "Guardar fotos está desactivado para esta app. Actívalo en los ajustes de tu dispositivo para guardar fotos.",
+      openSettingsButton: "Abrir Ajustes",
     },
     paywall: {
       upgradeTitle: "Actualizar a Premium",
@@ -1270,6 +1278,9 @@ export const translations: Translations = {
       title: "Autorizzazione Richiesta",
       photoSaveMessage:
         "Abbiamo bisogno del tuo permesso per salvare le foto nella tua galleria.",
+      photoSavePermanentlyDeniedMessage:
+        "Il salvataggio delle foto è disabilitato per questa app. Attivalo nelle impostazioni del dispositivo per salvare le foto.",
+      openSettingsButton: "Apri Impostazioni",
     },
     paywall: {
       upgradeTitle: "Passa a Premium",
@@ -1608,6 +1619,9 @@ export const translations: Translations = {
       title: "Berechtigung Erforderlich",
       photoSaveMessage:
         "Wir benötigen Ihre Erlaubnis, um Fotos in Ihrer Galerie zu speichern.",
+      photoSavePermanentlyDeniedMessage:
+        "Das Speichern von Fotos ist für diese App deaktiviert. Aktiviere es in den Geräteeinstellungen, um Fotos zu speichern.",
+      openSettingsButton: "Einstellungen Öffnen",
     },
     paywall: {
       upgradeTitle: "Auf Premium upgraden",
@@ -1945,6 +1959,9 @@ export const translations: Translations = {
       title: "Autorisation Requise",
       photoSaveMessage:
         "Nous avons besoin de votre autorisation pour enregistrer des photos dans votre galerie.",
+      photoSavePermanentlyDeniedMessage:
+        "L'enregistrement des photos est désactivé pour cette application. Activez-le dans les paramètres de votre appareil pour enregistrer des photos.",
+      openSettingsButton: "Ouvrir les Paramètres",
     },
     paywall: {
       upgradeTitle: "Passer à Premium",

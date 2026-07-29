@@ -17,10 +17,16 @@ import { saveFileToGallery, shareFile } from "./mediaExportService";
 describe("saveFileToGallery", () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it("returns permission_denied when permission isn't granted", async () => {
-    (MediaLibrary.requestPermissionsAsync as jest.Mock).mockResolvedValue({ status: "denied" });
+  it("returns permission_denied with canAskAgain when permission isn't granted but can be re-requested", async () => {
+    (MediaLibrary.requestPermissionsAsync as jest.Mock).mockResolvedValue({ status: "denied", canAskAgain: true });
     const result = await saveFileToGallery("file://photo.png");
-    expect(result).toEqual({ status: "permission_denied" });
+    expect(result).toEqual({ status: "permission_denied", canAskAgain: true });
+  });
+
+  it("returns permission_denied with canAskAgain false when permanently denied", async () => {
+    (MediaLibrary.requestPermissionsAsync as jest.Mock).mockResolvedValue({ status: "denied", canAskAgain: false });
+    const result = await saveFileToGallery("file://photo.png");
+    expect(result).toEqual({ status: "permission_denied", canAskAgain: false });
   });
 
   it("saves into a named album when albumName is given", async () => {
