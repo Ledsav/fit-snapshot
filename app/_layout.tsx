@@ -1,4 +1,9 @@
 import "react-native-gesture-handler";
+// Side-effect import: constructing the native Crashlytics module registers
+// the global JS exception and unhandled-promise-rejection handlers, so this
+// must run before anything else can throw. No further setup call needed —
+// native crash reporting is automatic once @react-native-firebase/app links.
+import "@react-native-firebase/crashlytics";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import {
   Fraunces_500Medium,
