@@ -22,6 +22,7 @@ import { useLocalization } from "@/context/LocalizationContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useUser } from "@/context/UserContext";
 import { Ionicons } from "@expo/vector-icons";
+import crashlytics from "@react-native-firebase/crashlytics";
 import React, { useState } from "react";
 import {
   Alert,
@@ -124,6 +125,25 @@ export default function SettingsScreen() {
         {
           text: "Confirm",
           onPress: () => setTestPremiumStatus(!isPremium),
+        },
+      ]
+    );
+  };
+
+  const handleTestCrash = () => {
+    Alert.alert(
+      "Test Crashlytics",
+      "Send a test event to verify crash reporting is wired up.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Non-fatal error",
+          onPress: () => crashlytics().recordError(new Error("Test non-fatal error from Settings")),
+        },
+        {
+          text: "Force native crash",
+          style: "destructive",
+          onPress: () => crashlytics().crash(),
         },
       ]
     );
@@ -349,6 +369,23 @@ export default function SettingsScreen() {
               <Text style={[styles.settingText, { color: theme.text }]}>
                 {t("settings.testPremium")} ({isPremium ? t("settings.on") : t("settings.off")})
               </Text>
+              <Ionicons name="chevron-forward" size={20} color={theme.text} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.settingItem,
+                {
+                  backgroundColor: theme.cardBackground,
+                  borderColor: withOpacity(theme.primary, overlayOpacity.medium),
+                  marginTop: spacing.sm,
+                },
+              ]}
+              onPress={handleTestCrash}
+            >
+              <View style={[styles.iconContainer, { backgroundColor: withOpacity(theme.warning, overlayOpacity.subtle) }]}>
+                <Ionicons name="bug-outline" size={24} color={theme.warning} />
+              </View>
+              <Text style={[styles.settingText, { color: theme.text }]}>Test Crashlytics</Text>
               <Ionicons name="chevron-forward" size={20} color={theme.text} />
             </TouchableOpacity>
           </View>
