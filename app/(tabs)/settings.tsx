@@ -465,15 +465,17 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <View style={styles.section}>
-          <SettingItem
-            title="Build Info"
-            onPress={handleBuildInfoPress}
-            icon="information-circle-outline"
-            theme={theme}
-            value={buildInfo?.gitCommitHash ? buildInfo.gitCommitHash.slice(0, 7) : "local"}
-          />
-        </View>
+        {__DEV__ && (
+          <View style={styles.section}>
+            <SettingItem
+              title="Build Info"
+              onPress={handleBuildInfoPress}
+              icon="information-circle-outline"
+              theme={theme}
+              value={buildInfo?.gitCommitHash ? buildInfo.gitCommitHash.slice(0, 7) : "local"}
+            />
+          </View>
+        )}
       </ScrollView>
 
       <ThemeSelector
