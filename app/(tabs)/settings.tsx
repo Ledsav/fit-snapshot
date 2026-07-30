@@ -402,25 +402,32 @@ export default function SettingsScreen() {
               </Text>
               <Ionicons name="chevron-forward" size={20} color={theme.text} />
             </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.settingItem,
-                {
-                  backgroundColor: theme.cardBackground,
-                  borderColor: withOpacity(theme.primary, overlayOpacity.medium),
-                  marginTop: spacing.sm,
-                },
-              ]}
-              onPress={handleTestCrash}
-            >
-              <View style={[styles.iconContainer, { backgroundColor: withOpacity(theme.warning, overlayOpacity.subtle) }]}>
-                <Ionicons name="bug-outline" size={24} color={theme.warning} />
-              </View>
-              <Text style={[styles.settingText, { color: theme.text }]}>Test Crashlytics</Text>
-              <Ionicons name="chevron-forward" size={20} color={theme.text} />
-            </TouchableOpacity>
           </View>
         )}
+
+        {/* NOT __DEV__-gated on purpose: __DEV__ is false in any release-mode
+            build (preview/production/production-apk), and those are exactly
+            the builds needed to test a real native crash (dev-client +
+            Metro intercepts it). Remove this whole block before public
+            Play Store release — it's pre-launch test scaffolding only. */}
+        <View style={styles.section}>
+          <TouchableOpacity
+            style={[
+              styles.settingItem,
+              {
+                backgroundColor: theme.cardBackground,
+                borderColor: withOpacity(theme.primary, overlayOpacity.medium),
+              },
+            ]}
+            onPress={handleTestCrash}
+          >
+            <View style={[styles.iconContainer, { backgroundColor: withOpacity(theme.warning, overlayOpacity.subtle) }]}>
+              <Ionicons name="bug-outline" size={24} color={theme.warning} />
+            </View>
+            <Text style={[styles.settingText, { color: theme.text }]}>Test Crashlytics</Text>
+            <Ionicons name="chevron-forward" size={20} color={theme.text} />
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, preciseType.sectionLabel, { color: theme.text }]}>
