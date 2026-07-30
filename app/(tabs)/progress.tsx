@@ -61,7 +61,7 @@ const ProgressScreen: React.FC = () => {
             { backgroundColor: theme.transparent },
           ]}
         >
-          <PhotoMorph type={activeType} />
+          <PhotoMorph key={activeType} type={activeType} />
         </View>
       </ScrollView>
     </BackgroundImage>
