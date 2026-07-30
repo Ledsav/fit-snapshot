@@ -24,7 +24,7 @@ import { useUser } from "@/context/UserContext";
 import { Ionicons } from "@expo/vector-icons";
 import crashlytics from "@react-native-firebase/crashlytics";
 import Constants from "expo-constants";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Alert,
   Linking,
@@ -78,21 +78,6 @@ export default function SettingsScreen() {
   const [isContactsModalVisible, setIsContactsModalVisible] = useState(false);
   const [isTutorialVisible, setIsTutorialVisible] = useState(false);
   const [isPaywallVisible, setIsPaywallVisible] = useState(false);
-
-  // Definitive answer to "did the app crash last time" — decoupled from
-  // whether the OS visibly closed the app or the console has synced yet.
-  useEffect(() => {
-    crashlytics()
-      .didCrashOnPreviousExecution()
-      .then((crashed) => {
-        Alert.alert(
-          "Crashlytics Diagnostic",
-          crashed
-            ? "YES — a crash was detected on the previous app run."
-            : "NO — no crash was detected on the previous app run."
-        );
-      });
-  }, []);
 
   const handleLanguagePress = () => {
     setIsLanguageSelectorVisible(true);
