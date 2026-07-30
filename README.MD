@@ -88,6 +88,7 @@ Builds are a real native rebuild — required any time a native dependency chang
 | `eas build --platform android --profile preview` | Internal build for testing a release-like build without publishing |
 | `eas build --platform android --profile production` | Store-ready release build (auto-increments version code) |
 | `eas submit --platform android --profile production` | Submit the latest production build to the Play Store |
+| `eas build:list --platform android --profile development --limit 5` | List recent builds for a profile, including the exact git commit each was built from — compare against `git log --oneline` to verify which version is actually installed |
 
 ### EAS environment variables & secrets
 
