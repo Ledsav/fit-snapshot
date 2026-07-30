@@ -79,6 +79,15 @@ module.exports = {
       },
       eas: {
         projectId: "0b5c8589-3aaf-4eae-b40b-5ca83c4c1e78"
+      },
+      // Baked in by EAS Build's own built-in env vars, so the running app
+      // can report exactly which commit/profile/build it was built from —
+      // lets you verify "which version do I have installed" without
+      // guessing from memory. Unset (null) for local/non-EAS builds.
+      buildInfo: {
+        gitCommitHash: process.env.EAS_BUILD_GIT_COMMIT_HASH ?? null,
+        easBuildId: process.env.EAS_BUILD_ID ?? null,
+        easBuildProfile: process.env.EAS_BUILD_PROFILE ?? null
       }
     }
   }

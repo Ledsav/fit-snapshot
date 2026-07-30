@@ -23,6 +23,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { useUser } from "@/context/UserContext";
 import { Ionicons } from "@expo/vector-icons";
 import crashlytics from "@react-native-firebase/crashlytics";
+import Constants from "expo-constants";
 import React, { useState } from "react";
 import {
   Alert,
@@ -127,6 +128,21 @@ export default function SettingsScreen() {
           onPress: () => setTestPremiumStatus(!isPremium),
         },
       ]
+    );
+  };
+
+  const buildInfo = Constants.expoConfig?.extra?.buildInfo as
+    | { gitCommitHash: string | null; easBuildId: string | null; easBuildProfile: string | null }
+    | undefined;
+
+  const handleBuildInfoPress = () => {
+    if (!buildInfo?.gitCommitHash) {
+      Alert.alert("Build Info", "Not an EAS build (local/dev server bundle) — no build metadata available.");
+      return;
+    }
+    Alert.alert(
+      "Build Info",
+      `Commit: ${buildInfo.gitCommitHash}\nProfile: ${buildInfo.easBuildProfile}\nBuild ID: ${buildInfo.easBuildId}`
     );
   };
 
@@ -446,6 +462,16 @@ export default function SettingsScreen() {
             icon="language-outline"
             theme={theme}
             value={getLanguageDisplayName(locale)}
+          />
+        </View>
+
+        <View style={styles.section}>
+          <SettingItem
+            title="Build Info"
+            onPress={handleBuildInfoPress}
+            icon="information-circle-outline"
+            theme={theme}
+            value={buildInfo?.gitCommitHash ? buildInfo.gitCommitHash.slice(0, 7) : "local"}
           />
         </View>
       </ScrollView>
