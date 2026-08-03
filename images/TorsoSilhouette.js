@@ -1,7 +1,5 @@
 import React from "react";
-import { Dimensions, Image, View } from "react-native";
-
-const { width, height } = Dimensions.get("window");
+import { Image, View } from "react-native";
 
 const TorsoSilhouette = ({ type = "front" }) => {
   // Select silhouette based on photo type
@@ -31,8 +29,8 @@ const TorsoSilhouette = ({ type = "front" }) => {
       <Image
         source={getSilhouetteSource()}
         style={{
-          width: width * 0.8,
-          height: height * 0.6,
+          width: "80%",
+          height: "60%",
           opacity: 0.3,
           resizeMode: "contain",
         }}
