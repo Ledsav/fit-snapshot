@@ -82,6 +82,57 @@ export const savePhoto = async (photo: Photo): Promise<void> => {
   }
 };
 
+export const updatePhoto = async (
+  id: string,
+  updates: { uri?: string; date?: string; luminance?: number }
+): Promise<Photo> => {
+  try {
+    const existingPhotos = await getPhotos();
+    const index = existingPhotos.findIndex((photo) => photo.id === id);
+    if (index === -1) {
+      throw new Error(`Photo not found: ${id}`);
+    }
+    const existing = existingPhotos[index];
+
+    let fileName = existing.fileName;
+    let uri = existing.uri;
+
+    if (updates.uri) {
+      // Always a fresh filename, never the original one — <Image> caches by
+      // URI, so overwriting the same path would keep showing the old bytes.
+      const newFileName = `${existing.type}_edited-${Date.now()}_${existing.id}.jpg`;
+      uri = await savePhotoToDevice(updates.uri, newFileName);
+
+      if (existing.fileName) {
+        const oldFilePath = PHOTO_DIRECTORY + existing.fileName;
+        const oldFileInfo = await FileSystem.getInfoAsync(oldFilePath);
+        if (oldFileInfo.exists) {
+          await FileSystem.deleteAsync(oldFilePath);
+        }
+      }
+      fileName = newFileName;
+    }
+
+    const updatedPhoto: Photo = {
+      ...existing,
+      uri,
+      fileName,
+      date: updates.date ?? existing.date,
+      // 'luminance' in updates distinguishes "field not touched" (keep
+      // existing) from "explicitly cleared to undefined" (the edit-crop flow
+      // needs the latter, since cropping invalidates any cached reading).
+      luminance: "luminance" in updates ? updates.luminance : existing.luminance,
+    };
+
+    existingPhotos[index] = updatedPhoto;
+    await AsyncStorage.setItem(PHOTO_STORAGE_KEY, JSON.stringify(existingPhotos));
+    return updatedPhoto;
+  } catch (error) {
+    console.error("Error updating photo:", error);
+    throw error;
+  }
+};
+
 export const getPhotos = async (): Promise<Photo[]> => {
   try {
     const photosJson = await AsyncStorage.getItem(PHOTO_STORAGE_KEY);
