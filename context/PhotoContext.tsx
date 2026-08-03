@@ -7,12 +7,17 @@ import {
   getPhotos,
   getStorageInfo,
   savePhoto,
+  updatePhoto as updatePhotoFile,
 } from "@/services/photoStorage";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface PhotoContextType {
   photos: Photo[];
   addPhoto: (photo: Photo) => Promise<{ success: boolean; error?: string }>;
+  updatePhoto: (
+    id: string,
+    updates: { uri?: string; date?: string; luminance?: number }
+  ) => Promise<{ success: boolean; error?: string }>;
   removePhoto: (id: string) => Promise<void>;
   refreshPhotos: () => Promise<void>;
   getPhotosByType: (type: PhotoType) => Photo[];
@@ -101,6 +106,28 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const updatePhoto = async (
+    id: string,
+    updates: { uri?: string; date?: string; luminance?: number }
+  ): Promise<{ success: boolean; error?: string }> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const updated = await updatePhotoFile(id, updates);
+      setPhotos((prevPhotos) =>
+        prevPhotos.map((photo) => (photo.id === id ? updated : photo))
+      );
+      return { success: true };
+    } catch (err) {
+      const errorMessage = "Failed to update photo. Please try again.";
+      setError(errorMessage);
+      console.error("Error updating photo:", err);
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const removePhoto = async (id: string) => {
     setIsLoading(true);
     setError(null);
@@ -132,6 +159,7 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({
   const value: PhotoContextType = {
     photos,
     addPhoto,
+    updatePhoto,
     removePhoto,
     refreshPhotos,
     getPhotosByType,
