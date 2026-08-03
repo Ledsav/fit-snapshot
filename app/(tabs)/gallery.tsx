@@ -23,7 +23,9 @@ import { useUser } from "@/context/UserContext";
 import { PhotoType } from "@/enums/Photos";
 import { GeneratedGif } from "@/services/gifStorage";
 import { Photo } from "@/services/photoStorage";
+import { LightingBaselineStore } from "@/services/lightingBaselineStore";
 import { PendingCropResult } from "@/services/pendingCropStore";
+import { computeImageLuminance } from "@/utils/imageLuminance";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from 'expo-image-picker';
 import { extractPhotoDate } from "@/utils/photoDate";
@@ -66,6 +68,8 @@ type ViewMode = 'grouped' | 'timeline';
 export default function GalleryScreen() {
   const [sections, setSections] = useState<Section[]>([]);
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [selectedPhotoRecord, setSelectedPhotoRecord] = useState<Photo | null>(null);
+  const [isComputingLuminance, setIsComputingLuminance] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isTypeSelectionVisible, setIsTypeSelectionVisible] = useState(false);
   const [pendingImageUri, setPendingImageUri] = useState<string | null>(null);
@@ -85,6 +89,7 @@ export default function GalleryScreen() {
   const {
     photos,
     addPhoto,
+    updatePhoto,
     removePhoto,
     refreshPhotos,
     canAddPhoto,
@@ -252,12 +257,63 @@ export default function GalleryScreen() {
     );
   };
 
-  const openFullScreenPhoto = (photoUri: string) => {
+  const openFullScreenPhoto = (photoUri: string, photo?: Photo) => {
     setSelectedPhoto(photoUri);
+    setSelectedPhotoRecord(photo ?? null);
   };
 
   const closeFullScreenPhoto = () => {
     setSelectedPhoto(null);
+    setSelectedPhotoRecord(null);
+  };
+
+  const getImageSize = (uri: string): Promise<{ width: number; height: number }> =>
+    new Promise((resolve, reject) => {
+      Image.getSize(uri, (width, height) => resolve({ width, height }), reject);
+    });
+
+  const handleEditPhoto = async (photo: Photo) => {
+    try {
+      const { width, height } = await getImageSize(photo.uri);
+
+      PendingCropResult.setResolver((croppedUri, date) => {
+        updatePhoto(photo.id, { uri: croppedUri, date, luminance: undefined });
+      });
+
+      closeFullScreenPhoto();
+      router.push({
+        pathname: "/photo-crop",
+        params: {
+          uri: photo.uri,
+          width: String(width),
+          height: String(height),
+          type: photo.type,
+          date: photo.date,
+        },
+      });
+    } catch (error) {
+      console.error("Error preparing photo for edit:", error);
+      Alert.alert(t("common.error"), t("camera.imagePickerError") || "Error selecting image. Please try again.");
+    }
+  };
+
+  const handleSetReferenceLuminance = async (photo: Photo) => {
+    setIsComputingLuminance(true);
+    try {
+      const luminance = await computeImageLuminance(photo.uri);
+      if (luminance === null) {
+        Alert.alert(t("common.error"), t("gallery.luminanceComputeError"));
+        return;
+      }
+      await LightingBaselineStore.setOverride(photo.type, luminance);
+      await updatePhoto(photo.id, { luminance });
+      Alert.alert(
+        t("gallery.referenceLuminanceSetTitle"),
+        t("gallery.referenceLuminanceSetMessage")
+      );
+    } finally {
+      setIsComputingLuminance(false);
+    }
   };
 
   const pickImage = async () => {
@@ -414,7 +470,7 @@ export default function GalleryScreen() {
             { borderColor: withOpacity(theme.secondary, overlayOpacity.light) },
             isSelected && { borderWidth: 2, borderColor: theme.primary },
           ]}
-          onPress={() => selectionMode ? togglePhotoSelection(item.id) : openFullScreenPhoto(item.uri)}
+          onPress={() => selectionMode ? togglePhotoSelection(item.id) : openFullScreenPhoto(item.uri, item)}
           activeOpacity={0.95}
         >
           <Image source={{ uri: item.uri }} style={styles.image} />
@@ -724,6 +780,10 @@ export default function GalleryScreen() {
           isVisible={!!selectedPhoto}
           photoUri={selectedPhoto || ""}
           onClose={closeFullScreenPhoto}
+          photo={selectedPhotoRecord ?? undefined}
+          onEdit={handleEditPhoto}
+          onSetReferenceLuminance={handleSetReferenceLuminance}
+          isComputingLuminance={isComputingLuminance}
         />
 
         {/* Type Selection Modal */}

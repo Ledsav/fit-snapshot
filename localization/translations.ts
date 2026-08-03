@@ -71,6 +71,9 @@ interface TranslationKeys {
     addPhoto: string;
     importGif: string;
     invalidGifFile: string;
+    referenceLuminanceSetTitle: string;
+    referenceLuminanceSetMessage: string;
+    luminanceComputeError: string;
   };
   progress: {
     title: string;
@@ -383,6 +386,9 @@ export const translations: Translations = {
       addPhoto: "Add Photo",
       importGif: "Import GIF",
       invalidGifFile: "Please select a GIF file.",
+      referenceLuminanceSetTitle: "Reference Set",
+      referenceLuminanceSetMessage: "This photo is now your lighting reference for this pose.",
+      luminanceComputeError: "Couldn't read this photo's lighting. Please try a different photo.",
     },
     progress: {
       title: "Your Progress",
@@ -723,6 +729,9 @@ export const translations: Translations = {
       addPhoto: "Añadir Foto",
       importGif: "Importar GIF",
       invalidGifFile: "Por favor selecciona un archivo GIF.",
+      referenceLuminanceSetTitle: "Referencia Establecida",
+      referenceLuminanceSetMessage: "Esta foto ahora es tu referencia de iluminación para esta pose.",
+      luminanceComputeError: "No se pudo leer la iluminación de esta foto. Prueba con otra foto.",
     },
     progress: {
       title: "Tu Progreso",
@@ -1065,6 +1074,9 @@ export const translations: Translations = {
       addPhoto: "Aggiungi Foto",
       importGif: "Importa GIF",
       invalidGifFile: "Seleziona un file GIF.",
+      referenceLuminanceSetTitle: "Riferimento Impostato",
+      referenceLuminanceSetMessage: "Questa foto è ora il tuo riferimento di illuminazione per questa posa.",
+      luminanceComputeError: "Impossibile leggere l'illuminazione di questa foto. Prova con un'altra foto.",
     },
     progress: {
       title: "I Tuoi Progressi",
@@ -1405,6 +1417,9 @@ export const translations: Translations = {
       addPhoto: "Foto hinzufügen",
       importGif: "GIF importieren",
       invalidGifFile: "Bitte wähle eine GIF-Datei aus.",
+      referenceLuminanceSetTitle: "Referenz Festgelegt",
+      referenceLuminanceSetMessage: "Dieses Foto ist jetzt deine Beleuchtungsreferenz für diese Pose.",
+      luminanceComputeError: "Die Beleuchtung dieses Fotos konnte nicht gelesen werden. Versuche es mit einem anderen Foto.",
     },
     progress: {
       title: "Ihr Fortschritt",
@@ -1747,6 +1762,9 @@ export const translations: Translations = {
       addPhoto: "Ajouter une Photo",
       importGif: "Importer un GIF",
       invalidGifFile: "Veuillez sélectionner un fichier GIF.",
+      referenceLuminanceSetTitle: "Référence Définie",
+      referenceLuminanceSetMessage: "Cette photo est maintenant votre référence d'éclairage pour cette pose.",
+      luminanceComputeError: "Impossible de lire l'éclairage de cette photo. Essayez une autre photo.",
     },
     progress: {
       title: "Votre Progrès",
