@@ -8,6 +8,7 @@ A mobile application for tracking fitness progress through photo tracking.
 - [Design](#design)
 - [Features](#features)
 - [Installation](#installation)
+- [Environment](#environment)
 - [Usage](#usage)
 - [Useful Commands](#useful-commands)
 
@@ -52,11 +53,38 @@ The overall feel sits between "premium fitness tracker" and "minimal photo app":
 
 ## **Installation**
 
-To install the application, follow these steps:
+FitSnapshot uses native modules (Vision Camera, React Native Firebase, Google Sign-In, RevenueCat), so it does **not** run in Expo Go — you need a dev-client build installed on the device/emulator, then Metro serves the JS to it.
 
-1. Clone the repository: `git clone https://github.com/your-username/fit-snapshot.git`
-2. Install dependencies: `npm install` or `yarn install`
-3. Run the application: `npm start` or `yarn start`
+### Prerequisites
+
+- **Node.js** 22 LTS (React Native 0.86 needs `^20.19.4 || ^22.13.0 || >=24.3`) and npm
+- **EAS CLI** — `npm i -g eas-cli`, then `eas login` (Expo account that owns the project)
+- For local native builds only: **Android Studio** (SDK + an emulator, or a USB-debugging device) and **JDK 17** (`JAVA_HOME` pointing to it)
+- The secrets listed under [Environment](#environment): `.env` and `support/google-services.json` (both git-ignored)
+
+### One-go setup
+
+1. Clone the repository: `git clone https://github.com/Ledsav/fit-snapshot.git`
+2. Put `.env` and `support/google-services.json` in place (see [Environment](#environment)).
+3. In VS Code run **Terminal → Run Task → "Setup (fresh clone)"**. It runs `npm install`, checks `.env` (creates it from `.env.example` and stops if missing) and `support/google-services.json`, then `npx tsc --noEmit` and `npx jest`.
+4. Install a dev client once (and again whenever a native dependency or `app.config.js` changes):
+   - cloud: `eas build -p android --profile development` and install the resulting APK, or
+   - local: `npx expo run:android` (task **"Build dev client (local Android)"**; needs Android Studio + JDK 17).
+5. Run the **"Dev"** task (`npm start`) and open the app from the dev client.
+
+## **Environment**
+
+| What | Where to get it |
+| --- | --- |
+| `.env` (copy of `.env.example`) | Keys below. Expo only inlines `EXPO_PUBLIC_*` variables. |
+| `EXPO_PUBLIC_FIREBASE_API_KEY`, `_AUTH_DOMAIN`, `_PROJECT_ID`, `_STORAGE_BUCKET`, `_MESSAGING_SENDER_ID`, `_APP_ID`, `_MEASUREMENT_ID` | Firebase Console → project **python-functions** (`python-functions-476223`) → Project settings → Your apps → Web app config |
+| `EXPO_PUBLIC_ANDROID_CLIENT_ID` | Google Cloud Console (same project) → APIs & Services → Credentials → the **Web** OAuth client *"Web client (auto created by Google Service)"*. It is passed to `GoogleSignin.configure({ webClientId })`, so it must be the web client ID despite the name. The Android OAuth client (package + SHA-1 of the EAS keystore) must also exist. |
+| `EXPO_PUBLIC_CLOUD_FUNCTION_URL` | URL of the `generate_gif_http` function (us-central1) in the same GCP project. Its source lives in the separate public repo [Ledsav/gif-generator](https://github.com/Ledsav/gif-generator). |
+| `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY` | app.revenuecat.com → project → API keys → Google Play public SDK key (`goog_…`). See `docs/revenuecat-play-setup.md`. |
+| `support/google-services.json` | Firebase Console → Project settings → Android app `com.ledsav.fitsnapshot` → download. EAS cloud builds get it from the file-type env var `GOOGLE_SERVICES_JSON` instead (`app.config.js` falls back to `./support/google-services.json`). |
+| Android signing keystore | Managed by EAS. Download a backup with `eas credentials -p android`. Never commit `*.jks`. |
+
+EAS cloud builds do not read `.env` — the same keys must exist in EAS (see the EAS env commands below).
 
 ## **Usage**
 
@@ -70,8 +98,9 @@ To install the application, follow these steps:
 
 | Command | Description |
 | --- | --- |
-| `npm start` | Start the Metro dev server (Expo dev client / Expo Go) |
-| `npm run android` | Start Metro and open on a connected Android device/emulator |
+| `npm start` | Start the Metro dev server for the installed dev client (Expo Go is not supported) |
+| `npm run android` | Start Metro and open the dev client on a connected Android device/emulator |
+| `npx expo run:android` | Build and install the dev client locally (Android Studio + JDK 17) |
 | `npm run ios` | Start Metro and open on iOS simulator |
 | `npm run web` | Start Metro for the web target |
 | `npm test` | Run the Jest test suite in watch mode |

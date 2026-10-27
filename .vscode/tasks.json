@@ -1,0 +1,60 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "setup:install",
+      "type": "shell",
+      "command": "npm install",
+      "problemMatcher": []
+    },
+    {
+      "label": "setup:env",
+      "type": "shell",
+      "command": "node -e 'const fs=require(`fs`);if(!fs.existsSync(`.env`)){fs.copyFileSync(`.env.example`,`.env`);console.error(`Created .env from .env.example - fill in the values (see README > Environment) and re-run Setup.`);process.exit(1)}if(/your_/.test(fs.readFileSync(`.env`,`utf8`))){console.error(`.env still contains placeholder values (your_...) - see README > Environment.`);process.exit(1)}console.log(`.env OK`)'",
+      "problemMatcher": []
+    },
+    {
+      "label": "setup:google-services",
+      "type": "shell",
+      "command": "node -e 'if(!require(`fs`).existsSync(`support/google-services.json`)){console.error(`Missing support/google-services.json - download it from Firebase Console > Project settings > Android app com.ledsav.fitsnapshot (see README > Environment).`);process.exit(1)}console.log(`support/google-services.json OK`)'",
+      "problemMatcher": []
+    },
+    {
+      "label": "setup:typecheck",
+      "type": "shell",
+      "command": "npx tsc --noEmit",
+      "problemMatcher": ["$tsc"]
+    },
+    {
+      "label": "setup:test",
+      "type": "shell",
+      "command": "npx jest",
+      "problemMatcher": []
+    },
+    {
+      "label": "Setup (fresh clone)",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "setup:install",
+        "setup:env",
+        "setup:google-services",
+        "setup:typecheck",
+        "setup:test"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Build dev client (local Android)",
+      "type": "shell",
+      "command": "npx expo run:android",
+      "problemMatcher": []
+    },
+    {
+      "label": "Dev",
+      "type": "shell",
+      "command": "npm start",
+      "isBackground": true,
+      "problemMatcher": []
+    }
+  ]
+}
