@@ -102,16 +102,22 @@ export default function CameraScreen() {
   const photoLimitStatus = canAddPhoto();
   const isPhotoLimitReached = !photoLimitStatus.allowed;
 
-  // Load the per-pose recalibration override whenever the pose changes.
-  useEffect(() => {
-    let cancelled = false;
-    LightingBaselineStore.getOverride(overlay).then((value) => {
-      if (!cancelled) setOverride(value);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [overlay]);
+  // Load the per-pose recalibration override whenever the pose changes, and
+  // re-read it every time the screen regains focus — the screen stays
+  // mounted while the user is in the gallery, so a newly-set reference
+  // luminance (from the gallery) wouldn't otherwise reach the camera until
+  // the pose was toggled away and back.
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      LightingBaselineStore.getOverride(overlay).then((value) => {
+        if (!cancelled) setOverride(value);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [overlay])
+  );
 
   useEffect(() => {
     let cancelled = false;

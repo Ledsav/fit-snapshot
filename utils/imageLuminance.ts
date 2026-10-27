@@ -22,6 +22,10 @@ export async function computeImageLuminance(uri: string): Promise<number | null>
     const bytes = toByteArray(resized.base64);
     const { data, width, height } = decodeJpeg(bytes, { useTArray: true });
 
+    // Static RGB-based luma average — an approximation of the live camera's
+    // raw Y-plane average (see meanLumaFromYPlane in lightingService.ts).
+    // The two paths use different color pipelines/decoders, so readings may
+    // differ slightly across devices; they aren't expected to be bit-identical.
     let sum = 0;
     let count = 0;
     for (const region of DEFAULT_BG_REGIONS) {
@@ -41,7 +45,7 @@ export async function computeImageLuminance(uri: string): Promise<number | null>
     if (count === 0) return null;
     return normalizeLuma(sum / count);
   } catch (error) {
-    console.error("Error computing image luminance:", error);
+    console.warn("Error computing image luminance:", error);
     return null;
   }
 }

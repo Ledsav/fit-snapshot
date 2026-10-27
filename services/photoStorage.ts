@@ -24,29 +24,39 @@ const ensureDirectoryExists = async (): Promise<void> => {
   }
 };
 
-// Save photo to permanent device storage
-const savePhotoToDevice = async (photoUri: string, fileName: string): Promise<string> => {
+// Save photo to permanent device storage. `saveToLibrary` gates whether the
+// file is additionally copied into the user's system photo library — true
+// for brand-new photos (savePhoto), false for in-place edits (updatePhoto)
+// so re-cropping the same photo doesn't leave duplicate copies in the
+// camera roll every time.
+const savePhotoToDevice = async (
+  photoUri: string,
+  fileName: string,
+  saveToLibrary: boolean = true
+): Promise<string> => {
   try {
     await ensureDirectoryExists();
     const newPath = PHOTO_DIRECTORY + fileName;
-    
+
     // Copy the photo to our app's document directory
     await FileSystem.copyAsync({
       from: photoUri,
       to: newPath,
     });
-    
+
     // Optionally save to device's photo library as well
-    try {
-      const { status } = await MediaLibrary.requestPermissionsAsync();
-      if (status === 'granted') {
-        await MediaLibrary.saveToLibraryAsync(newPath);
+    if (saveToLibrary) {
+      try {
+        const { status } = await MediaLibrary.requestPermissionsAsync();
+        if (status === 'granted') {
+          await MediaLibrary.saveToLibraryAsync(newPath);
+        }
+      } catch (error) {
+        console.log('Could not save to media library:', error);
+        // Don't throw - we still have the file in our directory
       }
-    } catch (error) {
-      console.log('Could not save to media library:', error);
-      // Don't throw - we still have the file in our directory
     }
-    
+
     return newPath;
   } catch (error) {
     console.error('Error saving photo to device:', error);
@@ -101,15 +111,9 @@ export const updatePhoto = async (
       // Always a fresh filename, never the original one — <Image> caches by
       // URI, so overwriting the same path would keep showing the old bytes.
       const newFileName = `${existing.type}_edited-${Date.now()}_${existing.id}.jpg`;
-      uri = await savePhotoToDevice(updates.uri, newFileName);
-
-      if (existing.fileName) {
-        const oldFilePath = PHOTO_DIRECTORY + existing.fileName;
-        const oldFileInfo = await FileSystem.getInfoAsync(oldFilePath);
-        if (oldFileInfo.exists) {
-          await FileSystem.deleteAsync(oldFilePath);
-        }
-      }
+      // Edits shouldn't duplicate into the system photo library — only
+      // brand-new photos (savePhoto) do that.
+      uri = await savePhotoToDevice(updates.uri, newFileName, false);
       fileName = newFileName;
     }
 
@@ -121,11 +125,26 @@ export const updatePhoto = async (
       // 'luminance' in updates distinguishes "field not touched" (keep
       // existing) from "explicitly cleared to undefined" (the edit-crop flow
       // needs the latter, since cropping invalidates any cached reading).
+      // Note: clearing a photo's cached luminance here intentionally leaves
+      // the pose-level LightingBaselineStore override untouched — that
+      // override applies to the pose, not to any single photo.
       luminance: "luminance" in updates ? updates.luminance : existing.luminance,
     };
 
+    // Persist the new metadata BEFORE deleting the old file: if setItem
+    // throws (e.g. disk full), the stored record still points at a file
+    // that still exists, instead of a path that's already gone.
     existingPhotos[index] = updatedPhoto;
     await AsyncStorage.setItem(PHOTO_STORAGE_KEY, JSON.stringify(existingPhotos));
+
+    if (updates.uri && existing.fileName) {
+      const oldFilePath = PHOTO_DIRECTORY + existing.fileName;
+      const oldFileInfo = await FileSystem.getInfoAsync(oldFilePath);
+      if (oldFileInfo.exists) {
+        await FileSystem.deleteAsync(oldFilePath);
+      }
+    }
+
     return updatedPhoto;
   } catch (error) {
     console.error("Error updating photo:", error);
